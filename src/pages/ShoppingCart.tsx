@@ -17,6 +17,7 @@ const ProductPrice: React.FC<{ price: number }> = ({ price }) => (
 
 const ShoppingCart: React.FC = () => {
   const { cart, updateQuantity, deleteItem, updateItemVariant } = useCart();
+  console.log(cart);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   // Group items by product id
@@ -68,7 +69,7 @@ const ShoppingCart: React.FC = () => {
                       />
 
                       {/* Wrapper utama per produk */}
-                      <div className="flex items-center gap-3 flex-1 bg-white p-2 rounded-md">
+                      <div className="flex items-center gap-3 flex-1">
 
                         {/* Gambar produk */}
                         <div className="flex-shrink-0">
@@ -85,7 +86,7 @@ const ShoppingCart: React.FC = () => {
                           <div className="flex-1 mr-10">
                             <p className="font-poppinsRegular text-[15px]">Variant:</p>
                             <select
-                              className="border rounded px-2 py-1 mt-1 bg-white"
+                              className=" bg-white"
                               value={item.variation}
                               onChange={(e) => updateItemVariant(item.cartId, e.target.value)}
                             >
@@ -95,6 +96,20 @@ const ShoppingCart: React.FC = () => {
                                 </option>
                               ))}
                             </select>
+                          </div>
+                        )}
+
+                        {/* Face count */}
+                        {item.attributes?.faceCount && (
+                          <div className="flex-1 -translate-x-5">
+                            <p className="font-poppinsRegular ">Faces: {item.attributes.faceCount}</p>
+                          </div>
+                        )}
+
+                        {/* Background */}
+                        {item.attributes?.backgroundType && (
+                          <div className="flex-1 -translate-x-9">
+                            <p className="font-poppinsRegular ">BG: {item.attributes.backgroundType}</p>
                           </div>
                         )}
 
