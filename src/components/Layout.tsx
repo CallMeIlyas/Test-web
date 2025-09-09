@@ -1,50 +1,36 @@
 import { Outlet } from "react-router-dom";
 import { useState } from "react";
 import Header from "./home/Header";
-import { Toaster, toast } from "react-hot-toast"; // ⬅️ import
+import { Toaster, toast } from "react-hot-toast";
+import { useCart } from "../context/CartContext";
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-  image: string;
+interface LayoutProps {
+  onSearch?: (query: string) => void; // opsional
 }
 
-const Layout = () => {
+const Layout: React.FC<LayoutProps> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { cart, addToCart } = useCart();
 
-  // fungsi untuk nambah produk ke cart
-  const addToCart = (item: CartItem) => {
-    setCartItems((prev) => {
-      const existing = prev.find((p) => p.id === item.id);
-      if (existing) {
-        toast.success(`${item.name} ditambah 🛒`); // ✅ toast saat update qty
-        return prev.map((p) =>
-          p.id === item.id ? { ...p, qty: p.qty + item.qty } : p
-        );
-      }
-      toast.success(`${item.name} berhasil ditambahkan 🛍️`); // ✅ toast saat item baru
-      return [...prev, item];
-    });
+  const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
+
+  const handleAddToCart = (item: Parameters<typeof addToCart>[0]) => {
+    addToCart(item);
+    toast.success(`${item.name} berhasil ditambahkan 🛍️`);
   };
 
-  // 🔹 total semua qty
-  const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0);
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (onSearch) onSearch(query);
+  };
 
   return (
-    <div>
-      <Header
-        cartCount={cartCount}
-        cartItems={cartItems}
-        onSearch={setSearchQuery}
-      />
+    <div className="min-h-screen flex flex-col">
+      <Header cartCount={cartCount} cartItems={cart} onSearch={handleSearch} />
 
-      {/* ⬇️ lempar searchQuery dan addToCart ke semua children */}
-      <Outlet context={{ searchQuery, addToCart }} />
+      {/* Outlet untuk halaman anak */}
+      <Outlet context={{ searchQuery, addToCart: handleAddToCart }} />
 
-      {/* ⬅️ ini harus dipasang sekali di root layout */}
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

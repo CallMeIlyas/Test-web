@@ -10,13 +10,19 @@ export interface Product {
 }
 
 export interface CartItem {
-  id: string;       // biasanya string unik, bisa pakai productId + variant
+  cartId: string;
+  id: string;
   name: string;
+  variation: string; // HANYA frame variant, misal "Black Hardbox"
   price: number;
-  qty: number;
-  image: string;    // pakai imageUrl dari Product
+  quantity: number;
+  imageUrl: string;
+  productType: "frame";
+  attributes?: {
+    faceCount?: number;         // optional, TIDAK dicampur ke variation
+    backgroundType?: string;    // optional, TIDAK dicampur ke variation
+  };
 }
-
 export interface Step {
   number: number;
   icon: string;

@@ -21,7 +21,7 @@ const ProductCard: FC<ProductCardProps> = ({ imageUrl, name, size, onAddToCart }
       {/* cart Button */}
       <button
         onClick={onAddToCart}
-        className="mt-3 px-4 py-2 bg-[#f5d7d6] text-black text-sm rounded-lg shadow hover:bg-[#e8b9b8] transition-colors"
+        className="font-poppinsRegular mt-3 px-4 py-2 bg-[#f5d7d6] text-black text-sm rounded-lg shadow hover:bg-[#e8b9b8] transition-colors"
       >
         Add to Cart
       </button>

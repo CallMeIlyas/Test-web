@@ -5,7 +5,7 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
-  qty: number;
+  quantity: number;   // 🔹 ubah dari qty -> quantity
   image: string;
 }
 
@@ -15,7 +15,7 @@ interface HeaderProps {
   onSearch: (query: string) => void;
 }
 
-const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => { // ✅ tambahin cartItems
+const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => { 
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
 
@@ -86,7 +86,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => { // ✅ tam
 
           {/* Cart */}
           <li className="relative group">
-            <a href="/cart" className="block relative">
+            <a href="/shoppingcart" className="block relative">
               <img
                 src="/src/assets/Icons/CART.png"
                 alt="Cart"
@@ -119,18 +119,18 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => { // ✅ tam
                     Your cart is empty
                   </div>
                 ) : (
-                  <ul className="ml-10 -translate-y-[px] space-y-3 overflow-y-auto max-h-[180px] pr-2">
+                  <ul className="ml-10 space-y-3 overflow-y-auto max-h-[180px] pr-2">
                     {cartItems.map((item) => (
                       <li key={item.id} className="flex items-center gap-3">
                         <img
-                          src={item.image}
+                          src={item.imageUrl}
                           alt={item.name}
                           className="w-12 h-12 rounded"
                         />
                         <div className="flex-1">
                           <p className="text-sm font-semibold">{item.name}</p>
                           <p className="text-xs text-gray-600">
-                            {item.qty} × Rp{item.price.toLocaleString("id-ID")}
+                            {item.quantity} × Rp{item.price.toLocaleString("id-ID")}
                           </p>
                         </div>
                       </li>

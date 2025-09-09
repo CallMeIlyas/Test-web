@@ -25,7 +25,7 @@ export default function FAQPage() {
           {/* Left Column */}
           <div className="space-y-3 font-s">
             <FAQItem 
-              question="How long the process time for 1 frame 2–10 ces caricature?"
+              question="How long the process time for 1 frame 1 face caricature?"
               answer={
                 <>
                   Normal process for frame
