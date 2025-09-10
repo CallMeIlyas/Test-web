@@ -4,7 +4,11 @@ import Header from "./home/Header";
 import { Toaster, toast } from "react-hot-toast";
 import { useCart } from "../context/CartContext";
 
-const Layout = () => {
+interface LayoutProps {
+  onSearch?: (query: string) => void; // opsional
+}
+
+const Layout: React.FC<LayoutProps> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { cart, addToCart } = useCart();
 
@@ -15,9 +19,14 @@ const Layout = () => {
     toast.success(`${item.name} berhasil ditambahkan 🛍️`);
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (onSearch) onSearch(query);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header cartCount={cartCount} cartItems={cart} onSearch={setSearchQuery} />
+      <Header cartCount={cartCount} cartItems={cart} onSearch={handleSearch} />
 
       {/* Outlet untuk halaman anak */}
       <Outlet context={{ searchQuery, addToCart: handleAddToCart }} />

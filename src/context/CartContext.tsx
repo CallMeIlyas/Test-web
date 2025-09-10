@@ -5,21 +5,27 @@ export interface CartItem {
   cartId: string;
   id: string;
   name: string;
-  variation?: string;           // variant yang sedang dipilih
-  variationOptions?: string[];  // semua opsi variant
+  variation?: string;
+  variationOptions?: string[];
   price: number;
   quantity: number;
   imageUrl: string;
-  productType: "frame";
+  productType: "frame" | "face" | "background";
+  parentCartId?: string;
   attributes?: {
-    faceCount?: number;
+    isFace?: boolean;
+    isBackground?: boolean;
     backgroundType?: string;
   };
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: Omit<CartItem, "cartId">) => void;
+  addToCart: (
+    item: Omit<CartItem, "cartId"> & {
+      attributes?: { faceCount?: number; backgroundType?: string };
+    }
+  ) => void;
   updateQuantity: (cartId: string, delta: number) => void;
   deleteItem: (cartId: string) => void;
   clearCart: () => void;
@@ -29,17 +35,13 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem("cart");
-      const parsed = saved ? JSON.parse(saved) : [];
-      // Pastikan setiap item punya variationOptions dan variation
-      return parsed.map((item: CartItem) => ({
-        ...item,
-        variationOptions: item.variationOptions || ["Default Frame"],
-        variation: item.variation || (item.variationOptions?.[0] || "Default Frame"),
-      }));
+      return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
@@ -53,22 +55,64 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart]);
 
-  const addToCart = (item: Omit<CartItem, "cartId">) => {
-    setCart((prev) => [
-      ...prev,
-      {
-        ...item,
+  const addToCart = (
+    item: Omit<CartItem, "cartId"> & {
+      attributes?: { faceCount?: number; backgroundType?: string };
+    }
+  ) => {
+    const { attributes, ...rest } = item;
+    const faceCount = attributes?.faceCount || 0;
+    const backgroundType = attributes?.backgroundType;
+
+    // Produk utama (frame)
+    const mainCartItem: CartItem = {
+      ...rest,
+      cartId: uuidv4(),
+      quantity: rest.quantity || 1,
+      productType: "frame",
+      variationOptions: ["Wood Frame", "Metal Frame", "No Frame"],
+      variation: "Wood Frame",
+    };
+    setCart((prev) => [...prev, mainCartItem]);
+
+    // Additional Face
+    if (faceCount > 0) {
+      const faceOptions = Array.from({ length: 9 }, (_, i) => `${i + 1} Face`);
+      const faceItem: CartItem = {
         cartId: uuidv4(),
-        variation: item.variation || (item.variationOptions?.[0] || "Default Frame"),
-        variationOptions: item.variationOptions || ["Default Frame"],
-        productType: "frame",
-        quantity: item.quantity || 1,
-        attributes: {
-          faceCount: item.attributes?.faceCount,
-          backgroundType: item.attributes?.backgroundType,
-        },
-      },
-    ]);
+        parentCartId: mainCartItem.cartId,
+        id: `${rest.id}-face`,
+        name: "Additional Faces",
+        price: 52800,
+        quantity: faceCount,
+        imageUrl: rest.imageUrl,
+        productType: "face",
+        variation: faceOptions[faceCount - 1] || faceOptions[0],
+        variationOptions: faceOptions,
+        attributes: { isFace: true },
+      };
+      setCart((prev) => [...prev, faceItem]);
+    }
+
+// Background
+const bgSelected = backgroundType ? backgroundType : "BG Default"; 
+const bgName = backgroundType === "BG Custom" ? "Background Custom" : "Background Default";
+
+const bgItem: CartItem = {
+  cartId: uuidv4(),
+  parentCartId: mainCartItem.cartId,
+  id: `${rest.id}-bg`,
+  name: bgName, // sesuai pilihan
+  price: 52800,
+  quantity: 1,
+  imageUrl: rest.imageUrl,
+  productType: "background",
+  attributes: { isBackground: true, backgroundType: bgSelected },
+  variation: bgSelected, // variant mengikuti pilihan
+  variationOptions: ["BG Default", "BG Custom"],
+};
+
+setCart((prev) => [...prev, bgItem]);
   };
 
   const updateQuantity = (cartId: string, delta: number) => {
@@ -76,7 +120,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       prev
         .map((p) =>
           p.cartId === cartId
-            ? { ...p, quantity: Math.max(0, (p.quantity ?? 1) + delta) }
+            ? { ...p, quantity: Math.max(0, (p.quantity || 1) + delta) }
             : p
         )
         .filter((p) => p.quantity > 0)
@@ -84,19 +128,29 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteItem = (cartId: string) => {
-    setCart((prev) => prev.filter((p) => p.cartId !== cartId));
+    setCart((prev) =>
+      prev.filter((p) => p.cartId !== cartId && p.parentCartId !== cartId)
+    );
   };
 
   const clearCart = () => setCart([]);
 
-  const getProductGroup = (productId: string): CartItem[] =>
+  const getProductGroup = (productId: string) =>
     cart.filter((item) => item.id === productId);
 
   const updateItemVariant = (cartId: string, newVariation: string) => {
     setCart((prev) =>
-      prev.map((p) =>
-        p.cartId === cartId ? { ...p, variation: newVariation } : p
-      )
+      prev.map((p) => {
+        if (p.cartId === cartId) {
+          const updated = { ...p, variation: newVariation };
+          if (p.attributes?.isBackground) {
+            updated.name =
+              newVariation === "BG Default" ? "Background Default" : "Background Custom";
+          }
+          return updated;
+        }
+        return p;
+      })
     );
   };
 

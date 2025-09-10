@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState } from "react"; // ✅ Tambah ini
+import { useState } from "react"; 
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import OurProducts from "./pages/OurProducts";
@@ -9,10 +9,10 @@ import Faq from "./pages/Faq";
 import TermsOfService from "./pages/TermsOfService";
 import ContactUs from "./pages/ContactUs";
 import ShoppingCart from "./pages/ShoppingCart";
-import { CartProvider } from "./context/CartContext"; // ✅ Hapus useCart karena ga dipakai
+import { CartProvider } from "./context/CartContext"; 
 
 const App = () => {
-  const [searchQuery, setSearchQuery] = useState(""); // ✅ aman sekarang
+  const [searchQuery, setSearchQuery] = useState(""); 
 
   return (
     <CartProvider>

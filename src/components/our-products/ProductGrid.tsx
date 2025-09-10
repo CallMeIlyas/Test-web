@@ -1,4 +1,5 @@
-import { FC, useState } from "react";
+import {useState } from "react";
+import type {fc} from "react";
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagination";
 import SortControl from "./SortControls";

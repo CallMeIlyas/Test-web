@@ -17,14 +17,13 @@ const ProductPrice: React.FC<{ price: number }> = ({ price }) => (
 
 const ShoppingCart: React.FC = () => {
   const { cart, updateQuantity, deleteItem, updateItemVariant } = useCart();
-  console.log(cart);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-  // Group items by product id
+  // Group items by parentCartId atau id
   const groupedItems = useMemo(() => {
     const groups: { [key: string]: any[] } = {};
     cart.forEach((item) => {
-      const key = item.id;
+      const key = item.parentCartId || item.cartId;
       if (!groups[key]) groups[key] = [];
       groups[key].push(item);
     });
@@ -47,71 +46,70 @@ const ShoppingCart: React.FC = () => {
             <>
               {/* Select All */}
               <div className="flex items-center mb-4">
-                <input type="checkbox" className="mr-2" checked={allSelected} onChange={toggleSelectAll} />
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                />
                 <span className="font-semibold">Select All ({cart.length})</span>
               </div>
 
               {/* Grouped items */}
-              {Object.values(groupedItems).map((productGroup: any[], index) => (
-                <div key={index} className="mb-6 border-b pb-6 last:border-b-0">
-                  {productGroup.map((item) => (
-                    <div key={item.cartId} className="flex items-center justify-between py-3">
-
-                      {/* Checkbox per produk */}
+              {Object.values(groupedItems).map((group: any[], idx) => (
+                <div key={idx} className="mb-6 border-b pb-6 last:border-b-0">
+                  {group.map((item) => (
+                    <div
+                      key={item.cartId}
+                      className={`flex items-center justify-between py-3 ${
+                        item.attributes?.isFace ? "" : ""
+                      }`}
+                    >
+                      {/* Checkbox */}
                       <input
                         type="checkbox"
                         className="mr-3"
                         checked={selectedItems.includes(item.cartId)}
                         onChange={(e) => {
-                          if (e.target.checked) setSelectedItems([...selectedItems, item.cartId]);
-                          else setSelectedItems(selectedItems.filter((id) => id !== item.cartId));
+                          if (e.target.checked)
+                            setSelectedItems([...selectedItems, item.cartId]);
+                          else
+                            setSelectedItems(
+                              selectedItems.filter((id) => id !== item.cartId)
+                            );
                         }}
                       />
 
-                      {/* Wrapper utama per produk */}
+                      {/* Konten utama */}
                       <div className="flex items-center gap-3 flex-1">
+                        <ProductImage src={item.imageUrl} alt={item.name} />
+                        <ProductName name={item.name} />
 
-                        {/* Gambar produk */}
-                        <div className="flex-shrink-0">
-                          <ProductImage src={item.imageUrl} alt={item.name} />
-                        </div>
-
-                        {/* Nama produk */}
-                        <div className="flex-1">
-                          <ProductName name={item.name} />
-                        </div>
-
-                        {/* Variant dropdown */}
-                        {item.variationOptions && item.variationOptions.length > 0 && (
-                          <div className="flex-1 mr-10">
-                            <p className="font-poppinsRegular text-[15px]">Variant:</p>
-                            <select
-                              className=" bg-white"
-                              value={item.variation}
-                              onChange={(e) => updateItemVariant(item.cartId, e.target.value)}
-                            >
-                              {item.variationOptions.map((option: string) => (
-                                <option key={option} value={option}>
-                                  {option}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-
-                        {/* Face count */}
-                        {item.attributes?.faceCount && (
-                          <div className="flex-1 -translate-x-5">
-                            <p className="font-poppinsRegular ">Faces: {item.attributes.faceCount}</p>
-                          </div>
-                        )}
-
-                        {/* Background */}
-                        {item.attributes?.backgroundType && (
-                          <div className="flex-1 -translate-x-9">
-                            <p className="font-poppinsRegular ">BG: {item.attributes.backgroundType}</p>
-                          </div>
-                        )}
+{/* Dropdown variant */}
+<div className="flex-1 mr-10 translate-x-10">
+  <p className="font-poppinsRegular text-[15px]">
+    Variant:
+  </p>
+<select
+  className="bg-white"
+  value={item.variation || ""}
+  onChange={(e) => updateItemVariant(item.cartId, e.target.value)}
+>
+  {(
+    item.variationOptions && item.variationOptions.length > 0
+      ? item.variationOptions
+      : item.attributes?.isFace
+      ? Array.from({ length: 9 }, (_, i) => `${i + 1} Face`)
+      : item.attributes?.isBackground
+      ? ["BG Default", "BG Custom"] // ⚡ hanya dua pilihan
+      : ["Wood Frame", "Metal Frame", "No Frame"]
+  ).map((opt) => (
+    <option key={opt} value={opt}>
+      {opt}
+    </option>
+  ))}
+</select>
+</div>
 
                         {/* Harga */}
                         <div className="flex-shrink-0 -translate-x-7">
@@ -119,23 +117,31 @@ const ShoppingCart: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Aksi */}
+                      {/* Action */}
                       <div className="flex items-center gap-3 mt-2">
-                        <button className="px-2 rounded border" onClick={() => updateQuantity(item.cartId, -1)}>
+                        <button
+                          className="px-2 rounded border"
+                          onClick={() => updateQuantity(item.cartId, -1)}
+                        >
                           -
                         </button>
                         <span>{item.quantity}</span>
-                        <button className="px-2 rounded border" onClick={() => updateQuantity(item.cartId, 1)}>
+                        <button
+                          className="px-2 rounded border"
+                          onClick={() => updateQuantity(item.cartId, 1)}
+                        >
                           +
                         </button>
                         <p className="w-28 text-right font-bold text-red-600">
                           Rp{(item.price * item.quantity).toLocaleString("id-ID")}
                         </p>
-                        <button className="font-poppinsRegular" onClick={() => deleteItem(item.cartId)}>
+                        <button
+                          className="font-poppinsRegular"
+                          onClick={() => deleteItem(item.cartId)}
+                        >
                           Delete
                         </button>
                       </div>
-
                     </div>
                   ))}
                 </div>
