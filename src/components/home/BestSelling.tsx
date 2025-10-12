@@ -1,4 +1,8 @@
-import type { Product } from '../../types/types';
+import type { Product } from "../../types/types";
+import img10R from "../../assets/karya/10R.jpg";
+import img12R from "../../assets/karya/12R-6.jpg";
+import imgA2 from "../../assets/karya/55x80cm.jpg";
+import imgA1 from "../../assets/karya/80x110cm.jpeg";
 
 const BestSelling = () => {
   const products: Product[] = [
@@ -6,7 +10,7 @@ const BestSelling = () => {
       id: 1,
       name: "10R / A4",
       size: "25x30cm",
-      imageUrl: "../assets/karya/10R.jpg",
+      imageUrl: img10R,
       category: "Frames",
       shippedFrom: "Jakarta",
       shippedTo: ["Indonesia"],
@@ -16,7 +20,7 @@ const BestSelling = () => {
       id: 2,
       name: "12R / A3",
       size: "30x40cm",
-      imageUrl: "../assets/karya/12R-6.jpg",
+      imageUrl: img12R,
       category: "Frames",
       shippedFrom: "Jakarta",
       shippedTo: ["Indonesia"],
@@ -26,7 +30,7 @@ const BestSelling = () => {
       id: 3,
       name: "A2",
       size: "40x55cm",
-      imageUrl: "../assets/karya/55x80cm.jpg",
+      imageUrl: imgA2,
       category: "Frames",
       shippedFrom: "Jakarta",
       shippedTo: ["Indonesia"],
@@ -36,7 +40,7 @@ const BestSelling = () => {
       id: 4,
       name: "A1",
       size: "55x80cm",
-      imageUrl: "../assets/karya/80x110cm.jpeg",
+      imageUrl: imgA1,
       category: "Frames",
       shippedFrom: "Jakarta",
       shippedTo: ["Indonesia"],

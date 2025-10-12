@@ -1,24 +1,35 @@
 import { useState, type FC } from "react";
 import type { VideoItem } from "../../types/types";
 
+import IGIcon from "../../assets/Icons/IG.png";
+import TikTokIcon from "../../assets/Icons/TIKTOD2.png";
+
+import video1 from "../../assets/karya/vid-1.mp4";
+import video2 from "../../assets/karya/vid-2.mp4";
+import video3 from "../../assets/karya/vid-3.mp4";
+
+import foto1 from "../../assets/karya/foto/foto1.jpeg";
+import foto2 from "../../assets/karya/foto/foto2.jpeg";
+import foto3 from "../../assets/karya/foto/foto3.jpeg";
+
 const GallerySection: FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const videos: VideoItem[] = [
-    { id: 1, video: "../assets/karya/vid-1.mp4", poster: "/karya/poster-1.jpg" },
-    { id: 2, video: "../assets/karya/vid-2.mp4", poster: "/karya/poster-2.jpg" },
-    { id: 3, video: "../assets/karya/vid-3.mp4", poster: "/karya/poster-3.jpg" },
+    { id: 1, video: video1},
+    { id: 2, video: video2},
+    { id: 3, video: video3},
   ];
 
   const photos = [
-    { id: 1, image: "../assets/karya/foto/foto1.jpeg" },
-    { id: 2, image: "../assets/karya/foto/foto2.jpeg" },
-    { id: 3, image: "../assets/karya/foto/foto3.jpeg" },
+    { id: 1, image: foto1 },
+    { id: 2, image: foto2 },
+    { id: 3, image: foto3 },
   ];
 
   return (
     <>
-      {/* border */}
+      {/* Border */}
       <div className="relative my-10 text-center h-[1px]">
         <div className="absolute top-0 left-0 w-1/4 border-t-[5px] border-black"></div>
         <div className="absolute top-0 right-0 w-1/4 border-t-[5px] border-black"></div>
@@ -40,7 +51,7 @@ const GallerySection: FC = () => {
               rel="noopener noreferrer"
             >
               <img
-                src="../assets/Icons/IG.png"
+                src={IGIcon}
                 alt="Instagram"
                 className="w-full h-full object-contain"
               />
@@ -54,7 +65,7 @@ const GallerySection: FC = () => {
                 key={video.id}
                 className="aspect-[9/16] overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-transform duration-300 bg-black hover:scale-[1.03]"
               >
-                <video controls poster={video.poster} className="w-full h-full object-cover">
+                <video controls className="w-full h-full object-cover">
                   <source src={video.video} type="video/mp4" />
                 </video>
               </div>
@@ -71,7 +82,7 @@ const GallerySection: FC = () => {
               rel="noopener noreferrer"
             >
               <img
-                src="../assets/Icons/TIKTOD2.png"
+                src={TikTokIcon}
                 alt="TikTok"
                 className="w-full h-full object-contain"
               />

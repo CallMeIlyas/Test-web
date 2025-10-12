@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { FaSearch, FaChevronDown } from "react-icons/fa";
+import logoAmora from "../../assets/logo/logo-amora-footer2.png";
+import cartIcon from "../../assets/Icons/CART.png";
+import cartPopup from "../../assets/Icons/cart-popup.png";
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
-  quantity: number;   // 🔹 ubah dari qty -> quantity
+  quantity: number; // ubah dari qty -> quantity
   imageUrl: string;
 }
 
 interface HeaderProps {
   cartCount: number;
-  cartItems: CartItem[]; // 🔹 props untuk isi cart
+  cartItems: CartItem[];
   onSearch: (query: string) => void;
 }
 
-const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => { 
+const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
 
@@ -28,7 +31,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
       {/* Top bar */}
       <div className="bg-[#dcbec1] py-5 flex justify-center items-center">
         <img
-          src="../assets/logo/logo-amora-footer2.png"
+          src={logoAmora}
           alt="Little Amora Logo"
           className="h-24"
         />
@@ -88,7 +91,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
           <li className="relative group">
             <a href="/shoppingcart" className="block relative">
               <img
-                src="../assets/Icons/CART.png"
+                src={cartIcon}
                 alt="Cart"
                 className="w-[30px] h-auto cursor-pointer"
               />
@@ -104,7 +107,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
               <div
                 className="relative bg-no-repeat bg-contain bg-top p-6"
                 style={{
-                  backgroundImage: "url('../assets/Icons/cart-popup.png')",
+                  backgroundImage: `url(${cartPopup})`,
                   width: "100%",
                   height: "300px",
                   backgroundPosition: "10px top",

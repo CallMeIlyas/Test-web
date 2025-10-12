@@ -33,7 +33,6 @@ export interface Step {
 export interface VideoItem {
   id: number;
   video: string;
-  poster: string;
 }
 
 export interface FilterOptions {
