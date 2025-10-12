@@ -1,11 +1,11 @@
 const OrderSteps = () => {
   const steps = [
-    { number: 1, icon: "/src/assets/Icons/people.png", text: "How many faces on the frame?" },
-    { number: 2, icon: "/src/assets/Icons/frame.png", text: "How many frame that you need?" },
-    { number: 3, icon: "/src/assets/Icons/size.png", text: "Pick the frame size" },
-    { number: 4, icon: "/src/assets/Icons/location.png", text: "Fill subdistrict and city for estimated shipping fee" },
-    { number: 5, icon: "/src/assets/Icons/calendar.png", text: "Fill the deadline date and month" },
-    { number: 6, icon: "/src/assets/Icons/whatsapp.png", text: "Give the format order to our admin", special: true }
+    { number: 1, icon: "../assets/Icons/people.png", text: "How many faces on the frame?" },
+    { number: 2, icon: "../assets/Icons/frame.png", text: "How many frame that you need?" },
+    { number: 3, icon: "../assets/Icons/size.png", text: "Pick the frame size" },
+    { number: 4, icon: "../assets/Icons/location.png", text: "Fill subdistrict and city for estimated shipping fee" },
+    { number: 5, icon: "../assets/Icons/calendar.png", text: "Fill the deadline date and month" },
+    { number: 6, icon: "../assets/Icons/whatsapp.png", text: "Give the format order to our admin", special: true }
   ];
 
   return (

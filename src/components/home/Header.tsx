@@ -28,7 +28,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
       {/* Top bar */}
       <div className="bg-[#dcbec1] py-5 flex justify-center items-center">
         <img
-          src="/src/assets/logo/logo-amora-footer2.png"
+          src="../assets/logo/logo-amora-footer2.png"
           alt="Little Amora Logo"
           className="h-24"
         />
@@ -88,7 +88,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
           <li className="relative group">
             <a href="/shoppingcart" className="block relative">
               <img
-                src="/src/assets/Icons/CART.png"
+                src="../assets/Icons/CART.png"
                 alt="Cart"
                 className="w-[30px] h-auto cursor-pointer"
               />
@@ -104,7 +104,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
               <div
                 className="relative bg-no-repeat bg-contain bg-top p-6"
                 style={{
-                  backgroundImage: "url('/src/assets/Icons/cart-popup.png')",
+                  backgroundImage: "url('../assets/Icons/cart-popup.png')",
                   width: "100%",
                   height: "300px",
                   backgroundPosition: "10px top",

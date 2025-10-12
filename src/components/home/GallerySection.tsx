@@ -5,15 +5,15 @@ const GallerySection: FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const videos: VideoItem[] = [
-    { id: 1, video: "/src/assets/karya/vid-1.mp4", poster: "/karya/poster-1.jpg" },
-    { id: 2, video: "/src/assets/karya/vid-2.mp4", poster: "/karya/poster-2.jpg" },
-    { id: 3, video: "/src/assets/karya/vid-3.mp4", poster: "/karya/poster-3.jpg" },
+    { id: 1, video: "../assets/karya/vid-1.mp4", poster: "/karya/poster-1.jpg" },
+    { id: 2, video: "../assets/karya/vid-2.mp4", poster: "/karya/poster-2.jpg" },
+    { id: 3, video: "../assets/karya/vid-3.mp4", poster: "/karya/poster-3.jpg" },
   ];
 
   const photos = [
-    { id: 1, image: "/src/assets/karya/foto/foto1.jpeg" },
-    { id: 2, image: "/src/assets/karya/foto/foto2.jpeg" },
-    { id: 3, image: "/src/assets/karya/foto/foto3.jpeg" },
+    { id: 1, image: "../assets/karya/foto/foto1.jpeg" },
+    { id: 2, image: "../assets/karya/foto/foto2.jpeg" },
+    { id: 3, image: "../assets/karya/foto/foto3.jpeg" },
   ];
 
   return (
@@ -40,7 +40,7 @@ const GallerySection: FC = () => {
               rel="noopener noreferrer"
             >
               <img
-                src="/src/assets/Icons/IG.png"
+                src="../assets/Icons/IG.png"
                 alt="Instagram"
                 className="w-full h-full object-contain"
               />
@@ -71,7 +71,7 @@ const GallerySection: FC = () => {
               rel="noopener noreferrer"
             >
               <img
-                src="/src/assets/Icons/TIKTOD2.png"
+                src="../assets/Icons/TIKTOD2.png"
                 alt="TikTok"
                 className="w-full h-full object-contain"
               />

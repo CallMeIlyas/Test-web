@@ -3,7 +3,7 @@ const Footer = () => {
     <footer className="w-full py-3 bg-[#dcbec1]">
       <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto px-10">
         <img 
-          src="/src/assets/logo/logo-amora-footer2.png" 
+          src="../assets/logo/logo-amora-footer2.png" 
           alt="Little Amora Logo" 
           className="h-[86px] mb-4 md:mb-0"
         />
