@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import Footer from "../components/home/Footer";
 import SidebarFilters from "../components/our-products/SidebarFilters";
 import ProductGridWithPagination from "../components/our-products/ProductGrid";
-import type { FilterOptions, CartItem } from "../types/types";
+import type { FilterOptions } from "../types/types";
 
 interface LayoutContext {
   searchQuery: string;
