@@ -7,11 +7,10 @@ import type { FilterOptions, CartItem } from "../types/types";
 
 interface LayoutContext {
   searchQuery: string;
-  addToCart: (item: CartItem) => void;
 }
 
 const OurProducts: FC = () => {
-  const { searchQuery, addToCart } = useOutletContext<LayoutContext>();
+  const { searchQuery} = useOutletContext<LayoutContext>();
   const [filters, setFilters] = useState<FilterOptions>({
     categories: [],
     shippedFrom: [],
