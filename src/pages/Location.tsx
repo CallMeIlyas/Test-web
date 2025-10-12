@@ -1,6 +1,11 @@
-import React from 'react';
-import Footer from '../components/home/Footer';
-import LocationSection from '../components/location/LocationSection';
+import React from "react";
+import Footer from "../components/home/Footer";
+import LocationSection from "../components/location/LocationSection";
+import JNELogo from "../assets/Icons/address/JNE.png";
+import GOJEKLogo from "../assets/Icons/address/GOJEK.png";
+import GRABLogo from "../assets/Icons/address/GRAB.png";
+import PAXELLogo from "../assets/Icons/address/PAXEL.png";
+import RAYSPEEDLogo from "../assets/Icons/address/RAYSPEED.png";
 
 interface LocationData {
   city: string;
@@ -26,38 +31,38 @@ const Location: React.FC = () => {
       description: [
         "Our original production process based in Bogor.",
         "Currently offline store not available, only online store.",
-        "Our team or customer can order courier to pickup from this address below."
+        "Our team or customer can order courier to pickup from this address below.",
       ],
       whatsapp: {
         name: "Claresta",
-        number: "6281373131988"
+        number: "6281373131988",
       },
       address: {
         name: "Little Amora Karikatur Pop Up Frame",
         lines: [
           "Bogor Park Residence no. D27",
           "Jl. R. E. Soemintadiredja, Pamoyanan",
-          "Bogor Selatan, Kota Bogor, 16136"
-        ]
+          "Bogor Selatan, Kota Bogor, 16136",
+        ],
       },
       shippingMethods: [
-        { logo: '/src/assets/Icons/address/JNE.png', name: 'Regular, YES (Yakin Esok Sampai), Kargo' },
-        { logo: '/src/assets/Icons/address/GOJEK.png', name: 'Go-send Instant, Bike/Car' },
-        { logo: '/src/assets/Icons/address/GRAB.png', name: 'Grabbike Instant, Bike/Car' },
-        { logo: '/src/assets/Icons/address/PAXEL.png', name: 'Sameday, Instant' },
-        { logo: '/src/assets/Icons/address/RAYSPEED.png', name: 'Regular, Express' }
-      ]
+        { logo: JNELogo, name: "Regular, YES (Yakin Esok Sampai), Kargo" },
+        { logo: GOJEKLogo, name: "Go-send Instant, Bike/Car" },
+        { logo: GRABLogo, name: "Grabbike Instant, Bike/Car" },
+        { logo: PAXELLogo, name: "Sameday, Instant" },
+        { logo: RAYSPEEDLogo, name: "Regular, Express" },
+      ],
     },
     {
       city: "Jakarta",
       description: [
         "Our team or customer can order courier to pickup from this address below.",
         "Please note, this address only for small or medium frame size,",
-        "maximum 1 pcs 10R or 1 pcs 12R."
+        "maximum 1 pcs 10R or 1 pcs 12R.",
       ],
       whatsapp: {
         name: "Benyamin",
-        number: "62895601416518"
+        number: "62895601416518",
       },
       address: {
         name: "WTC Mangga Dua, Sapphire Auto",
@@ -65,14 +70,14 @@ const Location: React.FC = () => {
           "Bursa Mobil, floor 3A block 63-65",
           "JI. Mangga Dua Raya No.8, RT.11/RW.5, Ancol,",
           "Kec. Pademangan, Jakarta Utara",
-          "Daerah Khusus lbukota 14430"
-        ]
+          "Daerah Khusus lbukota 14430",
+        ],
       },
       shippingMethods: [
-        { logo: '/src/assets/Icons/address/GOJEK.png', name: 'Go-send Instant, Bike/Car' },
-        { logo: '/src/assets/Icons/address/GRAB.png', name: 'Grabbike Instant, Bike/Car' }
-      ]
-    }
+        { logo: GOJEKLogo, name: "Go-send Instant, Bike/Car" },
+        { logo: GRABLogo, name: "Grabbike Instant, Bike/Car" },
+      ],
+    },
   ];
 
   return (
@@ -83,13 +88,13 @@ const Location: React.FC = () => {
           <h1 className="inline-block px-5 text-4xl md:text-5xl font-nataliecaydence relative z-10">
             Location
           </h1>
-         
+
           <div className="absolute top-1/2 left-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
           <div className="absolute top-1/2 right-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
         </div>
 
         {locations.map((location, index) => (
-          <LocationSection 
+          <LocationSection
             key={`${location.city}-${index}`}
             location={location}
             isLast={index === locations.length - 1}
