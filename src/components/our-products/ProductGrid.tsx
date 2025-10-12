@@ -2,7 +2,7 @@ import type { FC } from "react";
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagination";
 import SortControls from "./SortControls";
-import type { FilterOptions, CartItem } from "../../types/types";
+import type { FilterOptions } from "../../types/types";
 import { allProducts } from "../../data/productDataLoader";
 import { useProductFilter } from "../../hooks/useProductFilter";
 import { useSort } from "../../hooks/useSort";
@@ -17,7 +17,6 @@ export interface ProductGridWithPaginationProps {
 const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
   filters,
   searchQuery,
-  onAddToCart,
 }) => {
   const PRODUCTS_PER_PAGE = 16;
 

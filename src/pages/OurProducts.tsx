@@ -26,7 +26,6 @@ const OurProducts: FC = () => {
           <ProductGridWithPagination
             filters={filters}
             searchQuery={searchQuery}
-            onAddToCart={addToCart}
           />
         </div>
       </div>
