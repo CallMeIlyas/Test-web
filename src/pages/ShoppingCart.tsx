@@ -1,6 +1,13 @@
 import React, { useState, useMemo } from "react";
 import Footer from "../components/home/Footer";
 import { useCart } from "../context/CartContext";
+import BCAIcon from "../assets/icon-bank/bca.png";
+import TMRWIcon from "../assets/icon-bank/tmrw.png";
+import AladinIcon from "../assets/icon-bank/aladin.png";
+import DANAIcon from "../assets/icon-bank/dana.png";
+import GopayIcon from "../assets/icon-bank/gopay.png";
+import OVOIcon from "../assets/icon-bank/ovo.png";
+import ShopeePayIcon from "../assets/icon-bank/shopeepay.png";
 
 interface DateInputProps {
   value: string;
@@ -280,15 +287,57 @@ const ShoppingCart: React.FC = () => {
           <div>
             <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">Payment</h2>
             <p className="mb-4 font-poppinsRegular">Please make a payment to:</p>
-            <ul className="space-y-2">
-                <li className="flex items-center gap-3"><img src="/src/assets/icon-bank/bca.png" alt="BCA" className="w-[65px] h-auto" /><div className="flex flex-col"><span className="font-poppinsRegular">7370-2351-33</span><span className="text-[12px] font-poppinsBold">Claresta</span></div></li>
-                <li className="flex items-center gap-3"><img src="/src/assets/icon-bank/tmrw.png" alt="TMRW" className="w-[65px] h-auto" /><div className="flex flex-col"><span className="font-poppinsRegular">7293-8666-12</span><span className="text-[12px] font-poppinsBold">Claresta</span></div></li>
-                <li className="flex items-center gap-3"><img src="/src/assets/icon-bank/aladin.png" alt="Aladin" className="w-[65px] h-auto" /><div className="flex flex-col"><span className="font-poppinsRegular">2022-7324-139</span><span className="text-[12px] font-poppinsBold">Claresta</span></div></li>
-                <li className="flex items-center gap-3"><img src="/src/assets/icon-bank/dana.png" alt="DANA" className="w-[65px] h-auto" /><div className="flex flex-col"><span className="font-poppinsRegular">0813-7313-1988</span><span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span></div></li>
-                <li className="flex items-center gap-3"><img src="/src/assets/icon-bank/gopay.png" alt="Gopay" className="w-[65px] h-auto" /><div className="flex flex-col"><span className="font-poppinsRegular">0813-7313-1988</span><span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span></div></li>
-                <li className="flex items-center gap-3"><img src="/src/assets/icon-bank/ovo.png" alt="OVO" className="w-[65px] h-auto" /><div className="flex flex-col"><span className="font-poppinsRegular">0813-7313-1988</span><span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span></div></li>
-                <li className="flex items-center gap-3"><img src="/src/assets/icon-bank/shopeepay.png" alt="ShopeePay" className="w-[65px] h-auto" /><div className="flex flex-col"><span className="font-poppinsRegular">0821-6266-2302</span><span className="text-[12px] font-poppinsBold">LittleAmoraKarikatur</span></div></li>
-            </ul>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-3">
+                  <img src={BCAIcon} alt="BCA" className="w-[65px] h-auto" />
+                  <div className="flex flex-col">
+                    <span className="font-poppinsRegular">7370-2351-33</span>
+                    <span className="text-[12px] font-poppinsBold">Claresta</span>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <img src={TMRWIcon} alt="TMRW" className="w-[65px] h-auto" />
+                  <div className="flex flex-col">
+                    <span className="font-poppinsRegular">7293-8666-12</span>
+                    <span className="text-[12px] font-poppinsBold">Claresta</span>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <img src={AladinIcon} alt="Aladin" className="w-[65px] h-auto" />
+                  <div className="flex flex-col">
+                    <span className="font-poppinsRegular">2022-7324-139</span>
+                    <span className="text-[12px] font-poppinsBold">Claresta</span>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <img src={DANAIcon} alt="DANA" className="w-[65px] h-auto" />
+                  <div className="flex flex-col">
+                    <span className="font-poppinsRegular">0813-7313-1988</span>
+                    <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <img src={GopayIcon} alt="Gopay" className="w-[65px] h-auto" />
+                  <div className="flex flex-col">
+                    <span className="font-poppinsRegular">0813-7313-1988</span>
+                    <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <img src={OVOIcon} alt="OVO" className="w-[65px] h-auto" />
+                  <div className="flex flex-col">
+                    <span className="font-poppinsRegular">0813-7313-1988</span>
+                    <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+                  </div>
+                </li>
+                <li className="flex items-center gap-3">
+                  <img src={ShopeePayIcon} alt="ShopeePay" className="w-[65px] h-auto" />
+                  <div className="flex flex-col">
+                    <span className="font-poppinsRegular">0821-6266-2302</span>
+                    <span className="text-[12px] font-poppinsBold">LittleAmoraKarikatur</span>
+                  </div>
+                </li>
+              </ul>
             <div className="mt-6 -space-y-1">
                 <p className="text-[12px] font-poppinsItalic text-[#a23728]">*Please give the bank payment receipt to our team via WhatsApp</p>
                 <p className="text-[12px] font-poppinsItalic text-[#a23728]">*This invoice is valid and published by Claresta, owner of Little Amora Karikatur</p>
