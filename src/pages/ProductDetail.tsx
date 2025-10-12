@@ -58,13 +58,6 @@ const getAdditionalPrice = (name: string): number | string => {
   return 0;
 };
 
-const getThumbnail = (url: string) => {
-  if (url.endsWith(".mp4")) {
-    // Bisa pakai thumbnail khusus jika ada, atau placeholder
-    return "https://via.placeholder.com/100x100?text=Video";
-  }
-  return url;
-};
 
 // Mock fallback data
 const MOCK_PRODUCT_DATA = {

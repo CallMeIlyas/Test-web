@@ -12,7 +12,6 @@ import { useEffect } from "react";
 export interface ProductGridWithPaginationProps {
   filters: FilterOptions;
   searchQuery: string;
-  onAddToCart: (item: CartItem) => void;
 }
 
 const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
@@ -42,7 +41,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
       <div className="grid grid-cols-4 gap-5 px-10 max-w-[1230px] mx-auto">
         {currentProducts.length > 0 ? (
           currentProducts.map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+            <ProductCard key={product.id} product={product} />
           ))
         ) : (
           <div className="col-span-4 text-center py-10 text-gray-500">
