@@ -1,12 +1,12 @@
-export interface Product {
-  id: number;
-  name: string;
-  size: string;
-  imageUrl: string;
-  category: string;
-  shippedFrom: string;
-  shippedTo: string[];
-  price: number;
+export interface Product {  
+  id: number;  
+  name: string;  
+  size: string;  
+  imageUrl: string;  
+  category: string;  
+  shippedFrom: string;  
+  shippedTo: string[];  
+  price: number;  
 }
 
 export interface CartItem {

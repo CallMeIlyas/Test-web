@@ -6,7 +6,7 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;   // 🔹 ubah dari qty -> quantity
-  image: string;
+  imageUrl: string;
 }
 
 interface HeaderProps {

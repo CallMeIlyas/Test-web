@@ -1,4 +1,5 @@
-import { FC, useState } from "react";
+import { useState } from "react";
+import type { FC } from "react";
 import { useOutletContext } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagination";
@@ -63,7 +64,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ filters
 
   const PRODUCTS_PER_PAGE = 16;
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOption, setSortOption] = useState("name-asc");
+  const [sortOption, setSortOption] = useState("all");
 
   // --- Filter kategori + search ---
   const filteredProducts = allProducts.filter((product) => {
@@ -110,7 +111,6 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ filters
             key={`${product.name}-${index}`}
             imageUrl={product.imageUrl}
             name={product.name}
-            size={product.size}
           />
         ))}
       </div>

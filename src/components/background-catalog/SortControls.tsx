@@ -1,51 +1,70 @@
-import { FC, useState } from 'react';
-import { FaChevronDown } from 'react-icons/fa';
+import type { FC } from "react";
+import { useState } from "react";
+import { FaChevronDown } from "react-icons/fa";
 
-const SortControls: FC = () => {
+interface SortControlsProps {
+  sortOption?: string; // default "all"
+  onSortChange: (option: string) => void;
+}
+
+const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange }) => {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState("Price"); // state pilihan
 
-  const options = ["Price", "Low to High", "High to Low"];
+  const options = [
+    { label: "All", value: "all" },
+    { label: "Name A-Z", value: "name-asc" },
+    { label: "Name Z-A", value: "name-desc" },
+  ];
 
-  const handleSelect = (option: string) => {
-    setSelected(option);
-    setOpen(false); // tutup dropdown setelah pilih
+  const handleSelect = (value: string) => {
+    onSortChange(value);
+    setOpen(false);
+  };
+
+  const handleFrequentlyUsed = () => {
+    onSortChange("all");
+  };
+
+  const getCurrentLabel = () => {
+    const current = options.find(opt => opt.value === sortOption);
+    return current ? current.label : "All";
   };
 
   return (
     <div className="bg-[#f0f0f0] px-4 py-2 rounded-[var(--radius)] mb-2">
       <div className="flex items-center gap-10">
-        {/* Sort Label */}
-        <span className="font-poppinsBold text-base font-bold text-black">
-          Sort by
-        </span>
+        <span className="font-poppinsBold text-base font-bold text-black">Sort by</span>
 
-        {/* Best Selling */}
-        <button className="font-poppinsBold text-base font-bold text-black">
-        Frequently used
+        <button 
+          onClick={handleFrequentlyUsed}
+          className="font-poppinsBold text-base font-bold text-black hover:text-gray-600 transition-colors"
+        >
+          Frequently Used
         </button>
 
-        {/* Price Capsule */}
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
-            className="font-poppinsBold relative flex items-center justify-between px-4 py-2 w-40 text-base font-bold text-black bg-white rounded-full"
+            className="font-poppinsBold relative flex items-center justify-between px-4 py-2 w-40 text-base font-bold text-black bg-white rounded-full hover:bg-gray-50 transition-colors"
           >
-            <span>{selected}</span>
-            <FaChevronDown size={14} />
+            <span>{getCurrentLabel()}</span>
+            <FaChevronDown 
+              size={14} 
+              className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {open && (
-            <div className=" absolute mt-1 w-40 bg-white text-[var(--muted-foreground)] rounded-md shadow-lg overflow-hidden border border-[var(--border)] z-50">
+            <div className="absolute mt-1 w-40 bg-white text-[var(--muted-foreground)] rounded-md shadow-lg overflow-hidden border border-[var(--border)] z-50">
               {options.map((option) => (
                 <button
-                  key={option}
-                  onClick={() => handleSelect(option)}
-                  className={`block w-full px-4 py-2 text-left hover:bg-[var(--secondary)] ${
-                    selected === option ? "bg-[var(--secondary)] font-bold" : ""
+                  key={option.value}
+                  onClick={() => handleSelect(option.value)}
+                  className={`block w-full px-4 py-2 text-left hover:bg-[var(--secondary)] transition-colors ${
+                    sortOption === option.value ? "bg-[var(--secondary)] font-bold" : ""
                   }`}
                 >
-                  {option}
+                  {option.label}
                 </button>
               ))}
             </div>

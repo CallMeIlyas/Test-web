@@ -10,6 +10,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   imageUrl: string;
+  image: string; 
   productType: "frame" | "face" | "background";
   parentCartId?: string;
   attributes?: {
@@ -62,7 +63,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     const { attributes, ...rest } = item;
     const faceCount = attributes?.faceCount || 0;
-    const backgroundType = attributes?.backgroundType;
 
     // Produk utama (frame)
     const mainCartItem: CartItem = {
@@ -72,6 +72,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       productType: "frame",
       variationOptions: ["Wood Frame", "Metal Frame", "No Frame"],
       variation: "Wood Frame",
+      image: rest.imageUrl, 
     };
     setCart((prev) => [...prev, mainCartItem]);
 
@@ -86,6 +87,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         price: 52800,
         quantity: faceCount,
         imageUrl: rest.imageUrl,
+        image: rest.imageUrl, 
         productType: "face",
         variation: faceOptions[faceCount - 1] || faceOptions[0],
         variationOptions: faceOptions,
@@ -94,25 +96,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       setCart((prev) => [...prev, faceItem]);
     }
 
-// Background
-const bgSelected = backgroundType ? backgroundType : "BG Default"; 
-const bgName = backgroundType === "BG Custom" ? "Background Custom" : "Background Default";
+    // Background
+    const bgSelected = attributes?.backgroundType || "BG Default";
+    const bgName =
+      bgSelected === "BG Custom" ? "Background Custom" : "Background Default";
 
-const bgItem: CartItem = {
-  cartId: uuidv4(),
-  parentCartId: mainCartItem.cartId,
-  id: `${rest.id}-bg`,
-  name: bgName, // sesuai pilihan
-  price: 52800,
-  quantity: 1,
-  imageUrl: rest.imageUrl,
-  productType: "background",
-  attributes: { isBackground: true, backgroundType: bgSelected },
-  variation: bgSelected, // variant mengikuti pilihan
-  variationOptions: ["BG Default", "BG Custom"],
-};
+    const bgItem: CartItem = {
+      cartId: uuidv4(),
+      parentCartId: mainCartItem.cartId,
+      id: `${rest.id}-bg`,
+      name: bgName,
+      price: 52800,
+      quantity: 1,
+      imageUrl: rest.imageUrl,
+      image: rest.imageUrl, 
+      productType: "background",
+      attributes: { isBackground: true, backgroundType: bgSelected },
+      variation: bgSelected,
+      variationOptions: ["BG Default", "BG Custom"],
+    };
 
-setCart((prev) => [...prev, bgItem]);
+    setCart((prev) => [...prev, bgItem]);
   };
 
   const updateQuantity = (cartId: string, delta: number) => {
@@ -145,7 +149,9 @@ setCart((prev) => [...prev, bgItem]);
           const updated = { ...p, variation: newVariation };
           if (p.attributes?.isBackground) {
             updated.name =
-              newVariation === "BG Default" ? "Background Default" : "Background Custom";
+              newVariation === "BG Default"
+                ? "Background Default"
+                : "Background Custom";
           }
           return updated;
         }

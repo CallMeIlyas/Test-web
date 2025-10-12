@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import SplitBorder from "./SplitBorder";
 import type { FilterOptions } from "../../types/types";
 

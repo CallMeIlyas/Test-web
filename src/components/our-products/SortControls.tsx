@@ -1,15 +1,31 @@
-import { FC, useState } from 'react';
-import { FaChevronDown } from 'react-icons/fa';
+import type { FC } from "react";
+import { useState } from "react";
+import { FaChevronDown } from "react-icons/fa";
 
-const SortControls: FC = () => {
+interface SortControlsProps {
+  sortOption: string;
+  onSortChange: (option: string) => void;
+}
+
+const SortControls: FC<SortControlsProps> = ({ sortOption, onSortChange }) => {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState("Price"); // state pilihan
+  
+  // Map display labels to actual sort values
+  const options = [
+    { label: "Price", value: "price" },
+    { label: "Low to High", value: "price-asc" },
+    { label: "High to Low", value: "price-desc" }
+  ];
 
-  const options = ["Price", "Low to High", "High to Low"];
+  const handleSelect = (value: string) => {
+    onSortChange(value); // kirim value ke parent (ProductGrid)
+    setOpen(false);
+  };
 
-  const handleSelect = (option: string) => {
-    setSelected(option);
-    setOpen(false); // tutup dropdown setelah pilih
+  // Get current label based on sortOption value
+  const getCurrentLabel = () => {
+    const current = options.find(opt => opt.value === sortOption);
+    return current ? current.label : "Price";
   };
 
   return (
@@ -31,7 +47,7 @@ const SortControls: FC = () => {
             onClick={() => setOpen(!open)}
             className="font-poppinsBold relative flex items-center justify-between px-4 py-2 w-40 text-base font-bold text-black bg-white rounded-full"
           >
-            <span>{selected}</span>
+            <span>{getCurrentLabel()}</span>
             <FaChevronDown size={14} />
           </button>
 
@@ -39,13 +55,13 @@ const SortControls: FC = () => {
             <div className="absolute mt-1 w-40 bg-white text-[var(--muted-foreground)] rounded-md shadow-lg overflow-hidden border border-[var(--border)] z-50">
               {options.map((option) => (
                 <button
-                  key={option}
-                  onClick={() => handleSelect(option)}
+                  key={option.value}
+                  onClick={() => handleSelect(option.value)}
                   className={`block w-full px-4 py-2 text-left hover:bg-[var(--secondary)] ${
-                    selected === option ? "bg-[var(--secondary)] font-bold" : ""
+                    sortOption === option.value ? "bg-[var(--secondary)] font-bold" : ""
                   }`}
                 >
-                  {option}
+                  {option.label}
                 </button>
               ))}
             </div>

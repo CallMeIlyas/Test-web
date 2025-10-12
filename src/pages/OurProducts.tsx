@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, type FC } from "react";
 import { useOutletContext } from "react-router-dom";
 import Footer from "../components/home/Footer";
 import SidebarFilters from "../components/our-products/SidebarFilters";
@@ -7,22 +7,16 @@ import type { FilterOptions, CartItem } from "../types/types";
 
 interface LayoutContext {
   searchQuery: string;
-  addToCart: (item: CartItem) => void; 
+  addToCart: (item: CartItem) => void;
 }
 
-const OurProducts = () => {
-  const { searchQuery, addToCart } = useOutletContext<LayoutContext>(); 
+const OurProducts: FC = () => {
+  const { searchQuery, addToCart } = useOutletContext<LayoutContext>();
   const [filters, setFilters] = useState<FilterOptions>({
     categories: [],
     shippedFrom: [],
     shippedTo: [],
   });
-
-  useEffect(() => {
-    if (searchQuery) {
-      console.log("🔎 Cari produk dengan:", searchQuery);
-    }
-  }, [searchQuery]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -32,7 +26,7 @@ const OurProducts = () => {
           <ProductGridWithPagination
             filters={filters}
             searchQuery={searchQuery}
-            onAddToCart={addToCart} 
+            onAddToCart={addToCart}
           />
         </div>
       </div>

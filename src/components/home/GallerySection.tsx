@@ -1,4 +1,4 @@
-import type { VideoItem } from '/src/types/types';
+import type { VideoItem } from '../../types/types';
 
 const GallerySection = () => {
   const videos: VideoItem[] = [

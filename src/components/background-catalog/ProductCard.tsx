@@ -1,12 +1,12 @@
-import { FC, useState } from 'react';
+import { useState } from "react";
+import type { FC } from "react";
 
 interface ProductCardProps {
   imageUrl: string;
   name: string;
-  size: string;
 }
 
-const ProductCard: FC<ProductCardProps> = ({ imageUrl, name, size }) => {
+const ProductCard: FC<ProductCardProps> = ({ imageUrl, name }) => {
   const [showName, setShowName] = useState(false);
 
   return (

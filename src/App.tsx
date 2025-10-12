@@ -10,6 +10,7 @@ import TermsOfService from "./pages/TermsOfService";
 import ContactUs from "./pages/ContactUs";
 import ShoppingCart from "./pages/ShoppingCart";
 import { CartProvider } from "./context/CartContext"; 
+import ProductDetail from "./pages/ProductDetail"; 
 
 const App = () => {
   const [searchQuery, setSearchQuery] = useState(""); 
@@ -20,10 +21,7 @@ const App = () => {
         <Routes>
           <Route element={<Layout onSearch={setSearchQuery} />}>
             <Route path="/" element={<Home />} />
-            <Route
-              path="/products"
-              element={<OurProducts searchQuery={searchQuery} />}
-            />
+            <Route path="/products" element={<OurProducts />} />
             <Route path="/location" element={<Location />} />
             <Route
               path="/background-catalog"
@@ -33,6 +31,7 @@ const App = () => {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/shoppingcart" element={<ShoppingCart />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
           </Route>
         </Routes>
       </Router>
