@@ -3,7 +3,7 @@ const Hero = () => {
     <section className="flex justify-between px-12 py-14 items-start gap-10">
       <div className="max-w-[500px]">
         <img 
-          src="/src/assets/logo/caricature-3d.png" 
+          src="../assets/logo/caricature-3d.png" 
           alt="Little Amora - Caricature 3D Frame" 
           className="w-full max-w-[300px] mb-5"
         />
@@ -17,7 +17,7 @@ const Hero = () => {
       </div>
       <div>
         <img 
-          src="/src/assets/karya/pak-andre.jpg" 
+          src="../assets/karya/pak-andre.jpg" 
           alt="Caricature Frame" 
           className="max-w-[1000px] w-full rounded-[10px]"
         />
