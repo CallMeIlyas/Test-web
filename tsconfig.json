@@ -3,5 +3,13 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "sourceMap": true,
+    "noEmit": true,
+    "allowJs": false
+  },
+  "exclude": ["node_modules", "dist", "**/*.js", "**/*.jsx"]
 }

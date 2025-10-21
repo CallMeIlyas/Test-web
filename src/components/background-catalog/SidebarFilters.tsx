@@ -47,18 +47,29 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
       <div className="mb-8">
         <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">Category</h3>
         {categories.map((item) => (
-          <div key={item} className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6">
+          <div key={item} className="font-poppinsRegular flex items-start gap-2 mb-3 ml-6">
             <input
               type="checkbox"
               id={item.toLowerCase().replace(/\s+/g, "-")}
-              className="w-4 h-4 border rounded"
               onChange={(e) =>
                 handleCheckboxChange("categories", item, e.target.checked)
               }
+              className="
+                shrink-0 w-4 h-4 border border-black rounded-sm
+                appearance-none cursor-pointer
+                checked:bg-white checked:border-black
+                relative transition-all duration-200
+                after:hidden checked:after:block
+                after:w-[6px] after:h-[10px]
+                after:border-r-[2px] after:border-b-[2px]
+                after:border-black after:absolute
+                after:top-[0px] after:left-[5px]
+                after:rotate-45
+              "
             />
             <label
               htmlFor={item.toLowerCase().replace(/\s+/g, "-")}
-              className="text-sm cursor-pointer hover:text-primary"
+              className="text-sm cursor-pointer hover:text-primary flex-1 leading-tight"
             >
               {item}
             </label>

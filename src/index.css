@@ -31,3 +31,7 @@
     @apply inline-block w-[200px] h-[100px];
   }
 }
+/* ==== Global Fix for Mobile Overflow ==== */
+html, body, #root {
+  overflow-x: visible !important;
+}

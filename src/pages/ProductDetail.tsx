@@ -3,6 +3,7 @@ import {
   useParams,
   useLocation,
   Link,
+  useNavigate,
   useOutletContext,
 } from "react-router-dom";
 import Footer from "../components/home/Footer";
@@ -20,7 +21,15 @@ type LayoutContext = {
   addToCart: (item: any) => void;
 };
 
-// Removed unused getImageUrl function
+const mediaFiles = import.meta.glob("../assets/images/**/*.{jpg,jpeg,png,webp,mp4,webm,mov}", {
+  eager: true,
+  as: "url",
+});
+
+const getMediaUrl = (filename: string): string => {
+  const key = Object.keys(mediaFiles).find((path) => path.includes(filename));
+  return key ? mediaFiles[key] : "https://via.placeholder.com/48";
+};
 
 // Packaging images khusus untuk 3D Frame 8R
 const packagingImages = import.meta.glob(
@@ -57,7 +66,6 @@ const getAdditionalPrice = (name: string): number | string => {
 
   return 0;
 };
-
 
 // Mock fallback data
 const MOCK_PRODUCT_DATA = {
@@ -97,43 +105,21 @@ const MOCK_PRODUCT_DATA = {
   ],
 };
 
-// Type for variation options
-interface VariationOption {
-  value: string;
-  label: string;
-  preview?: string;
-  image?: string;
-}
-
 const ProductDetail = () => {
   const { id } = useParams();
   const location = useLocation();
-  // Removed unused navigate
+  const navigate = useNavigate();
   const { addToCart } = useOutletContext<LayoutContext>();
 
-  const { 
-    imageUrl, 
-    name, 
-    category, 
-    size, 
-    type, 
-    price, 
-    allImages,
-    shadingOptions,
-    sizeFrameOptions 
-  } = (location.state as any) || {};
+  const { imageUrl, name, category, size, type, price, allImages } = (location.state as any) || {};
 
   // State untuk product variations
   const [selectedVariation, setSelectedVariation] = useState(MOCK_PRODUCT_DATA.variations[0]);
   const [quantity, setQuantity] = useState<number | "">(1);
-  const [faces] = useState<number | "">(1); // Removed setFaces
-  const [background] = useState<"Default" | "Custom">("Default"); // Removed setBackground
+  const [faces, setFaces] = useState<number | "">(1);
+  const [background, setBackground] = useState<"Default" | "Custom">("Default");
   const [selectedImage, setSelectedImage] = useState(imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg");
   const [selectedProductVariation, setSelectedProductVariation] = useState<string>("");
-  
-  // State untuk 2D Frame variations
-  const [selectedShading, setSelectedShading] = useState<string>("");
-  const [selectedSizeFrame, setSelectedSizeFrame] = useState<string>("");
 
   // Product data
   const product = {
@@ -145,12 +131,10 @@ const ProductDetail = () => {
     type: type || "",
     price: price || getPrice(category, name) || 0,
     allImages: allImages || [],
-    shadingOptions: shadingOptions || [],
-    sizeFrameOptions: sizeFrameOptions || [],
     ...MOCK_PRODUCT_DATA,
   };
 
-  // 🔹 LOGIC DARI KODE ANDA - Auto Size & Packaging Detection
+  // ðŸ”¹ LOGIC DARI KODE ANDA - Auto Size & Packaging Detection
   const categoryOptions = productOptions[product.category as keyof typeof productOptions];
 
   // Tentukan default size berdasarkan folder/subcategory
@@ -168,30 +152,18 @@ const ProductDetail = () => {
       ? categoryOptions?.specialCases?.[normalizedSizeKey] || []
       : [];
 
-  // 🔹 Auto-select packaging option pertama jika available
+  // ðŸ”¹ Auto-select packaging option pertama jika available
   useEffect(() => {
     if (specialVariations.length > 0 && !selectedProductVariation) {
       setSelectedProductVariation(specialVariations[0].value);
     }
   }, [specialVariations, selectedProductVariation]);
 
-  // 🔹 Auto-select 2D Frame options pertama jika available
-  useEffect(() => {
-    if (product.category === "2D Frame") {
-      if (product.shadingOptions.length > 0 && !selectedShading) {
-        setSelectedShading(product.shadingOptions[0].value);
-      }
-      if (product.sizeFrameOptions.length > 0 && !selectedSizeFrame) {
-        setSelectedSizeFrame(product.sizeFrameOptions[0].value);
-      }
-    }
-  }, [product.shadingOptions, product.sizeFrameOptions, selectedShading, selectedSizeFrame, product.category]);
-
   const handleAddToCart = () => {
     const finalQty = quantity === "" ? 1 : quantity;
     const finalFaces = faces === "" ? 1 : faces;
 
-    const cartItem: any = {
+    addToCart({
       id: product.id || "p1",
       name: [product.category, defaultSize, product.type, product.name].filter(Boolean).join(" "),
       price: product.price,
@@ -202,26 +174,15 @@ const ProductDetail = () => {
       attributes: {
         faceCount: finalFaces > 1 ? finalFaces - 1 : 0,
         backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
+        selectedProductVariation,
       },
-    };
-
-    // Tambahkan atribut untuk 2D Frame
-    if (product.category === "2D Frame") {
-      cartItem.attributes.shading = selectedShading;
-      cartItem.attributes.sizeFrame = selectedSizeFrame;
-    } else {
-      cartItem.attributes.selectedProductVariation = selectedProductVariation;
-    }
-
-    addToCart(cartItem);
+    });
   };
 
   console.log("DEBUG PRODUCT:", {
     category: product.category,
     size: defaultSize,
     specialVariations,
-    shadingOptions: product.shadingOptions,
-    sizeFrameOptions: product.sizeFrameOptions,
   });
 
   return (
@@ -237,19 +198,33 @@ const ProductDetail = () => {
             Our Products
           </Link>{" "}
           &gt;
-          <span className="mx-1">{product.category}</span> &gt;
+          <span
+            className="mx-1 cursor-pointer"
+            onClick={() => {
+              if (product.category.toLowerCase().includes("3d")) {
+                // Hanya kalau kategori 3D, baru filter
+                navigate(`/products?category=${encodeURIComponent(product.category)}`);
+              } else {
+                // Kalau kategori lain (misal 2D), cuma pindah tanpa filter
+                navigate("/products");
+              }
+            }}
+          >
+            {product.category} &gt;
+          </span>
+          
           <span className="mx-1">{product.name}</span>
         </div>
 
         {/* Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
-        {/* Left: Gallery */}
+          {/* Left: Gallery */}
           <div>
-            {selectedImage.endsWith('.mp4') ? (
+            {selectedImage.endsWith(".mp4") || selectedImage.endsWith(".webm") ? (
               <video
                 src={selectedImage}
-                controls
-                className="w-full h-auto object-cover rounded-lg border border-gray-200 mb-4"
+                ols
+                className="w-full h-auto rounded-lg border border-gray-200 mb-4"
               />
             ) : (
               <img
@@ -281,22 +256,38 @@ const ProductDetail = () => {
                     1024: { slidesPerView: 5 },
                   }}
                 >
-                  {product.allImages.map((img: string, idx: number) => (
-                    <SwiperSlide key={idx}>
-                      <div
-                        onClick={() => setSelectedImage(img)}
-                        className={`w-full h-24 cursor-pointer border-2 rounded-md overflow-hidden transition-all duration-200 ${
-                          selectedImage === img ? "border-pink-500 scale-105" : "border-gray-200 hover:border-gray-400"
-                        }`}
-                      >
-                        {img.endsWith(".mp4") ? (
-                          <video src={img} className="w-full h-full object-cover" muted />
+                  {product.allImages.map((media: string, idx: number) => {
+                    const isVideo = media.endsWith(".mp4") || media.endsWith(".webm") || media.endsWith(".mov");
+                  
+                    return (
+                      <SwiperSlide key={idx}>
+                        {isVideo ? (
+                          <video
+                            src={media}
+                            muted
+                            playsInline
+                            onClick={() => setSelectedImage(media)}
+                            className={`w-full h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                              selectedImage === media
+                                ? "border-pink-500 scale-105"
+                                : "border-gray-200 hover:border-gray-400"
+                            }`}
+                          />
                         ) : (
-                          <img src={img} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover" />
+                          <img
+                            src={media}
+                            alt={`${product.name} ${idx + 1}`}
+                            onClick={() => setSelectedImage(media)}
+                            className={`w-full h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                              selectedImage === media
+                                ? "border-pink-500 scale-105"
+                                : "border-gray-200 hover:border-gray-400"
+                            }`}
+                          />
                         )}
-                      </div>
-                    </SwiperSlide>
-                  ))}
+                      </SwiperSlide>
+                    );
+                  })}
                 </Swiper>
 
                 <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-2">
@@ -308,7 +299,7 @@ const ProductDetail = () => {
 
           {/* Right: Info */}
           <div className="flex flex-col">
-            <h1 className="text-[19px] font-poppinsMedium">
+            <h1 className="text-[25px] font-poppinsMedium">
               {[product.category, defaultSize, product.type, product.name].filter(Boolean).join(" ")}
             </h1>
             <div className="flex items-center space-x-2 text-yellow-500 px-3 py-1 rounded-full text-[15px] font-poppinsMediumItalic w-fit">
@@ -318,104 +309,40 @@ const ProductDetail = () => {
               Rp {product.price.toLocaleString("id-ID")}
             </p>
 
-            {/* 🔹 SPECIAL VARIATIONS - Packaging Options (untuk 3D Frame) */}
+            {/* SPECIAL VARIATIONS - Packaging Options */}
             {specialVariations.length > 0 && (
-              <div className="mt-6 mb-4">
-                <label className="block text-[18px] font-poppinsSemiBold mb-3">
-                  Packaging Option
-                </label>
-                <div className="flex gap-4 flex-wrap">
-                  {specialVariations.map((opt: VariationOption) => (
-                    <div
-                      key={opt.value}
-                      onClick={() => setSelectedProductVariation(opt.value)}
-                      className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
-                        selectedProductVariation === opt.value
-                          ? "border-2 border-blue-500 bg-blue-50"
-                          : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-                      }`}
-                    >
-                      <img
-                        src={getPackagingImage(
-                          opt.value === "dus_kraft_paperbag"
-                            ? "PACKING DUS KRAFT.jpg"
-                            : "PACKING HARDBOX.jpg"
-                        )}
-                        alt={opt.label}
-                        className="w-20 h-20 object-cover rounded-xl"
-                      />
-                      <span className="text-base font-medium text-gray-800 text-center">
-                        {opt.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 🔹 2D FRAME - Shading Options */}
-            {product.category === "2D Frame" && product.shadingOptions.length > 0 && (
-              <div className="mt-6 mb-4">
-                <label className="block text-[18px] font-poppinsSemiBold mb-3">
-                  Shading Style
-                </label>
-                <div className="flex gap-4 flex-wrap">
-                  {product.shadingOptions.map((opt: VariationOption) => (
-                    <div
-                      key={opt.value}
-                      onClick={() => setSelectedShading(opt.value)}
-                      className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
-                        selectedShading === opt.value
-                          ? "border-2 border-blue-500 bg-blue-50"
-                          : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-                      }`}
-                    >
-                      {opt.preview && (
-                        <img
-                          src={opt.preview}
-                          alt={opt.label}
-                          className="w-20 h-20 object-cover rounded-xl"
-                        />
+            <div className="mt-6 mb-4">
+              <label className="block text-[18px] font-poppinsSemiBold mb-3">
+                Packaging Option
+              </label>
+              <div className="flex gap-4 flex-wrap"> {/* horizontal */}
+                {specialVariations.map((opt) => (
+                  <div
+                    key={opt.value}
+                    onClick={() => setSelectedProductVariation(opt.value)}
+                    className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
+                      selectedProductVariation === opt.value
+                        ? "border-2 border-blue-500 bg-blue-50"
+                        : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                    }`}
+                  >
+                    <img
+                      src={getPackagingImage(
+                        opt.value === "dus_kraft_paperbag"
+                          ? "PACKING DUS KRAFT.jpg"
+                          : "PACKING HARDBOX.jpg"
                       )}
-                      <span className="text-base font-medium text-gray-800 text-center">
-                        {opt.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                      alt={opt.label}
+                      className="w-20 h-20 object-cover rounded-xl" // persegi
+                    />
+                    <span className="text-base font-medium text-gray-800 text-center">
+                      {opt.label}
+                    </span>
+                  </div>
+                ))}
               </div>
-            )}
-
-            {/* 🔹 2D FRAME - Size Frame Options */}
-            {product.category === "2D Frame" && product.sizeFrameOptions.length > 0 && (
-              <div className="mt-6 mb-4">
-                <label className="block text-[18px] font-poppinsSemiBold mb-3">
-                  Frame Size
-                </label>
-                <div className="flex gap-4 flex-wrap">
-                  {product.sizeFrameOptions.map((opt: VariationOption) => (
-                    <div
-                      key={opt.value}
-                      onClick={() => setSelectedSizeFrame(opt.value)}
-                      className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
-                        selectedSizeFrame === opt.value
-                          ? "border-2 border-blue-500 bg-blue-50"
-                          : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-                      }`}
-                    >
-                      <img
-                        src={opt.image}
-                        alt={opt.label}
-                        className="w-20 h-20 object-cover rounded-xl"
-                      />
-                      <span className="text-base font-medium text-gray-800 text-center">
-                        {opt.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
+          )}
 
             {/* Variation */}
             <div className="flex items-start justify-between mt-4">
@@ -429,7 +356,7 @@ const ProductDetail = () => {
                     onClick={() => setSelectedVariation(variation)}
                     className={`px-6 py-2 border rounded-md text-sm transition-colors ${
                       selectedVariation === variation
-                        ? "font-semibold"
+                        ? "bg-[#dcbec1] border-[#bfa4a6]"
                         : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
                     }`}
                   >
@@ -452,7 +379,7 @@ const ProductDetail = () => {
                   }
                   className="w-[36px] h-[36px] text-lg font-bold text-gray-700 hover:bg-gray-100"
                 >
-                  −
+                  -
                 </button>
                 <input
                   type="number"
@@ -474,17 +401,26 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex space-x-4 pt-4">
-              <button
-                onClick={handleAddToCart}
-                className="flex-1 px-6 py-3 border bg-[#dcbec1] font-bold rounded-lg hover:bg-[#c7a9ac] transition-colors"
-              >
-                Add to Cart
-              </button>
-              <button className="flex-1 px-6 py-3 bg-[#E2DAD8] font-bold rounded-lg hover:bg-[#D3C7C4] transition-colors">
-                Buy Now
-              </button>
+            {/* Buttons + Info Price */}
+            <div className="flex flex-col pt-4">
+              <div className="flex space-x-4">
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 px-6 py-3 border bg-[#dcbec1] font-bold rounded-lg hover:bg-[#c7a9ac] transition-colors"
+                >
+                  Add to Cart
+                </button>
+                <button
+                  className="flex-1 px-6 py-3 bg-[#E2DAD8] font-bold rounded-lg hover:bg-[#D3C7C4] transition-colors"
+                >
+                  Buy Now
+                </button>
+              </div>
+            
+              {/* Info Price */}
+              <p className="mt-[17%] text-[16px] font-poppinsSemiBoldItalic text-black">
+                • All price for 1 face caricature & 1 pcs frame
+              </p>
             </div>
           </div>
         </div>

@@ -12,8 +12,8 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
 
   const options = [
     { label: "All", value: "all" },
-    { label: "Name A-Z", value: "name-asc" },
-    { label: "Name Z-A", value: "name-desc" },
+    { label: "Ascending", value: "name-asc" },
+    { label: "Discending", value: "name-desc" },
   ];
 
   const handleSelect = (value: string) => {
@@ -32,15 +32,38 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
 
   return (
     <div className="bg-[#f0f0f0] px-4 py-2 rounded-[var(--radius)] mb-2">
-      <div className="flex items-center gap-10">
-        <span className="font-poppinsBold text-base font-bold text-black">Sort by</span>
+      <div className="flex items-center gap-7">
+        <span className="font-poppinsBold text-base text-sm text-black">Sort by</span>
 
-        <button 
-          onClick={handleFrequentlyUsed}
-          className="font-poppinsBold text-base font-bold text-black hover:text-gray-600 transition-colors"
-        >
-          Frequently Used
-        </button>
+          <div className="flex gap-7 font-poppinsBold">
+            {/* Frequently Used */}
+            <button
+              onClick={() =>
+                onSortChange(sortOption === "frequently-used" ? "all" : "frequently-used")
+              }
+              className={`px-4 py-2 rounded-full text-sm border transition-all duration-200 ${
+                sortOption === "frequently-used"
+                  ? "bg-black text-white border-black shadow-sm"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
+              }`}
+            >
+              Frequently Used
+            </button>
+          
+            {/* Rarely Used */}
+            <button
+              onClick={() =>
+                onSortChange(sortOption === "rarely-used" ? "all" : "rarely-used")
+              }
+              className={`px-4 py-2 rounded-full text-sm border transition-all duration-200 ${
+                sortOption === "rarely-used"
+                  ? "bg-black text-white border-black shadow-sm"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
+              }`}
+            >
+              Rarely Used
+            </button>
+          </div>
 
         <div className="relative">
           <button

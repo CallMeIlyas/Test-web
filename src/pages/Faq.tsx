@@ -6,14 +6,16 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen flex flex-col">
       
-      <div className="relative text-center my-5 -translate-y-2.5 mt-16">
-        <h1 className="inline-block px-5 text-4xl font-[Nataliecaydence-regular] whitespace-nowrap relative top-1.5 z-10">
-          Frequently Ask Question
-        </h1>
-        <div className="before:content-[''] before:absolute before:top-1/2 before:left-0 before:w-[20%] before:border-t-4 before:border-black" />
-        <div className="after:content-[''] after:absolute after:top-1/2 after:right-0 after:w-[20%] after:border-t-4 after:border-black" />
-      </div>
-      
+      {/* Judul FAQ */}
+        <div className="relative my-8 mb-10 text-center">
+          <h1 className="inline-block px-5 text-4xl md:text-5xl font-nataliecaydence relative z-10">
+            Frequently Ask Question
+          </h1>
+          <div className="absolute top-1/2 left-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
+          <div className="absolute top-1/2 right-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
+        </div>
+
+      {/* Deskripsi singkat di bawah judul */}
       <div className="font-poppinsRegular text-[16px] text-justify max-w-[620px] mx-auto my-0.5 leading-[1.2] whitespace-nowrap">
         <p>The format order from customer determine the process time and total price.</p>
         <p>Here is the information for non-express process and other detail regarding</p>
@@ -23,7 +25,7 @@ export default function FAQPage() {
       <main className="max-w-[700px] mx-auto py-12 px-5 font-sans flex-1">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Left Column */}
-          <div className="space-y-3 font-s">
+          <div className="space-y-3 font-poppinsRegular">
             <FAQItem 
               question="How long the process time for 1 frame 1 face caricature?"
               answer={
@@ -134,7 +136,7 @@ export default function FAQPage() {
           </div>
           
           {/* Right Column */}
-          <div className="space-y-3">
+          <div className="space-y-3 font-poppinsRegular">
             <FAQItem 
               question="How long the process time for 1 frame 2-10 faces caricature?"
               answer={

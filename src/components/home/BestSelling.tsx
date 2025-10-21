@@ -1,80 +1,129 @@
-import type { Product } from "../../types/types";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { allProducts } from "../../data/productDataLoader";
+import type { Product } from "../../data/productDataLoader";
+
+// 🖼️ Import gambar khusus best selling (pakai path kamu sendiri)
 import img10R from "../../assets/karya/10R.jpg";
 import img12R from "../../assets/karya/12R-6.jpg";
 import imgA2 from "../../assets/karya/55x80cm.jpg";
 import imgA1 from "../../assets/karya/80x110cm.jpeg";
 
 const BestSelling = () => {
-  const products: Product[] = [
+  const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // 🗺️ Mapping data best selling + gambar manual
+  const bestSellingMap = [
     {
-      id: 1,
-      name: "10R / A4",
-      size: "25x30cm",
+      displayName: "10R / A4 25x30cm",
+      match: "10R",
+      target3D: "10R",
       imageUrl: img10R,
-      category: "Frames",
-      shippedFrom: "Jakarta",
-      shippedTo: ["Indonesia"],
-      price: 0,
     },
     {
-      id: 2,
-      name: "12R / A3",
-      size: "30x40cm",
+      displayName: "12R / A3 30x40cm",
+      match: "12R",
+      target3D: "12R",
       imageUrl: img12R,
-      category: "Frames",
-      shippedFrom: "Jakarta",
-      shippedTo: ["Indonesia"],
-      price: 0,
     },
     {
-      id: 3,
-      name: "A2",
-      size: "40x55cm",
+      displayName: "A2 40x55cm",
+      match: "A2-40X55CM",
+      target3D: "A1-55X80CM",
       imageUrl: imgA2,
-      category: "Frames",
-      shippedFrom: "Jakarta",
-      shippedTo: ["Indonesia"],
-      price: 0,
     },
     {
-      id: 4,
-      name: "A1",
-      size: "55x80cm",
+      displayName: "A1 55x80cm",
+      match: "A1-55X80CM",
+      target3D: "A0-80X110CM",
       imageUrl: imgA1,
-      category: "Frames",
-      shippedFrom: "Jakarta",
-      shippedTo: ["Indonesia"],
-      price: 0,
     },
   ];
 
+// 🎯 Ambil produk yang sesuai di allProducts (khusus 3D Frame)
+const bestSellingProducts = bestSellingMap
+  .map((b) => {
+    const found = allProducts.find(
+      (p) =>
+        p.category === "3D Frame" && // 🔒 pastikan ambil kategori 3D
+        p.name.toLowerCase().includes(b.match.toLowerCase())
+    );
+    return found
+      ? {
+          ...found,
+          displayName: b.displayName,
+          target3D: b.target3D,
+          imageUrl: b.imageUrl, // 👈 override gambar manual
+        }
+      : null;
+  })
+  .filter(Boolean) as (Product & {
+    displayName: string;
+    target3D: string;
+    imageUrl: string;
+  })[];
+
+  const handleCardClick = (product: Product & { target3D: string }) => {
+    const targetName = product.target3D.trim();
+    const targetProduct = allProducts.find(
+      (p) => p.name.trim().toLowerCase() === targetName.toLowerCase()
+    );
+
+    if (targetProduct) {
+      navigate(`/product/${targetProduct.id}`, {
+        state: {
+          ...targetProduct,
+          specialVariations: targetProduct.specialVariations || [],
+          details: targetProduct.details || {},
+        },
+      });
+    }
+  };
+
   return (
     <>
-      {/* Border */}
       <div className="relative my-10 text-center h-[1px]">
         <div className="absolute top-0 left-0 w-1/4 border-t-[5px] border-black"></div>
         <div className="absolute top-0 right-0 w-1/4 border-t-[5px] border-black"></div>
       </div>
 
-      <section className="py-16 bg-white">
-        <h2 className="font-nataliecaydence text-[46px] text-4xl text-center mb-10 text-black">
+      <section className={`bg-white ${isMobile ? "py-8" : "py-16"}`}>
+        <h2
+          className={`font-nataliecaydence text-center text-black ${
+            isMobile ? "text-3xl mb-6" : "text-[46px] text-4xl mb-10"
+          }`}
+        >
           Best Selling Frames
         </h2>
-        <div className="grid grid-cols-4 gap-5 px-10 max-w-6xl mx-auto">
-          {products.map((product) => (
+
+        <div
+          className={`grid ${
+            isMobile
+              ? "grid-cols-1 gap-4 px-4 max-w-md mx-auto"
+              : "grid-cols-4 gap-5 px-10 max-w-6xl mx-auto"
+          }`}
+        >
+          {bestSellingProducts.map((product) => (
             <div
               key={product.id}
-              className="text-center bg-white p-5 rounded-xl shadow-md hover:-translate-y-1 transition-transform"
+              onClick={() => handleCardClick(product)}
+              className="cursor-pointer text-center bg-white p-5 rounded-xl shadow-md hover:-translate-y-1 transition-transform"
             >
               <img
                 src={product.imageUrl}
-                alt={`Frame ${product.name}`}
+                alt={product.displayName}
                 className="w-full h-48 object-cover rounded-lg mb-4"
               />
               <p className="m-2.5 font-bold text-gray-600 text-base">
-                {product.name}
-                <br />
-                {product.size}
+                {product.displayName}
               </p>
             </div>
           ))}

@@ -142,11 +142,19 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                 <input
                   type="checkbox"
                   id={mainCategory.toLowerCase().replace(/\s+/g, "-")}
-                  className="w-4 h-4 border rounded"
                   checked={selectedMainCategories.has(mainCategory)}
-                  onChange={(e) =>
-                    handleMainCategoryChange(mainCategory, e.target.checked)
-                  }
+                  onChange={(e) => handleMainCategoryChange(mainCategory, e.target.checked)}
+                  className="
+                    appearance-none w-4 h-4 border border-black rounded-sm
+                    cursor-pointer transition-all duration-200 relative
+                    checked:bg-white checked:border-black
+                    after:hidden checked:after:block
+                    after:w-[6px] after:h-[10px]
+                    after:border-r-[2px] after:border-b-[2px]
+                    after:border-black after:absolute
+                    after:top-[0px] after:left-[5px]
+                    after:rotate-45
+                  "
                 />
                 <label
                   htmlFor={mainCategory.toLowerCase().replace(/\s+/g, "-")}
@@ -182,22 +190,28 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                         key={subcat}
                         className="font-poppinsRegular flex items-center gap-2"
                       >
-                        <input
-                          type="checkbox"
-                          id={fullName.toLowerCase().replace(/\s+/g, "-")}
-                          className="w-3 h-3 border rounded"
-                          checked={selectedSubcategories.has(fullName)}
-                          onChange={(e) =>
-                            handleSubcategoryChange(
-                              mainCategory,
-                              subcat,
-                              e.target.checked
-                            )
-                          }
-                        />
+                      <input
+                        type="checkbox"
+                        id={fullName.toLowerCase().replace(/\s+/g, "-")}
+                        checked={selectedSubcategories.has(fullName)}
+                        onChange={(e) =>
+                          handleSubcategoryChange(mainCategory, subcat, e.target.checked)
+                        }
+                        className="
+                          appearance-none w-4 h-4 border border-black rounded-sm
+                          cursor-pointer transition-all duration-200 relative
+                          checked:border-black checked:bg-white
+                          after:hidden checked:after:block
+                          after:w-[6px] after:h-[10px]
+                          after:border-r-[2px] after:border-b-[2px]
+                          after:border-black after:absolute
+                          after:top-[0px] after:left-[5px]
+                          after:rotate-45
+                        "
+                      />
                         <label
                           htmlFor={fullName.toLowerCase().replace(/\s+/g, "-")}
-                          className="text-xs cursor-pointer hover:text-primary"
+                          className="text-sm cursor-pointer hover:text-primary"
                         >
                           {subcat}
                         </label>

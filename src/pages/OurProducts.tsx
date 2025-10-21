@@ -1,5 +1,5 @@
-import { useState, type FC } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useState, type FC, useEffect } from "react";
+import { useOutletContext, useLocation } from "react-router-dom"; 
 import Footer from "../components/home/Footer";
 import SidebarFilters from "../components/our-products/SidebarFilters";
 import ProductGridWithPagination from "../components/our-products/ProductGrid";
@@ -10,12 +10,26 @@ interface LayoutContext {
 }
 
 const OurProducts: FC = () => {
-  const { searchQuery} = useOutletContext<LayoutContext>();
+  const { searchQuery } = useOutletContext<LayoutContext>();
+  const location = useLocation(); // ⬅️ ini buat baca query URL
   const [filters, setFilters] = useState<FilterOptions>({
     categories: [],
     shippedFrom: [],
     shippedTo: [],
   });
+
+  // ✅ AUTO FILTER kalau ada ?category= di URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const categoryFromURL = params.get("category");
+
+    if (categoryFromURL) {
+      setFilters(prev => ({
+        ...prev,
+        categories: [categoryFromURL], // set kategori dari URL
+      }));
+    }
+  }, [location.search]);
 
   return (
     <div className="min-h-screen flex flex-col">

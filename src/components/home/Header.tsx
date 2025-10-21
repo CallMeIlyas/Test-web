@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { FaSearch, FaChevronDown } from "react-icons/fa";
+import { FaSearch, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
 import logoAmora from "../../assets/logo/logo-amora-footer2.png";
 import cartIcon from "../../assets/Icons/CART.png";
 import cartPopup from "../../assets/Icons/cart-popup.png";
+import useIsMobile from "../../hooks/useIsMobile"; // gunakan hook baru
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
-  quantity: number; // ubah dari qty -> quantity
+  quantity: number;
   imageUrl: string;
 }
 
@@ -21,35 +22,35 @@ interface HeaderProps {
 const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const isMobile = useIsMobile(); // deteksi device
 
   const handleSearch = () => {
     onSearch(searchText);
   };
 
-  return (
+  // ================= Desktop Layout =================
+  const DesktopLayout = () => (
     <header>
-      {/* Top bar */}
+      {/* Top Logo */}
       <div className="bg-[#dcbec1] py-5 flex justify-center items-center">
-        <img
-          src={logoAmora}
-          alt="Little Amora Logo"
-          className="h-24"
-        />
+        <img src={logoAmora} alt="Little Amora Logo" className="h-24" />
       </div>
 
       {/* Navbar */}
-      <nav className="flex justify-between items-center px-10 py-3 bg-white gap-2">
-        {/* Left menu */}
-        <ul className="flex gap-7 p-0 m-0 mr-auto -translate-x-2">
-          <li><a href="/" className="font-poppinsBold text-[15px] font-bold">Home</a></li>
-          <li><a href="/products" className="font-poppinsBold text-[15px] font-bold">Our Products</a></li>
-          <li><a href="/size-guide" className="font-poppinsBold text-[15px] font-bold">Size Guide</a></li>
-          <li><a href="/background-catalog" className="font-poppinsBold text-[15px] font-bold">Background Catalog</a></li>
-          <li><a href="/location" className="font-poppinsBold text-[15px] font-bold">Location</a></li>
+      <nav className="flex justify-between items-center px-10 py-3 bg-white gap-2 overflow-x-visible relative z-40">
+        {/* Menu kiri */}
+        <ul className="flex gap-7 p-0 m-0 mr-auto -translate-x-2 no-underline text-black font-poppinsBold whitespace-nowrap text-sm">
+          <li><a href="/">Home</a></li>
+          <li><a href="/products">Our Products</a></li>
+          <li><a href="/size-guide">Size Guide</a></li>
+          <li><a href="/background-catalog">Background Catalog</a></li>
+          <li><a href="/location">Location</a></li>
         </ul>
 
         {/* Search bar */}
-        <div className="flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 max-w-[90px] min-w-[250px] mr-[29px] -translate-x-3">
+        <div className="flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 max-w-[90px] min-w-[250px] mr-[29px] -translate-x-7">
           <input
             type="text"
             placeholder="Search"
@@ -63,15 +64,15 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
           </button>
         </div>
 
-        {/* Right menu */}
+        {/* Menu kanan */}
         <ul className="flex gap-4 p-0 m-0 -ml-3 items-center">
-          <li><a href="/faq" className="font-poppinsBold text-[15px] font-bold">FAQ</a></li>
+          <li><a href="/faq" className="font-poppinsBold text-sm font-bold">FAQ</a></li>
 
-          {/* Language Dropdown */}
+          {/* Dropdown language */}
           <li className="relative">
             <button
               onClick={() => setIsLangOpen(!isLangOpen)}
-              className="font-poppinsBold flex items-center gap-2 font-bold text-[15px]"
+              className="font-poppinsBold flex items-center gap-2 font-bold text-sm"
             >
               Language
               <FaChevronDown
@@ -87,7 +88,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
             )}
           </li>
 
-          {/* Cart */}
+          {/* Cart + Popup */}
           <li className="relative group">
             <a href="/shoppingcart" className="block relative">
               <img
@@ -102,7 +103,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
               )}
             </a>
 
-            {/* Hover popup */}
+            {/* === HOVER POPUP === */}
             <div className="absolute right-0 mt-3 hidden group-hover:block z-50 w-[420px]">
               <div
                 className="relative bg-no-repeat bg-contain bg-top p-6"
@@ -147,6 +148,78 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
       </nav>
     </header>
   );
+
+  // ================= Mobile Layout =================
+  const MobileLayout = () => (
+    <header className="bg-white shadow">
+      {/* Logo tengah + hamburger kanan */}
+      <div className="relative flex items-center justify-center px-4 py-3 bg-[#dcbec1]">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="absolute right-4 text-xl"
+        >
+          {menuOpen ? <FaTimes /> : <FaBars />}
+        </button>
+
+        <img
+          src={logoAmora}
+          alt="Little Amora Logo"
+          className="h-16 mx-auto"
+        />
+      </div>
+
+      {/* Menu dropdown */}
+      {menuOpen && (
+        <nav className="flex flex-col bg-white p-4 border-t border-gray-200 space-y-4">
+          <input
+            type="text"
+            placeholder="Search"
+            className="border border-gray-400 rounded-full px-4 py-2 text-sm outline-none"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+
+          <a href="/" className="font-poppinsBold text-[15px] font-bold">Home</a>
+          <a href="/products" className="font-poppinsBold text-[15px] font-bold">Our Products</a>
+          <a href="/size-guide" className="font-poppinsBold text-[15px] font-bold">Size Guide</a>
+          <a href="/background-catalog" className="font-poppinsBold text-[15px] font-bold">Background Catalog</a>
+          <a href="/location" className="font-poppinsBold text-[15px] font-bold">Location</a>
+          <a href="/faq" className="font-poppinsBold text-[15px] font-bold">FAQ</a>
+
+          {/* Language selector */}
+          <div>
+            <button
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="font-poppinsBold flex items-center gap-2 font-bold text-[15px]"
+            >
+              Language
+              <FaChevronDown
+                size={16}
+                className={`transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {isLangOpen && (
+              <ul className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                <li><a href="/?lang=en" className="block px-4 py-2 hover:bg-gray-100 text-sm">English</a></li>
+                <li><a href="/?lang=id" className="block px-4 py-2 hover:bg-gray-100 text-sm">Indonesia</a></li>
+              </ul>
+            )}
+          </div>
+
+          {/* Cart */}
+          <a href="/shoppingcart" className="flex items-center gap-3">
+            <img src={cartIcon} alt="Cart" className="w-6 h-auto" />
+            <span className="font-poppinsBold text-[15px] font-bold">
+              Cart ({cartCount})
+            </span>
+          </a>
+        </nav>
+      )}
+    </header>
+  );
+
+  return isMobile ? <MobileLayout /> : <DesktopLayout />;
 };
 
 export default Header;

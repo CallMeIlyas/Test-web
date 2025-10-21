@@ -3,6 +3,7 @@ import Footer from '../components/home/Footer';
 import Sidebar from '../components/background-catalog/SidebarFilters';
 import ProductGrid from '../components/background-catalog/ProductGrid';
 import type { FilterOptions } from '../types/types';
+import NoteIcon from "../assets/Icons/NOTES.png";
 
 interface BackgroundCatalogProps {
   searchQuery: string; 
@@ -29,18 +30,14 @@ const BackgroundCatalog: React.FC<BackgroundCatalogProps> = () => {
       </div>
 
       {/* Note Section */}
-      <div className="flex items-center gap-4 max-w-4xl mx-auto my-8 px-4 mr-10">
-        <img
-          src="/src/assets/Icons/NOTES.png"
-          alt="Note Icon"
-          className="w-20 translate-x-7"
-        />
-        <p className="text-sm">
-          Customers are free to use the background from this catalog, the logo, products, plant or any
-          elements can be replaced as requested. Please note, customers must purchase additional fee for
-          background custom. From image to illustration count as background custom.
-        </p>
-      </div>
+<div className="flex items-start gap-4 my-8 px-10">
+  <img src={NoteIcon} alt="Note Icon" className="w-20" />
+  <p className="text-sm">
+    Customers are free to use the background from this catalog, the logo, products, plant or any
+    elements can be replaced as requested. Please note, customers must purchase additional fee for
+    background custom. From image to illustration count as background custom.
+  </p>
+</div>
 
       <Footer />
     </div>
