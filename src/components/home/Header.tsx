@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { FaSearch, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
 import logoAmora from "../../assets/logo/logo-amora-footer2.png";
 import cartIcon from "../../assets/Icons/CART.png";
@@ -21,71 +22,83 @@ interface HeaderProps {
 }
 
 const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
+  const location = useLocation();
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [searchText, setSearchText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isMobile = useIsMobile();
 
+  // ✅ Uncontrolled input menggunakan useRef
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+
   const handleSearch = () => {
-    onSearch(searchText);
+    const value = isMobile 
+      ? mobileSearchInputRef.current?.value || ""
+      : searchInputRef.current?.value || "";
+    onSearch(value);
   };
 
   // === Refs untuk animasi GSAP ===
   const navRef = useRef<HTMLDivElement | null>(null);
   const logoRef = useRef<HTMLImageElement | null>(null);
 
-useEffect(() => {
-  const ctx = gsap.context(() => {
-    const tl = gsap.timeline({
-      defaults: { ease: "power2.out", duration: 0.6 },
-    });
+  useEffect(() => {
+    // ✅ Animasi HANYA jalan di halaman Home
+    if (location.pathname !== "/") {
+      return;
+    }
 
-    // === Animasi Logo (turun dari atas + fade + zoom) ===
-    tl.from(logoRef.current, {
-      opacity: 0,
-      y: -40,
-      scale: 0.9,
-      duration: 0.8,
-      ease: "power2.out",
-    });
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        defaults: { ease: "power2.out", duration: 0.6 },
+      });
 
-    // === Navbar turun halus (sedikit overlap dengan logo) ===
-    tl.from(
-      navRef.current,
-      {
+      // === Animasi Logo (turun dari atas + fade + zoom) ===
+      tl.from(logoRef.current, {
         opacity: 0,
-        y: -30,
-      },
-      "-=0.4"
-    );
+        y: -40,
+        scale: 0.9,
+        duration: 0.8,
+        ease: "power2.out",
+      });
 
-    // === Menu kiri muncul satu per satu ===
-    tl.from(".nav-item-left", {
-      opacity: 0,
-      y: -15,
-      stagger: 0.08,
-      duration: 0.45,
-    }, "<"); // ⬅️ mulai langsung setelah navbar
+      // === Navbar turun halus (sedikit overlap dengan logo) ===
+      tl.from(
+        navRef.current,
+        {
+          opacity: 0,
+          y: -30,
+        },
+        "-=0.4"
+      );
 
-    // === Search bar muncul nyatu (overlap dikit) ===
-    tl.from(".nav-item-search", {
-      opacity: 0,
-      y: -15,
-      duration: 0.45,
-    }, "-=0.7"); // ⬅️ overlap sedikit biar nyambung
+      // === Menu kiri muncul satu per satu ===
+      tl.from(".nav-item-left", {
+        opacity: 0,
+        y: -15,
+        stagger: 0.08,
+        duration: 0.45,
+      }, "<"); // ⬅️ mulai langsung setelah navbar
 
-    // === Menu kanan muncul langsung setelah search ===
-    tl.from(".nav-item-right", {
-      opacity: 0,
-      y: -15,
-      stagger: 0.08,
-      duration: 0.45,
-    }, "-=0.2"); // ⬅️ overlap juga
-  });
+      // === Search bar muncul nyatu (overlap dikit) ===
+      tl.from(".nav-item-search", {
+        opacity: 0,
+        y: -15,
+        duration: 0.45,
+      }, "-=0.7"); // ⬅️ overlap sedikit biar nyambung
 
-  return () => ctx.revert();
-}, []);
+      // === Menu kanan muncul langsung setelah search ===
+      tl.from(".nav-item-right", {
+        opacity: 0,
+        y: -15,
+        stagger: 0.08,
+        duration: 0.45,
+      }, "-=0.2"); // ⬅️ overlap juga
+    });
+
+    return () => ctx.revert();
+  }, [location.pathname]);
 
   // ================= Desktop Layout =================
   const DesktopLayout = () => (
@@ -125,13 +138,13 @@ useEffect(() => {
         </ul>
 
         {/* Search bar */}
-        <div className="nav-item-right flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 max-w-[90px] min-w-[350px] mr-[40px] -translate-x-7">
+        <div className="nav-item-search flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 max-w-[90px] min-w-[350px] mr-[40px] -translate-x-7">
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Search"
             className="border-none outline-none text-sm px-2 w-full bg-transparent"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            defaultValue=""
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
           <button className="ml-3" onClick={handleSearch}>
@@ -264,11 +277,11 @@ useEffect(() => {
       {menuOpen && (
         <nav className="flex flex-col bg-white p-4 border-t border-gray-200 space-y-4">
           <input
+            ref={mobileSearchInputRef}
             type="text"
             placeholder="Search"
             className="border border-gray-400 rounded-full px-4 py-2 text-sm outline-none"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            defaultValue=""
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
 

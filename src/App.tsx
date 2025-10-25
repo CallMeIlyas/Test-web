@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState } from "react"; 
+import { useState, useCallback } from "react"; 
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import OurProducts from "./pages/OurProducts";
@@ -15,11 +15,15 @@ import ProductDetail from "./pages/ProductDetail";
 const App = () => {
   const [searchQuery, setSearchQuery] = useState(""); 
 
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
   return (
     <CartProvider>
       <Router>
         <Routes>
-          <Route element={<Layout onSearch={setSearchQuery} />}>
+          <Route element={<Layout onSearch={handleSearch} />}>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<OurProducts />} />
             <Route path="/location" element={<Location />} />

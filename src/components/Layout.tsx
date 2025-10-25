@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Header from "./home/Header";
 import { Toaster, toast } from "react-hot-toast";
 import { useCart } from "../context/CartContext";
@@ -67,19 +67,19 @@ const Layout: React.FC<LayoutProps> = ({ onSearch }) => {
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
   // ✅ Custom Toast dengan komponen ToastItem
-  const handleAddToCart = (item: Parameters<typeof addToCart>[0]) => {
+  const handleAddToCart = useCallback((item: Parameters<typeof addToCart>[0]) => {
     addToCart(item);
 
     toast.custom((t) => <ToastItem t={t} />, {
       duration: 2500,
       position: "top-right", // pojok kanan atas
     });
-  };
+  }, [addToCart]);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     if (onSearch) onSearch(query);
-  };
+  }, [onSearch]);
 
   return (
     <div className="min-h-screen flex flex-col">
