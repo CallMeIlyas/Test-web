@@ -40,23 +40,21 @@ const getPackagingImage = (filename: string): string => {
 const getAdditionalPrice = (name: string): number | string => {
   const additionalPrices = priceList.Additional;
 
-  if (name === "Additional Faces") {
-    const minPrice = additionalPrices["Tambahan Wajah Karikatur 1-9 wajah"];
-    const maxPrice = additionalPrices["Tambahan Wajah Karikatur diatas 10 wajah"];
-    return `Rp ${minPrice.toLocaleString("id-ID")} - Rp ${maxPrice.toLocaleString(
-      "id-ID"
-    )}`;
-  }
+  switch (name) {
+    case "Additional Faces": {
+      const minPrice = additionalPrices["Tambahan Wajah Karikatur 1-9 wajah"];
+      const maxPrice = additionalPrices["Tambahan Wajah Karikatur diatas 10 wajah"];
+      return `Rp ${minPrice.toLocaleString("id-ID")} - Rp ${maxPrice.toLocaleString("id-ID")}`;
+    }
+    case "Background Custom":
+      return additionalPrices["Background Custom"];
 
-  if (name === "Background Custom") {
-    return additionalPrices["Background Custom"];
-  }
+    case "Additional Packing":
+      return additionalPrices["Biaya Tambahan Packing untuk Order Banyak via Kargo"];
 
-  if (name === "Additional Packing") {
-    return additionalPrices["Biaya Tambahan Packing untuk Order...."];
+    default:
+      return 0;
   }
-
-  return 0;
 };
 
 // Mock fallback data
