@@ -41,7 +41,7 @@ export const priceList = {
     "Acrylic Stand 3mm size A4 2 sisi": 455800,
     "Acrylic Stand 3mm size A3 2 sisi": 595800,
   },
-  Additional: {
+  "Additional": {
     "Background Custom": 62800,
     "Tambahan Wajah Karikatur 1-9 wajah": 52800,
     "Tambahan Wajah Karikatur diatas 10 wajah": 62800,
@@ -50,7 +50,7 @@ export const priceList = {
     "Tambahan Wajah dari Foto Asli": 10000,
     "Biaya Tambahan Wajah Banyak 1-9 wajah": 150000,
     "Biaya Tambahan Wajah Banyak diatas 10 wajah": 250000,
-    "Biaya Tambahan Packing untuk Order....": 100000,
+    "Biaya Tambahan Packing untuk Order Banyak via Kargo": 100000,
     "Biaya Tambahan Ganti Frame Kaca ke Acrylic A2": 175800,
     "Biaya Tambahan Ganti Frame Kaca ke Acrylic A1": 319800,
     "Biaya Tambahan Ganti Frame Kaca ke Acrylic A0": 695000,

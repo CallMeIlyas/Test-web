@@ -12,8 +12,8 @@ import RAYSPEEDLogo from "../../assets/Icons/address/RAYSPEED.png";
 interface LocationSectionProps {
   location: {
     city: string;
-    gmapsLink?: string; // ✅ optional biar backward compatible
-    description: (string | JSX.Element)[];
+    gmapsLink?: string;
+    description: (string | React.ReactNode)[];
     whatsapp: {
       name: string;
       number: string;
@@ -22,7 +22,7 @@ interface LocationSectionProps {
       name: string;
       lines: string[];
     };
-    shippingMethods: string[];
+    shippingMethods: (string | { courier: string; name: string })[];
   };
   isLast: boolean;
 }
@@ -115,42 +115,44 @@ const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) =
  {/* 🚚 Shipping Methods */}
 <div className="border border-gray-600 rounded-[30px] p-4 max-w-xl mt-8 mx-auto">
   {location.shippingMethods.map((method, index) => {
-    const courierName = typeof method === "string"
-    ? method.split(" ")[0].toUpperCase()
-    : method.courier.toUpperCase();
-  
-    const methodName = typeof method === "string" ? method : method.name;
-    const logoSrc = logoMap[courierName];
-    const logoSize = logoSizeMap[courierName] || {
-      width: "w-24",
-      height: "h-auto",
-      translate: "",
-    };
+  const courierName =
+    typeof method === "string"
+      ? method.split(" ")[0].toUpperCase()
+      : method.courier.toUpperCase();
 
-    return (
-      <div
-        key={index}
-        className="flex items-center gap-3 mb-[6px] last:mb-0 min-h-[45px]"
-      >
-        <div className="flex items-center justify-center min-w-[130px] h-[45px]">
-          {logoSrc && (
-            <img
-              src={logoSrc}
-              alt={courierName}
-              className={`${logoSize.width} ${logoSize.height} ${logoSize.translate || ""}`}
-            />
-          )}
-        </div>
-        <span
-          className={`font-poppinsRegular text-sm leading-[1] block ${
-            method.name.includes("Regular, Express") ? "translate-x-5" : "translate-x-10"
-          }`}
-        >
-          {method.name}
-        </span>
+  const logoSrc = logoMap[courierName];
+  const logoSize = logoSizeMap[courierName] || {
+    width: "w-24",
+    height: "h-auto",
+    translate: "",
+  };
+
+  return (
+    <div
+      key={index}
+      className="flex items-center gap-3 mb-[6px] last:mb-0 min-h-[45px]"
+    >
+      <div className="flex items-center justify-center min-w-[130px] h-[45px]">
+        {logoSrc && (
+          <img
+            src={logoSrc}
+            alt={courierName}
+            className={`${logoSize.width} ${logoSize.height} ${logoSize.translate || ""}`}
+          />
+        )}
       </div>
-    );
-  })}
+      <span
+        className={`font-poppinsRegular text-sm leading-[1] block ${
+          typeof method === "object" && method.name.includes("Regular, Express")
+            ? "translate-x-5"
+            : "translate-x-10"
+        }`}
+      >
+        {typeof method === "object" ? method.name : method}
+      </span>
+    </div>
+  );
+})}
 </div>
     </div>
   );

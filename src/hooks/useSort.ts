@@ -11,29 +11,49 @@ interface Product {
   price: number;
   shippedFrom: string;
   shippedTo: string[];
-  displayName?: string; // ✅ tambahin untuk dukung best selling
+  displayName?: string; // ✅ dukung nama tampil
   allImages?: string[];
 }
 
 export const useSort = (products: Product[]) => {
   const [sortOption, setSortOption] = useState("default");
 
-  // ✅ Daftar produk Best Selling
-  const bestSellingProducts = ["12R", "15cm", "10R", "Acrylic Stand 2cm"];
+  // ✅ Logika penentuan produk Best Selling
+  const isBestSelling = (p: Product) => {
+    if (!p.displayName || !p.category) return false;
 
-  const sortedProducts = useMemo(() => {
-    // ✅ Filter Best Selling
-    if (sortOption === "best-selling") {
-      return products.filter((p) =>
-        bestSellingProducts.some(
-          (item) =>
-            item.toLowerCase().trim() ===
-            (p.displayName || p.name).toLowerCase().trim()
-        )
-      );
+    const name = (p.displayName || p.name).toLowerCase().trim();
+    const category = p.category.toLowerCase().trim();
+
+    // ✅ 3D Category: hanya 12R & 10R (bukan "by AI")
+    if (
+      category.includes("3d") &&
+      (/\b12r\b/.test(name) || /\b10r\b/.test(name)) &&
+      !name.includes("by ai")
+    ) {
+      return true;
     }
 
-    // ✅ Sorting Harga
+    // ✅ 2D Category: hanya 8R
+    if (category.includes("2d") && /\b8r\b/.test(name)) {
+      return true;
+    }
+
+    // ✅ Acrylic Stand 2cm (atau 2 cm)
+    if (name.includes("acrylic stand") && (name.includes("2cm") || name.includes("2 cm"))) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const sortedProducts = useMemo(() => {
+    if (sortOption === "best-selling") {
+      // 🔹 Filter hanya produk yang sesuai best selling
+      return products.filter(isBestSelling);
+    }
+
+    // 🔹 Sorting harga
     switch (sortOption) {
       case "price-asc":
         return [...products].sort((a, b) => a.price - b.price);

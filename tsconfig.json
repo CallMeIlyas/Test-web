@@ -4,12 +4,23 @@
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
+
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "sourceMap": true,
-    "noEmit": true,
-    "allowJs": false
-  },
-  "exclude": ["node_modules", "dist", "**/*.js", "**/*.jsx"]
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+
+    // ✅ tambahkan ini
+    "baseUrl": "./src",
+    "paths": {
+      "@data/*": ["data/*"],
+      "/data/data/com.termux/files/home/folder/src/*": ["*"]
+    },
+    "types": ["node"]
+  }
 }

@@ -21,9 +21,9 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
     setOpen(false);
   };
 
-  const handleFrequentlyUsed = () => {
-    onSortChange("all");
-  };
+  // const handleFrequentlyUsed = () => {
+  //   onSortChange("all");
+  // };
 
   const getCurrentLabel = () => {
     const current = options.find(opt => opt.value === sortOption);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   useParams,
   useLocation,
@@ -21,15 +21,7 @@ type LayoutContext = {
   addToCart: (item: any) => void;
 };
 
-const mediaFiles = import.meta.glob("../assets/images/**/*.{jpg,jpeg,png,webp,mp4,webm,mov}", {
-  eager: true,
-  as: "url",
-});
 
-const getMediaUrl = (filename: string): string => {
-  const key = Object.keys(mediaFiles).find((path) => path.includes(filename));
-  return key ? mediaFiles[key] : "https://via.placeholder.com/48";
-};
 
 // Packaging images khusus untuk 3D Frame 8R
 const packagingImages = import.meta.glob(
@@ -116,23 +108,95 @@ const ProductDetail = () => {
   // State untuk product variations
   const [selectedVariation, setSelectedVariation] = useState(MOCK_PRODUCT_DATA.variations[0]);
   const [quantity, setQuantity] = useState<number | "">(1);
-  const [faces, setFaces] = useState<number | "">(1);
-  const [background, setBackground] = useState<"Default" | "Custom">("Default");
+  const [faces] = useState<number | "">(1);
+  const [background] = useState<"Default" | "Custom">("Default");
   const [selectedImage, setSelectedImage] = useState(imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg");
   const [selectedProductVariation, setSelectedProductVariation] = useState<string>("");
+  const [selectedShading, setSelectedShading] = useState<string>("");
+  const [selectedSizeFrame, setSelectedSizeFrame] = useState<string>("");
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
+
+// ======== AUTO LOAD VARIATION IMAGES ========
+
+// Frame size images
+const frameSizeImages = import.meta.glob("../assets/list-products/2D/variation/frame/**/*.{jpg,png,JPG,jpeg,webp}", {
+  eager: true,
+  as: "url",
+});
+
+// Shading images (nested folder)
+const shadingImages = import.meta.glob("../assets/list-products/2D/variation/shading/**/*.{jpg,png,JPG,jpeg,webp}", {
+  eager: true,
+  as: "url",
+});
+
+// Group berdasarkan nama folder (misal: "4R", "6R", dst)
+const frameGroups: Record<string, string[]> = {};
+
+Object.entries(frameSizeImages).forEach(([path, url]) => {
+  const parts = path.split("/");
+  const folderName = parts[parts.length - 2]; // "4R", "6R", dll
+  if (!frameGroups[folderName]) frameGroups[folderName] = [];
+  frameGroups[folderName].push(url as string);
+});
+
+// Convert ke format UI
+const frameSizeOptions = Object.entries(frameGroups).map(([folder, urls]) => ({
+  value: folder,
+  label: folder.toUpperCase(),
+  image: urls[0], // tampilkan gambar pertama sebagai thumbnail
+  allImages: urls, // simpan semua gambar untuk preview
+}));
+
+// Urutkan frame size sesuai urutan prioritas tertentu
+const sizeOrder = ["4R", "6R", "8R", "12R", "15CM"];
+
+frameSizeOptions.sort((a, b) => {
+  const aIndex = sizeOrder.findIndex((s) => a.value.toUpperCase().includes(s));
+  const bIndex = sizeOrder.findIndex((s) => b.value.toUpperCase().includes(s));
+
+  if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex; // dua-duanya ada di daftar
+  if (aIndex !== -1) return -1; // a ada di daftar, b tidak
+  if (bIndex !== -1) return 1; // b ada di daftar, a tidak
+  return a.value.localeCompare(b.value, "en", { numeric: true }); // fallback urut alfabet
+});
+
+// Group shading berdasarkan nama folder utama (misal: "2D BOLD SHADING")
+const shadingGroups: Record<string, { value: string; label: string; preview: string }> = {};
+
+Object.entries(shadingImages).forEach(([path, url]) => {
+  const parts = path.split("/");
+  const folderName = parts[parts.length - 2]; // misalnya "2D BOLD SHADING"
+  if (!shadingGroups[folderName]) {
+    shadingGroups[folderName] = {
+      value: folderName,
+      label: folderName.replace(/^2D\s+/i, ""), // hilangkan prefix "2D"
+      preview: url as string,
+    };
+  }
+});
+
+const shadingOptions = Object.values(shadingGroups);
+// console.log("✅ frameSizeImages keys:", Object.keys(frameSizeImages));
+// console.log("✅ shadingImages keys:", Object.keys(shadingImages));
+// console.log("🧩 frameSizeOptions:", frameSizeOptions);
+// console.log("🎨 shadingOptions:", shadingOptions);
 
   // Product data
-  const product = {
-    id: id,
-    name: name || "Default Product Name",
-    imageUrl: imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg",
-    category: category || "3D Frame",
-    size: size || "",
-    type: type || "",
-    price: price || getPrice(category, name) || 0,
-    allImages: allImages || [],
-    ...MOCK_PRODUCT_DATA,
-  };
+const product = {
+  id: id,
+  name: name || "Default Product Name",
+  imageUrl: imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg",
+  category: category || "2D Frame", // sementara 2D
+  size: size || "",
+  type: type || "",
+  price: price || getPrice(category, name) || 0,
+  allImages: allImages || [],
+  shadingOptions,
+  sizeFrameOptions: frameSizeOptions,
+  ...MOCK_PRODUCT_DATA,
+};
 
   // ðŸ”¹ LOGIC DARI KODE ANDA - Auto Size & Packaging Detection
   const categoryOptions = productOptions[product.category as keyof typeof productOptions];
@@ -179,11 +243,18 @@ const ProductDetail = () => {
     });
   };
 
-  console.log("DEBUG PRODUCT:", {
-    category: product.category,
-    size: defaultSize,
-    specialVariations,
-  });
+  // console.log("DEBUG PRODUCT:", {
+  //   category: product.category,
+  //   size: defaultSize,
+  //   specialVariations,
+  // });
+  
+const [variationImages, setVariationImages] = useState<string[]>([]);
+
+
+// tambahkan kedua baris ini:
+const [showPreview, setShowPreview] = useState<boolean>(false);
+const previewRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -218,96 +289,201 @@ const ProductDetail = () => {
 
         {/* Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
-          {/* Left: Gallery */}
-          <div>
-            {selectedImage.endsWith(".mp4") || selectedImage.endsWith(".webm") ? (
-              <video
-                src={selectedImage}
-                ols
-                className="w-full h-auto rounded-lg border border-gray-200 mb-4"
-              />
-            ) : (
-              <img
-                src={selectedImage}
-                alt={product.name}
-                className="w-full h-auto object-cover rounded-lg border border-gray-200 mb-4"
-              />
-            )}
+{/* === Gallery Utama === */}
+{/* === Gallery Utama === */}
+<div>
+  {selectedImage.endsWith(".mp4") || selectedImage.endsWith(".webm") ? (
+    <video
+      src={selectedImage}
+      controls
+      className="w-full h-auto rounded-lg border border-gray-200 mb-4"
+    />
+  ) : (
+    <img
+      src={selectedImage}
+      alt={product.name}
+      className="w-full h-auto object-cover rounded-lg border border-gray-200 mb-4"
+    />
+  )}
 
-            {product.allImages.length > 1 && (
-              <div className="relative mt-4">
-                <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-2">
-                  <FaChevronLeft size={18} />
-                </button>
+  {/* Thumbnail utama */}
+  {product.allImages.length > 1 && (
+    <div className="relative mt-4">
+      <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-2">
+        <FaChevronLeft size={18} />
+      </button>
 
-                <Swiper
-                  modules={[Navigation]}
-                  navigation={{
-                    prevEl: ".swiper-button-prev-custom",
-                    nextEl: ".swiper-button-next-custom",
-                  }}
-                  slidesPerView={4}
-                  spaceBetween={10}
-                  grabCursor={true}
-                  className="!px-8"
-                  breakpoints={{
-                    0: { slidesPerView: 3 },
-                    640: { slidesPerView: 4 },
-                    1024: { slidesPerView: 5 },
-                  }}
-                >
-                  {product.allImages.map((media: string, idx: number) => {
-                    const isVideo = media.endsWith(".mp4") || media.endsWith(".webm") || media.endsWith(".mov");
-                  
-                    return (
-                      <SwiperSlide key={idx}>
-                        {isVideo ? (
-                          <video
-                            src={media}
-                            muted
-                            playsInline
-                            onClick={() => setSelectedImage(media)}
-                            className={`w-full h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
-                              selectedImage === media
-                                ? "border-pink-500 scale-105"
-                                : "border-gray-200 hover:border-gray-400"
-                            }`}
-                          />
-                        ) : (
-                          <img
-                            src={media}
-                            alt={`${product.name} ${idx + 1}`}
-                            onClick={() => setSelectedImage(media)}
-                            className={`w-full h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
-                              selectedImage === media
-                                ? "border-pink-500 scale-105"
-                                : "border-gray-200 hover:border-gray-400"
-                            }`}
-                          />
-                        )}
-                      </SwiperSlide>
-                    );
-                  })}
-                </Swiper>
+      <Swiper
+        modules={[Navigation]}
+        navigation={{
+          prevEl: ".swiper-button-prev-custom",
+          nextEl: ".swiper-button-next-custom",
+        }}
+        slidesPerView={4}
+        spaceBetween={10}
+        grabCursor={true}
+        className="!px-8"
+        breakpoints={{
+          0: { slidesPerView: 3 },
+          640: { slidesPerView: 4 },
+          1024: { slidesPerView: 5 },
+        }}
+      >
+        {product.allImages.map((media: string, idx: number) => {
+          const isVideo =
+            media.endsWith(".mp4") ||
+            media.endsWith(".webm") ||
+            media.endsWith(".mov");
 
-                <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-2">
-                  <FaChevronRight size={18} />
-                </button>
-              </div>
-            )}
-          </div>
+          return (
+            <SwiperSlide key={idx}>
+              {isVideo ? (
+                <video
+                  src={media}
+                  muted
+                  playsInline
+                  onClick={() => setSelectedImage(media)}
+                  className={`w-full h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                    selectedImage === media
+                      ? "border-pink-500 scale-105"
+                      : "border-gray-200 hover:border-gray-400"
+                  }`}
+                />
+              ) : (
+                <img
+                  src={media}
+                  alt={`${product.name} ${idx + 1}`}
+                  onClick={() => setSelectedImage(media)}
+                  className={`w-full h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                    selectedImage === media
+                      ? "border-pink-500 scale-105"
+                      : "border-gray-200 hover:border-gray-400"
+                  }`}
+                />
+              )}
+            </SwiperSlide>
+          );
+        })}
+      </Swiper>
 
-          {/* Right: Info */}
-          <div className="flex flex-col">
-            <h1 className="text-[25px] font-poppinsMedium">
-              {[product.category, defaultSize, product.type, product.name].filter(Boolean).join(" ")}
-            </h1>
-            <div className="flex items-center space-x-2 text-yellow-500 px-3 py-1 rounded-full text-[15px] font-poppinsMediumItalic w-fit">
-              <FaStar /> <span>Best Selling for The Most Fitting Size</span>
-            </div>
-            <p className="text-[30px] font-poppinsMedium text-red-600">
-              Rp {product.price.toLocaleString("id-ID")}
-            </p>
+      <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-2">
+        <FaChevronRight size={18} />
+      </button>
+    </div>
+  )}
+
+{/* 🆕 PREVIEW FRAME SIZE - Langsung di bawah thumbnail scroll */}
+{variationImages.length > 0 && (
+  <div
+    ref={previewRef}
+    className="mt-8"
+    style={{
+      opacity: showPreview ? 1 : 0,
+      transform: showPreview ? "translateY(0)" : "translateY(-10px)",
+      transition: "opacity 0.4s ease-out, transform 0.4s ease-out",
+    }}
+  >
+    <h3 className="text-[18px] font-poppinsSemiBold mb-4">
+      Preview {selectedSizeFrame}
+    </h3>
+
+    {/* 🖼️ Gambar besar preview */}
+{selectedPreviewImage && (
+  <img
+    src={selectedPreviewImage}
+    alt={`Preview ${selectedSizeFrame}`}
+    onClick={() => setIsZoomOpen(true)} // 🟢 buka zoom modal
+    className="w-full h-auto object-contain rounded-lg border border-gray-300 mb-4 transition-all duration-300 cursor-zoom-in hover:scale-[1.02]"
+  />
+)}
+
+    {/* Grid thumbnail kecil */}
+    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+      {variationImages.map((img, i) => (
+        <img
+          key={i}
+          src={img}
+          alt={`${selectedSizeFrame} ${i + 1}`}
+          onClick={() => setSelectedPreviewImage(img)} // 🟢 klik ubah preview besar
+          className={`w-full aspect-square object-cover rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+            selectedPreviewImage === img
+              ? "border-blue-500 scale-105"
+              : "border-gray-200 hover:border-blue-400 hover:shadow-lg"
+          }`}
+        />
+      ))}
+    </div>
+  </div>
+)}
+</div>
+
+{/* 🖼️ Fullscreen Zoom Modal */}
+{isZoomOpen && selectedPreviewImage && (
+  <div
+    className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] animate-fadeIn"
+    onClick={() => setIsZoomOpen(false)} // klik luar = tutup
+  >
+    {/* Tombol Close */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation(); // biar gak tutup pas klik tombol
+        setIsZoomOpen(false);
+      }}
+      className="absolute top-6 right-6 text-white text-3xl font-bold hover:text-gray-300 transition"
+    >
+      ✕
+    </button>
+
+    {/* Gambar besar zoom */}
+    <img
+      src={selectedPreviewImage}
+      alt="Zoomed preview"
+      className="max-w-[90%] max-h-[90%] object-contain rounded-lg shadow-lg border border-gray-400 cursor-zoom-out transition-transform duration-300"
+      onClick={(e) => e.stopPropagation()} // klik gambar gak nutup
+    />
+  </div>
+)}
+
+{/* Right: Info */}
+<div className="flex flex-col">
+  <h1 className="text-[25px] font-poppinsMedium">
+    {[product.category, defaultSize, product.type, product.name]
+      .filter(Boolean)
+      .join(" ")}
+  </h1>
+
+  {/* ⭐ Best Selling label */}
+  {(() => {
+    const category = product.category?.toLowerCase() || "";
+    const name = product.name?.toLowerCase() || "";
+
+    // ✅ 3D Frame 12R → Best Selling for The Most Fitting Size
+    if (category.includes("3d") && /\b12r\b/.test(name)) {
+      return (
+        <div className="flex items-center space-x-2 text-yellow-500 px-3 py-1 rounded-full text-[15px] font-poppinsMediumItalic w-fit">
+          <FaStar />
+          <span>Best Selling for The Most Fitting Size</span>
+        </div>
+      );
+    }
+
+    // ✅ Semua produk 2D Frame → Best Selling for The Most Affordable Gift
+    if (category.includes("2d")) {
+      return (
+        <div className="flex items-center space-x-2 text-yellow-600 px-3 py-1 rounded-full text-[15px] font-poppinsMediumItalic w-fit">
+          <FaStar />
+          <span>Best Selling for The Most Affordable Gift</span>
+        </div>
+      );
+    }
+
+    // 🚫 Produk lain (3D selain 12R, Acrylic, Softcopy, dst) → tidak tampil
+    return null;
+  })()}
+
+  <p className="text-[30px] font-poppinsMedium text-red-600">
+    Rp {product.price.toLocaleString("id-ID")}
+  </p>
 
             {/* SPECIAL VARIATIONS - Packaging Options */}
             {specialVariations.length > 0 && (
@@ -343,6 +519,87 @@ const ProductDetail = () => {
               </div>
             </div>
           )}
+          
+{/* 🔹 2D FRAME - Shading & Frame Size Options */}
+{product.category === "2D Frame" && (
+  <>
+    {/* Frame Size Options */}
+    {product.sizeFrameOptions.length > 0 && (
+      <div className="mt-6 mb-4">
+        <label className="block text-[18px] font-poppinsSemiBold mb-3">
+          Frame Size
+        </label>
+        <div className="flex gap-4 flex-wrap">
+          {product.sizeFrameOptions.map((opt) => (
+            <div
+              key={opt.value}
+onClick={() => {
+  setSelectedSizeFrame(opt.value);
+  if (opt.allImages?.length > 0) {
+    setVariationImages(opt.allImages);
+    setSelectedPreviewImage(opt.allImages[0]); // 🆕 otomatis tampilkan gambar pertama
+    setShowPreview(false);
+    setTimeout(() => setShowPreview(true), 50);
+  } else {
+    setVariationImages([]);
+    setSelectedPreviewImage(null); // 🧹 reset preview
+    setShowPreview(false);
+  }
+}}
+              className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
+                selectedSizeFrame === opt.value
+                  ? "border-2 border-blue-500 bg-blue-50"
+                  : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+              }`}
+            >
+              <img
+                src={opt.image}
+                alt={opt.label}
+                className="w-20 h-20 object-cover rounded-xl"
+              />
+              <span className="text-base font-medium text-gray-800 text-center">
+                {opt.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* Shading Options */}
+    {product.shadingOptions.length > 0 && (
+      <div className="mt-6 mb-4">
+        <label className="block text-[18px] font-poppinsSemiBold mb-3">
+          Shading Style
+        </label>
+        <div className="flex gap-4 flex-wrap">
+          {product.shadingOptions.map((opt) => (
+            <div
+              key={opt.value}
+              onClick={() => setSelectedShading(opt.value)}
+              className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
+                selectedShading === opt.value
+                  ? "border-2 border-blue-500 bg-blue-50"
+                  : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+              }`}
+            >
+              {opt.preview && (
+                <img
+                  src={opt.preview}
+                  alt={opt.label}
+                  className="w-20 h-20 object-cover rounded-xl"
+                />
+              )}
+              <span className="text-base font-medium text-gray-800 text-center">
+                {opt.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </>
+)}
 
             {/* Variation */}
             <div className="flex items-start justify-between mt-4">
@@ -377,7 +634,7 @@ const ProductDetail = () => {
                   onClick={() =>
                     setQuantity((prev) => Math.max(1, Number(prev) - 1))
                   }
-                  className="w-[36px] h-[36px] text-lg font-bold text-gray-700 hover:bg-gray-100"
+                  className="px-4 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
                 >
                   -
                 </button>
@@ -389,7 +646,7 @@ const ProductDetail = () => {
                     const val = e.target.value;
                     setQuantity(val === "" ? "" : Math.max(1, Number(val)));
                   }}
-                  className="w-16 text-center font-poppinsRegular border-x border-gray-300 focus:outline-none"
+                  className="w-16 text-center font-poppinsRegular border-x border-gray-300 focus:outline-none pl-[15px]"
                 />
                 <button
                   type="button"

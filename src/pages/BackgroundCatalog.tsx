@@ -30,9 +30,9 @@ const BackgroundCatalog: React.FC<BackgroundCatalogProps> = () => {
       </div>
 
       {/* Note Section */}
-<div className="flex items-start gap-4 my-8 px-10">
-  <img src={NoteIcon} alt="Note Icon" className="w-20" />
-  <p className="text-sm">
+<div className="flex text-justify items-start gap-4 my-8 px-24 max-w-[969px] ml-[150px]">
+  <img src={NoteIcon} alt="Note Icon" className="w-[110px] -translate-y-3 translate-x-7" />
+  <p className="text-md font-poppinsRegular">
     Customers are free to use the background from this catalog, the logo, products, plant or any
     elements can be replaced as requested. Please note, customers must purchase additional fee for
     background custom. From image to illustration count as background custom.

@@ -1,5 +1,6 @@
 import { useState, useEffect, type FC } from "react";
 import type { VideoItem } from "../../types/types";
+import useScrollFloat from "../../utils/scrollFloat"; 
 
 import IGIcon from "../../assets/Icons/IG.png";
 import TikTokIcon from "../../assets/Icons/TIKTOD2.png";
@@ -17,6 +18,16 @@ const GallerySection: FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
+
+  useScrollFloat(".scroll-float", {
+    yIn: 50,
+    yOut: 40,
+    blurOut: 6,
+    inDuration: 1.1,
+    outDuration: 0.7,
+    stagger: 0.15,
+  });
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -29,9 +40,9 @@ const GallerySection: FC = () => {
   }, []);
 
   const videos: VideoItem[] = [
-    { id: 1, video: video1},
-    { id: 2, video: video2},
-    { id: 3, video: video3},
+    { id: 1, video: video1 },
+    { id: 2, video: video2 },
+    { id: 3, video: video3 },
   ];
 
   const photos = [
@@ -50,14 +61,21 @@ const GallerySection: FC = () => {
       </div>
 
       <section className={`bg-white ${isMobile ? "py-8 px-4" : "py-16 px-5"}`}>
-        <h2 className={`font-nataliecaydence text-center text-black ${isMobile ? "text-3xl mb-6" : "text-[46px] mb-10"}`}>
+        <h2
+          className={`scroll-float font-nataliecaydence text-center text-black ${
+            isMobile ? "text-3xl mb-6" : "text-[46px] mb-10"
+          }`}
+        >
           Our Gallery
         </h2>
 
         {isMobile ? (
-          <div className="flex flex-col gap-6 max-w-md mx-auto">
+          <div
+            data-scroll-group="true"
+            className="scroll-float flex flex-col gap-6 max-w-md mx-auto"
+          >
             {/* Instagram Button */}
-            <div className="social-wrapper">
+            <div className="float-item social-wrapper">
               <span className="social-title">Photo Gallery</span>
               <a
                 href="https://www.instagram.com/alittleamora"
@@ -74,7 +92,7 @@ const GallerySection: FC = () => {
             </div>
 
             {/* Video Grid */}
-            <div className="grid grid-cols-1 gap-4 w-full">
+            <div className="float-item grid grid-cols-1 gap-4 w-full">
               {videos.map((video) => (
                 <div
                   key={video.id}
@@ -88,7 +106,7 @@ const GallerySection: FC = () => {
             </div>
 
             {/* TikTok Button */}
-            <div className="social-wrapper">
+            <div className="float-item social-wrapper">
               <span className="social-title">Video Gallery</span>
               <a
                 href="https://www.tiktok.com/@alittleamora"
@@ -105,7 +123,7 @@ const GallerySection: FC = () => {
             </div>
 
             {/* Photo Grid Section */}
-            <div className="mt-8">
+            <div className="float-item mt-8">
               <div className="grid grid-cols-1 gap-4 w-full">
                 {photos.map((photo) => (
                   <div
@@ -126,9 +144,12 @@ const GallerySection: FC = () => {
           </div>
         ) : (
           <>
-            <div className="flex flex-col md:flex-row items-center gap-8 max-w-6xl mx-auto">
+            <div
+              data-scroll-group="true"
+              className="scroll-float flex flex-col md:flex-row items-center gap-8 max-w-6xl mx-auto"
+            >
               {/* Instagram Button */}
-              <div className="social-wrapper">
+              <div className="float-item social-wrapper">
                 <span className="social-title">Photo Gallery</span>
                 <a
                   href="https://www.instagram.com/alittleamora"
@@ -145,7 +166,7 @@ const GallerySection: FC = () => {
               </div>
 
               {/* Video Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
+              <div className="float-item grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
                 {videos.map((video) => (
                   <div
                     key={video.id}
@@ -159,7 +180,7 @@ const GallerySection: FC = () => {
               </div>
 
               {/* TikTok Button */}
-              <div className="social-wrapper">
+              <div className="float-item social-wrapper">
                 <span className="social-title">Video Gallery</span>
                 <a
                   href="https://www.tiktok.com/@alittleamora"
@@ -177,14 +198,17 @@ const GallerySection: FC = () => {
             </div>
 
             {/* Photo Grid Section */}
-            <div className="mt-16 max-w-2xl mx-auto">
+            <div
+              data-scroll-group="true"
+              className="scroll-float mt-16 max-w-2xl mx-auto"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                 {photos.map((photo, index) => {
                   if (index === 3) {
                     return (
                       <div
                         key={photo.id}
-                        className="col-span-1 lg:col-start-2 aspect-[9/16] overflow-hidden rounded-xl shadow-md transition-transform duration-300 bg-gray-100 scale-90 hover:scale-100 cursor-pointer"
+                        className="float-item col-span-1 lg:col-start-2 aspect-[9/16] overflow-hidden rounded-xl shadow-md transition-transform duration-300 bg-gray-100 scale-90 hover:scale-100 cursor-pointer"
                         onClick={() => setSelectedImage(photo.image)}
                       >
                         <img
@@ -196,11 +220,11 @@ const GallerySection: FC = () => {
                       </div>
                     );
                   }
-            
+
                   return (
                     <div
                       key={photo.id}
-                      className="aspect-[9/16] overflow-hidden rounded-xl shadow-md transition-transform duration-300 bg-gray-100 scale-90 hover:scale-100 cursor-pointer"
+                      className="float-item aspect-[9/16] overflow-hidden rounded-xl shadow-md transition-transform duration-300 bg-gray-100 scale-90 hover:scale-100 cursor-pointer"
                       onClick={() => setSelectedImage(photo.image)}
                     >
                       <img

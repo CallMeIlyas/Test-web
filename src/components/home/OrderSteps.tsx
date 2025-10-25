@@ -5,6 +5,7 @@ import sizeIcon from "../../assets/Icons/size.png";
 import locationIcon from "../../assets/Icons/location.png";
 import calendarIcon from "../../assets/Icons/calendar.png";
 import whatsappIcon from "../../assets/Icons/whatsapp.png";
+import useScrollFloat from "../../utils/scrollFloat"; 
 
 // 💡 Komponen input tanggal
 const DateInput = ({
@@ -12,7 +13,6 @@ const DateInput = ({
   value,
   onChange,
   placeholder,
-  className,
 }: {
   name: string;
   value: string;
@@ -21,28 +21,29 @@ const DateInput = ({
   className?: string;
 }) => {
   return (
-<div className="relative inline-block w-48">
-  <input
-    type="date"
-    name={name}
-    value={value}
-    onChange={onChange}
-    className="text-center rounded-full border border-gray-300 px-6 py-2 outline-none bg-white w-full"
-    style={{
-      appearance: "none",
-      WebkitAppearance: "none",
-      MozAppearance: "none",
-      textAlignLast: "center", // kunci utama agar tanggal di tengah
-    }}
-  />
-  {!value && (
-    <span className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm font-poppinsSemiBoldItalic pointer-events-none">
-      {placeholder}
-    </span>
-  )}
-</div>
+    <div className="relative inline-block w-48">
+      <input
+        type="date"
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="text-center rounded-full border border-gray-300 px-6 py-2 outline-none bg-white w-full"
+        style={{
+          appearance: "none",
+          WebkitAppearance: "none",
+          MozAppearance: "none",
+          textAlignLast: "center",
+        }}
+      />
+      {!value && (
+        <span className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm font-poppinsSemiBoldItalic pointer-events-none">
+          {placeholder}
+        </span>
+      )}
+    </div>
   );
 };
+
 const OrderSteps = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [form, setForm] = useState({
@@ -51,6 +52,15 @@ const OrderSteps = () => {
     size: "",
     city: "",
     deadline: "",
+  });
+
+  // 🌀 Terapkan animasi scroll
+  useScrollFloat(".scroll-float", {
+    yIn: 50,
+    yOut: 40,
+    blurOut: 6,
+    inDuration: 1.1,
+    stagger: 0.15,
   });
 
   useEffect(() => {
@@ -99,7 +109,7 @@ Deadline date & month = ${form.deadline}
     <div
       key={step.number}
       onClick={() => handleStepClick(step)}
-      className={`bg-white rounded-xl p-5 relative flex flex-col items-center justify-between h-full cursor-pointer transition-transform hover:-translate-y-1 shadow-none`}
+      className="float-item bg-white rounded-xl p-5 relative flex flex-col items-center justify-between h-full cursor-pointer transition-transform hover:-translate-y-1 shadow-none"
     >
       {/* Nomor Step */}
       <div
@@ -138,22 +148,30 @@ Deadline date & month = ${form.deadline}
 
   return (
     <section className={isMobile ? "py-8" : "py-16"}>
-      <h2
-        className={`font-nataliecaydence text-center text-black ${
-          isMobile ? "text-3xl mb-8" : "text-[46px] mb-20"
-        }`}
-      >
-        Format Order
-      </h2>
+  <h2
+    className={`scroll-float font-nataliecaydence text-center text-black ${
+      isMobile ? "text-3xl mb-8" : "text-[46px] mb-20"
+    }`}
+  >
+    Format Order
+  </h2>
 
-      {isMobile ? (
-        <div className="flex flex-col gap-4 px-4 max-w-md mx-auto">{steps.map(renderStepCard)}</div>
-      ) : (
-        <div className="grid grid-cols-3 grid-rows-2 gap-6 max-w-5xl mx-auto px-5">
-          {steps.map(renderStepCard)}
-        </div>
-      )}
-    </section>
+  {isMobile ? (
+    <div
+      data-scroll-group="true"
+      className="scroll-float flex flex-col gap-4 px-4 max-w-md mx-auto"
+    >
+      {steps.map(renderStepCard)}
+    </div>
+  ) : (
+    <div
+      data-scroll-group="true"
+      className="scroll-float grid grid-cols-3 grid-rows-2 gap-6 max-w-5xl mx-auto px-5"
+    >
+      {steps.map(renderStepCard)}
+    </div>
+  )}
+</section>
   );
 };
 

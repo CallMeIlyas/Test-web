@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, {useEffect, useState, useMemo, useRef } from "react";
 import Footer from "../components/home/Footer";
 import { useCart } from "../context/CartContext";
 import BCAIcon from "../assets/icon-bank/bca.png";
@@ -8,6 +8,7 @@ import DANAIcon from "../assets/icon-bank/dana.png";
 import GopayIcon from "../assets/icon-bank/gopay.png";
 import OVOIcon from "../assets/icon-bank/ovo.png";
 import ShopeePayIcon from "../assets/icon-bank/shopeepay.png";
+import { gsap } from "gsap";
 
 interface DateInputProps {
   value: string;
@@ -51,62 +52,197 @@ const ProductImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
 );
 
 const ProductName: React.FC<{ name: string }> = ({ name }) => (
-    <h3 className="font-poppinsRegular">{name}</h3>
+  <h3 className="font-poppinsRegular text-[15px] w-[230px] truncate">
+    {name}
+  </h3>
 );
 const ProductPrice: React.FC<{ price: number }> = ({ price }) => (
     <span className="font-poppinsSemiBold mr-9">
       Rp{price.toLocaleString("id-ID")}
     </span>
 );
-const FrameVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({ item, updateItemVariant }) => (
-    <div className="flex-1 mr-10 translate-x-[180px]">
-      <p className="font-poppinsRegular text-[15px]">Variantions:</p>
-      <select
-        className="bg-white"
-        value={item.variation || ""}
-        onChange={(e) => updateItemVariant(item.cartId, e.target.value)}
-      >
-        {item.variationOptions?.map((opt: string) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-    </div>
-);
-const FaceVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({ item, updateItemVariant }) => (
-    <div className="flex-1 mr-10 translate-x-[95px]">
-      <p className="font-poppinsRegular text-[15px]">Variantions:</p>
-      <select
-        className="bg-white"
-        value={item.variation || ""}
-        onChange={(e) => updateItemVariant(item.cartId, e.target.value)}
-      >
-        {Array.from({ length: 9 }, (_, i) => `${i + 1} Face`).map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-    </div>
-);
-const BackgroundVariantDropdown: React.FC<{ item: any; updateItemVariant: any; }> = ({ item, updateItemVariant }) => (
-    <div className="flex-1 mr-10 translate-x-[66px]">
-      <p className="font-poppinsRegular text-[15px]">Variantions:</p>
-      <select
-        className="bg-white"
-        value={item.variation || ""}
-        onChange={(e) => updateItemVariant(item.cartId, e.target.value)}
-      >
-        {["BG Default", "BG Custom"].map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-    </div>
-);
+// FRAME
+const FrameVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
+  item,
+  updateItemVariant,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState(item.variation || item.variationOptions?.[0] || "");
 
+  const toggleDropdown = () => setIsOpen(!isOpen);
+
+  const handleSelect = (value: string) => {
+    setSelected(value);
+    updateItemVariant(item.cartId, value);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="w-[200px] ml-20 relative">
+      {/* Tombol Variations */}
+      <p
+        onClick={toggleDropdown}
+        className="font-poppinsRegular text-[15px] cursor-pointer select-none"
+      >
+        Variations:{" "}
+        <span
+          className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        >
+          ▼
+        </span>
+      </p>
+
+      {/* Label varian terpilih */}
+      <p
+        onClick={toggleDropdown}
+        className="bg-white outline-none font-poppinsRegular text-[15px] cursor-pointer"
+      >
+        {selected}
+      </p>
+
+      {/* Container dropdown */}
+      {isOpen && (
+        <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
+          <div className="max-h-[120px] overflow-y-auto py-1">
+            {item.variationOptions?.map((opt: string) => (
+              <p
+                key={opt}
+                onClick={() => handleSelect(opt)}
+                className={`px-2 py-[2px] cursor-pointer font-poppinsRegular text-[15px] hover:bg-[#f6f6f6] ${
+                  opt === selected ? "text-[#a23728] font-poppinsSemiBold" : ""
+                }`}
+              >
+                {opt}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// FACES
+const FaceVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
+  item,
+  updateItemVariant,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState(item.variation || "1 Face");
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
+
+  const handleSelect = (value: string) => {
+    setSelected(value);
+    updateItemVariant(item.cartId, value);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="w-[200px] ml-20 relative">
+      <p
+        onClick={toggleDropdown}
+        className="font-poppinsRegular text-[15px] cursor-pointer select-none"
+      >
+        Variations:{" "}
+        <span
+          className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        >
+          ▼
+        </span>
+      </p>
+
+      <p
+        onClick={toggleDropdown}
+        className="bg-white outline-none font-poppinsRegular text-[15px] cursor-pointer"
+      >
+        {selected}
+      </p>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
+          <div className="max-h-[120px] overflow-y-auto py-1">
+            {Array.from({ length: 9 }, (_, i) => `${i + 1} Face`).map((opt) => (
+              <p
+                key={opt}
+                onClick={() => handleSelect(opt)}
+                className={`px-2 py-[2px] cursor-pointer hover:bg-[#f6f6f6] font-poppinsRegular text-[15px] ${
+                  opt === selected ? "text-[#a23728] font-poppinsSemiBold" : ""
+                }`}
+              >
+                {opt}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// BACKGROUND
+const BackgroundVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
+  item,
+  updateItemVariant,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState(item.variation || "BG Default");
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
+
+  const handleSelect = (value: string) => {
+    setSelected(value);
+    updateItemVariant(item.cartId, value);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="w-[200px] ml-20 relative">
+      <p
+        onClick={toggleDropdown}
+        className="font-poppinsRegular text-[15px] cursor-pointer select-none"
+      >
+        Variations:{" "}
+        <span
+          className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        >
+          ▼
+        </span>
+      </p>
+
+      <p
+        onClick={toggleDropdown}
+        className="bg-white outline-none font-poppinsRegular text-[15px] cursor-pointer"
+      >
+        {selected}
+      </p>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
+          <div className="max-h-[100px] overflow-y-auto py-1">
+            {["BG Default", "BG Custom"].map((opt) => (
+              <p
+                key={opt}
+                onClick={() => handleSelect(opt)}
+                className={`px-2 py-[2px] cursor-pointer hover:bg-[#f6f6f6] font-poppinsRegular text-[15px] ${
+                  opt === selected ? "text-[#a23728] font-poppinsSemiBold" : ""
+                }`}
+              >
+                {opt}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ShoppingCart: React.FC = () => {
   const { cart, updateQuantity, deleteItem, updateItemVariant } = useCart();
@@ -157,6 +293,19 @@ const ShoppingCart: React.FC = () => {
   const totalPrice = cart
     .filter((item) => selectedItems.includes(item.cartId))
     .reduce((total, item) => total + item.price * item.quantity, 0);
+    
+const [showCheckout, setShowCheckout] = useState(false);
+const checkoutRef = useRef<HTMLDivElement | null>(null);
+
+useEffect(() => {
+  if (showCheckout && checkoutRef.current) {
+    gsap.fromTo(
+      checkoutRef.current,
+      { opacity: 0, y: 40 },
+      { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
+    );
+  }
+}, [showCheckout]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -282,113 +431,120 @@ const ShoppingCart: React.FC = () => {
         </div>
 
         {/* Section Payment & Invoice */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Payment Section */}
-          <div>
-            <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">Payment</h2>
-            <p className="mb-4 font-poppinsRegular">Please make a payment to:</p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-3">
-                  <img src={BCAIcon} alt="BCA" className="w-[65px] h-auto" />
-                  <div className="flex flex-col">
-                    <span className="font-poppinsRegular">7370-2351-33</span>
-                    <span className="text-[12px] font-poppinsBold">Claresta</span>
-                  </div>
-                </li>
-                <li className="flex items-center gap-3">
-                  <img src={TMRWIcon} alt="TMRW" className="w-[65px] h-auto" />
-                  <div className="flex flex-col">
-                    <span className="font-poppinsRegular">7293-8666-12</span>
-                    <span className="text-[12px] font-poppinsBold">Claresta</span>
-                  </div>
-                </li>
-                <li className="flex items-center gap-3">
-                  <img src={AladinIcon} alt="Aladin" className="w-[65px] h-auto" />
-                  <div className="flex flex-col">
-                    <span className="font-poppinsRegular">2022-7324-139</span>
-                    <span className="text-[12px] font-poppinsBold">Claresta</span>
-                  </div>
-                </li>
-                <li className="flex items-center gap-3">
-                  <img src={DANAIcon} alt="DANA" className="w-[65px] h-auto" />
-                  <div className="flex flex-col">
-                    <span className="font-poppinsRegular">0813-7313-1988</span>
-                    <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
-                  </div>
-                </li>
-                <li className="flex items-center gap-3">
-                  <img src={GopayIcon} alt="Gopay" className="w-[65px] h-auto" />
-                  <div className="flex flex-col">
-                    <span className="font-poppinsRegular">0813-7313-1988</span>
-                    <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
-                  </div>
-                </li>
-                <li className="flex items-center gap-3">
-                  <img src={OVOIcon} alt="OVO" className="w-[65px] h-auto" />
-                  <div className="flex flex-col">
-                    <span className="font-poppinsRegular">0813-7313-1988</span>
-                    <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
-                  </div>
-                </li>
-                <li className="flex items-center gap-3">
-                  <img src={ShopeePayIcon} alt="ShopeePay" className="w-[65px] h-auto" />
-                  <div className="flex flex-col">
-                    <span className="font-poppinsRegular">0821-6266-2302</span>
-                    <span className="text-[12px] font-poppinsBold">LittleAmoraKarikatur</span>
-                  </div>
-                </li>
-              </ul>
-            <div className="mt-6 -space-y-1">
-                <p className="text-[12px] font-poppinsItalic text-[#a23728]">*Please give the bank payment receipt to our team via WhatsApp</p>
-                <p className="text-[12px] font-poppinsItalic text-[#a23728]">*This invoice is valid and published by Claresta, owner of Little Amora Karikatur</p>
-                <p className="text-[12px] font-poppinsItalic text-[#a23728]">*Copying or changing in any form is prohibited</p>
-            </div>
+        {/* Checkout Section */}
+{!showCheckout ? (
+  <div className="flex justify-end mt-6">
+    <button
+      onClick={() => setShowCheckout(true)}
+      className="bg-[#dcbec1] text-black font-poppinsSemiBold text-[15px] px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition"
+    >
+      Checkout
+    </button>
+  </div>
+) : (
+  <div ref={checkoutRef} className="grid md:grid-cols-2 gap-8 mt-8">
+    {/* Payment Section */}
+    <div>
+      <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">Payment</h2>
+      <p className="mb-4 font-poppinsRegular">Please make a payment to:</p>
+      <ul className="space-y-2">
+        <li className="flex items-center gap-3">
+          <img src={BCAIcon} alt="BCA" className="w-[65px] h-auto" />
+          <div className="flex flex-col">
+            <span className="font-poppinsRegular">7370-2351-33</span>
+            <span className="text-[12px] font-poppinsBold">Claresta</span>
           </div>
-          
-          {/* Get Invoice Section */}
-          <div className="text-[13px]">
-            <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
-              Get Invoice
-            </h2>
-            <p className="mb-4 font-poppinsRegular">
-              Please fill the data to get the order invoice:
-            </p>
-            {/* ✅ Semua input di dalam form diubah menjadi controlled component */}
-            <form onSubmit={handleSubmitInvoice} className="space-y-1 font-poppinsRegular">
-              <div className="flex items-center gap-2">
-                    <label className="w-48">Company name</label>
-                    <span>:</span>
-                    <input
-                      type="text"
-                      className="border border-black text-[] rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-                      placeholder="WhatsApp"
-                    />
-                  </div>
+        </li>
+        <li className="flex items-center gap-3">
+          <img src={TMRWIcon} alt="TMRW" className="w-[65px] h-auto" />
+          <div className="flex flex-col">
+            <span className="font-poppinsRegular">7293-8666-12</span>
+            <span className="text-[12px] font-poppinsBold">Claresta</span>
+          </div>
+        </li>
+        <li className="flex items-center gap-3">
+          <img src={AladinIcon} alt="Aladin" className="w-[65px] h-auto" />
+          <div className="flex flex-col">
+            <span className="font-poppinsRegular">2022-7324-139</span>
+            <span className="text-[12px] font-poppinsBold">Claresta</span>
+          </div>
+        </li>
+        <li className="flex items-center gap-3">
+          <img src={DANAIcon} alt="DANA" className="w-[65px] h-auto" />
+          <div className="flex flex-col">
+            <span className="font-poppinsRegular">0813-7313-1988</span>
+            <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+          </div>
+        </li>
+        <li className="flex items-center gap-3">
+          <img src={GopayIcon} alt="Gopay" className="w-[65px] h-auto" />
+          <div className="flex flex-col">
+            <span className="font-poppinsRegular">0813-7313-1988</span>
+            <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+          </div>
+        </li>
+        <li className="flex items-center gap-3">
+          <img src={OVOIcon} alt="OVO" className="w-[65px] h-auto" />
+          <div className="flex flex-col">
+            <span className="font-poppinsRegular">0813-7313-1988</span>
+            <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+          </div>
+        </li>
+        <li className="flex items-center gap-3">
+          <img src={ShopeePayIcon} alt="ShopeePay" className="w-[65px] h-auto" />
+          <div className="flex flex-col">
+            <span className="font-poppinsRegular">0821-6266-2302</span>
+            <span className="text-[12px] font-poppinsBold">LittleAmoraKarikatur</span>
+          </div>
+        </li>
+      </ul>
+      <div className="mt-6 -space-y-1">
+        <p className="text-[12px] font-poppinsItalic text-[#a23728]">*Please give the bank payment receipt to our team via WhatsApp</p>
+        <p className="text-[12px] font-poppinsItalic text-[#a23728]">*This invoice is valid and published by Claresta, owner of Little Amora Karikatur</p>
+        <p className="text-[12px] font-poppinsItalic text-[#a23728]">*Copying or changing in any form is prohibited</p>
+      </div>
+    </div>
 
-              <div className="flex items-center gap-2">
-                <label className="w-48">Name & Contact Person</label>
-                <span>:</span>
-                <input
-                  type="text"
-                  name="contactPerson"
-                  value={invoiceData.contactPerson}
-                  onChange={handleInvoiceChange}
-                  className="border border-black rounded-full px-4 py-1 flex-1"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="w-48">Order via</label>
-                <span>:</span>
-                <input
-                  type="text"
-                  name="orderVia"
-                  value={invoiceData.orderVia}
-                  onChange={handleInvoiceChange}
-                  className="border border-black rounded-full px-4 py-1 flex-1"
-                />
-              </div>
-
+    {/* Invoice Section */}
+    <div className="text-[13px]">
+      <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
+        Get Invoice
+      </h2>
+      <p className="mb-4 font-poppinsRegular">
+        Please fill the data to get the order invoice:
+      </p>
+      <form onSubmit={handleSubmitInvoice} className="space-y-1 font-poppinsRegular">
+        <div className="flex items-center gap-2">
+          <label className="w-48">Company name</label>
+          <span>:</span>
+          <input
+            type="text"
+            className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
+            placeholder="WhatsApp"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="w-48">Name & Contact Person</label>
+          <span>:</span>
+          <input
+            type="text"
+            name="contactPerson"
+            value={invoiceData.contactPerson}
+            onChange={handleInvoiceChange}
+            className="border border-black rounded-full px-4 py-1 flex-1"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="w-48">Order via</label>
+          <span>:</span>
+          <input
+            type="text"
+            name="orderVia"
+            value={invoiceData.orderVia}
+            onChange={handleInvoiceChange}
+            className="border border-black rounded-full px-4 py-1 flex-1"
+          />
+        </div>
               {/*kalender*/}
               <div className="flex items-center gap-2">
                 <label className="w-48">Payment date</label>
@@ -402,40 +558,39 @@ const ShoppingCart: React.FC = () => {
                 />
               </div>
 
-
-              <div className="flex items-center gap-2">
-                <label className="w-48">Estimated Product Arrival</label>
-                <span>:</span>
-                <input
-                  type="text"
-                  name="estimatedArrival"
-                  value={invoiceData.estimatedArrival}
-                  onChange={handleInvoiceChange}
-                  className="border border-black rounded-full px-4 py-1 flex-1"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="w-48">Payment transfer via Bank</label>
-                <span>:</span>
-                <input
-                  type="text"
-                  name="paymentMethod"
-                  value={invoiceData.paymentMethod}
-                  onChange={handleInvoiceChange}
-                  className="border border-black rounded-full px-4 py-1 flex-1"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="mt-4 translate-x-[-26px] text-[15px] font-poppinsSemiBold px-6 py-2 bg-[#dcbec1] rounded-full"
-              >
-                Submit to get invoice
-              </button>
-            </form>
-          </div>
+        <div className="flex items-center gap-2">
+          <label className="w-48">Estimated Product Arrival</label>
+          <span>:</span>
+          <input
+            type="text"
+            name="estimatedArrival"
+            value={invoiceData.estimatedArrival}
+            onChange={handleInvoiceChange}
+            className="border border-black rounded-full px-4 py-1 flex-1"
+          />
         </div>
+        <div className="flex items-center gap-2">
+          <label className="w-48">Payment transfer via Bank</label>
+          <span>:</span>
+          <input
+            type="text"
+            name="paymentMethod"
+            value={invoiceData.paymentMethod}
+            onChange={handleInvoiceChange}
+            className="border border-black rounded-full px-4 py-1 flex-1"
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="mt-4 translate-x-[-26px] text-[15px] font-poppinsSemiBold px-6 py-2 bg-[#dcbec1] rounded-full"
+        >
+          Submit to get invoice
+        </button>
+      </form>
+    </div>
+  </div>
+)}
       </main>
       <Footer />
     </div>
