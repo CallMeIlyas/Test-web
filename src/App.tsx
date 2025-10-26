@@ -11,6 +11,8 @@ import ContactUs from "./pages/ContactUs";
 import ShoppingCart from "./pages/ShoppingCart";
 import { CartProvider } from "./context/CartContext"; 
 import ProductDetail from "./pages/ProductDetail"; 
+import PageTransition from "./utils/PageTransition";
+import SlideUpTransition from "./utils/SlideUpTransition";
 
 const App = () => {
   const [searchQuery, setSearchQuery] = useState(""); 
@@ -23,20 +25,45 @@ const App = () => {
     <CartProvider>
       <Router>
         <Routes>
-          <Route element={<Layout onSearch={handleSearch} />}>
+
+          <Route
+            element={
+              <PageTransition>
+                <Layout onSearch={handleSearch} />
+              </PageTransition>
+            }
+          >
             <Route path="/" element={<Home />} />
-            <Route path="/products" element={<OurProducts />} />
             <Route path="/location" element={<Location />} />
-            <Route
-              path="/background-catalog"
-              element={<BackgroundCatalog searchQuery={searchQuery} />}
-            />
             <Route path="/faq" element={<Faq />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/shoppingcart" element={<ShoppingCart />} />
             <Route path="/product/:id" element={<ProductDetail />} />
           </Route>
+
+            <Route
+              path="/products"
+              element={
+                <SlideUpTransition>
+                  <Layout onSearch={handleSearch}>
+                    <OurProducts />
+                  </Layout>
+                </SlideUpTransition>
+              }
+            />
+            
+            <Route
+              path="/background-catalog"
+              element={
+                <SlideUpTransition>
+                  <Layout onSearch={handleSearch}>
+                    <BackgroundCatalog searchQuery={searchQuery} />
+                  </Layout>
+                </SlideUpTransition>
+              }
+            />
+
         </Routes>
       </Router>
     </CartProvider>

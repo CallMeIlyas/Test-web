@@ -106,72 +106,85 @@ Deadline date & month = ${form.deadline}
   };
 
   const renderStepCard = (step: any) => (
+  <div
+    key={step.number}
+    onClick={() => handleStepClick(step)}
+    className="float-item bg-white rounded-xl p-5 relative flex flex-col items-center justify-between h-full cursor-pointer transition-transform hover:-translate-y-1 shadow-none group hover:shadow-hover hover:scale-110 transition-all duration-300"
+  >
+    {/* Nomor Step */}
     <div
-      key={step.number}
-      onClick={() => handleStepClick(step)}
-      className="float-item bg-white rounded-xl p-5 relative flex flex-col items-center justify-between h-full cursor-pointer transition-transform hover:-translate-y-1 shadow-none"
+      className={`absolute -top-3 left-5 text-sm rounded-full w-7 h-7 flex items-center justify-center font-bold ${
+        step.special ? "bg-red-500" : "bg-black"
+      } text-white`}
     >
-      {/* Nomor Step */}
-      <div
-        className={`absolute -top-3 left-5 text-sm rounded-full w-7 h-7 flex items-center justify-center font-bold ${
-          step.special ? "bg-red-500" : "bg-black"
-        } text-white`}
-      >
-        {step.number}
-      </div>
-
-      <img src={step.icon} alt={`Step ${step.number}`} className="w-[100px] h-[100px] object-contain" />
-
-      <p className="font-poppinsRegular text-sm text-gray-600 text-center min-h-[36px] flex items-center justify-center">
-        {step.text}
-      </p>
-
-      {/* Step 5: Deadline (Kalender) */}
-      {step.number === 5 && (
-        <div className="flex items-center gap-2 mt-3 w-full justify-center">
-          <DateInput
-            name="deadline"
-            value={form.deadline}
-            onChange={handleDateChange}
-            placeholder="Select date"
-            className="text-sm text-gray-700 w-4/5"
-          />
-        </div>
-      )}
-
-      {/* Tampilkan hasil input */}
-      {form[step.key as keyof typeof form] && step.number !== 5 && step.number !== 6 && (
-        <p className="text-xs mt-2 text-green-600 italic">✓ {form[step.key as keyof typeof form]}</p>
-      )}
+      {step.number}
     </div>
-  );
+
+    <img
+      src={step.icon}
+      alt={`Step ${step.number}`}
+      className="!w-[170px] !h-[170px] object-contain group-hover:scale-110 transition-transform duration-500"
+    />
+
+    <p className="font-poppinsRegular text-sm text-gray-600 text-center min-h-[36px] flex items-center justify-center">
+      {step.text}
+    </p>
+
+    {/* Step 5: Deadline (Kalender) */}
+    {step.number === 5 && (
+      <div className="flex items-center gap-2 mt-3 w-full justify-center">
+        <DateInput
+          name="deadline"
+          value={form.deadline}
+          onChange={handleDateChange}
+          placeholder="Select date"
+          className="text-sm text-gray-700 w-4/5"
+        />
+      </div>
+    )}
+
+    {/* Tampilkan hasil input */}
+    {form[step.key as keyof typeof form] && step.number !== 5 && step.number !== 6 && (
+      <p className="text-xs mt-2 text-green-600 italic">✓ {form[step.key as keyof typeof form]}</p>
+    )}
+  </div>
+);
 
   return (
-    <section className={isMobile ? "py-8" : "py-16"}>
-  <h2
-    className={`scroll-float font-nataliecaydence text-center text-black ${
-      isMobile ? "text-3xl mb-8" : "text-[46px] mb-20"
-    }`}
-  >
-    Format Order
-  </h2>
-
-  {isMobile ? (
-    <div
-      data-scroll-group="true"
-      className="scroll-float flex flex-col gap-4 px-4 max-w-md mx-auto"
-    >
-      {steps.map(renderStepCard)}
-    </div>
-  ) : (
-    <div
-      data-scroll-group="true"
-      className="scroll-float grid grid-cols-3 grid-rows-2 gap-6 max-w-5xl mx-auto px-5"
-    >
-      {steps.map(renderStepCard)}
-    </div>
-  )}
-</section>
+ <>
+    {/*border*/}
+      <div className="relative my-10 text-center h-[1px]">
+        <div className="absolute top-0 left-0 w-1/4 border-t-[5px] border-black"></div>
+        <div className="absolute top-0 right-0 w-1/4 border-t-[5px] border-black"></div>
+      </div>
+      
+      
+          <section className={isMobile ? "py-8" : "py-16"}>
+        <h2
+          className={`scroll-float font-nataliecaydence text-center text-black ${
+            isMobile ? "text-3xl mb-8" : "text-[46px] mb-20"
+          }`}
+        >
+          Format Order
+        </h2>
+      
+        {isMobile ? (
+          <div
+            data-scroll-group="true"
+            className="scroll-float flex flex-col gap-4 px-4 max-w-md mx-auto"
+          >
+            {steps.map(renderStepCard)}
+          </div>
+        ) : (
+          <div
+            data-scroll-group="true"
+            className="scroll-float grid grid-cols-3 grid-rows-2 gap-6 max-w-5xl mx-auto px-5"
+          >
+            {steps.map(renderStepCard)}
+          </div>
+        )}
+      </section>
+</>
   );
 };
 

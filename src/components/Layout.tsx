@@ -8,9 +8,9 @@ import gsap from "gsap";
 
 interface LayoutProps {
   onSearch?: (query: string) => void;
+  children?: React.ReactNode;
 }
 
-/* 🔹 Komponen toast khusus agar aman pakai Hooks */
 const ToastItem: React.FC<{ t: any }> = ({ t }) => {
   const toastRef = useRef<HTMLDivElement>(null);
 
@@ -18,7 +18,6 @@ const ToastItem: React.FC<{ t: any }> = ({ t }) => {
     if (!toastRef.current) return;
 
     if (t.visible) {
-      // 🎬 Animasi masuk (fade + slide dari atas)
       gsap.fromTo(
         toastRef.current,
         { y: -50, opacity: 0, scale: 0.9 },
@@ -31,7 +30,6 @@ const ToastItem: React.FC<{ t: any }> = ({ t }) => {
         }
       );
     } else {
-      // 🔻 Animasi keluar (fade-out lembut)
       gsap.to(toastRef.current, {
         opacity: 0,
         y: -20,
@@ -47,12 +45,9 @@ const ToastItem: React.FC<{ t: any }> = ({ t }) => {
       ref={toastRef}
       className="flex items-center gap-3 bg-white px-5 py-3 rounded-xl shadow-md border border-gray-100"
     >
-      {/* Bulatan kiri */}
       <div className="flex items-center justify-center w-7 h-7 rounded-full bg-[#dcbec1] flex-shrink-0">
         <Check size={16} className="text-black" strokeWidth={3} />
       </div>
-
-      {/* Pesan teks */}
       <span className="text-[15px] font-poppinsMedium text-black">
         Item has been added to your shopping cart
       </span>
@@ -60,35 +55,42 @@ const ToastItem: React.FC<{ t: any }> = ({ t }) => {
   );
 };
 
-const Layout: React.FC<LayoutProps> = ({ onSearch }) => {
+const Layout: React.FC<LayoutProps> = ({ onSearch, children }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { cart, addToCart } = useCart();
-
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
-  // ✅ Custom Toast dengan komponen ToastItem
-  const handleAddToCart = useCallback((item: Parameters<typeof addToCart>[0]) => {
-    addToCart(item);
+  const handleAddToCart = useCallback(
+    (item: Parameters<typeof addToCart>[0]) => {
+      addToCart(item);
+      toast.custom((t) => <ToastItem t={t} />, {
+        duration: 2500,
+        position: "top-right",
+      });
+    },
+    [addToCart]
+  );
 
-    toast.custom((t) => <ToastItem t={t} />, {
-      duration: 2500,
-      position: "top-right", // pojok kanan atas
-    });
-  }, [addToCart]);
-
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    if (onSearch) onSearch(query);
-  }, [onSearch]);
+  const handleSearch = useCallback(
+    (query: string) => {
+      setSearchQuery(query);
+      if (onSearch) onSearch(query);
+    },
+    [onSearch]
+  );
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header cartCount={cartCount} cartItems={cart} onSearch={handleSearch} />
 
-      {/* Outlet untuk halaman anak */}
-      <Outlet context={{ searchQuery, addToCart: handleAddToCart }} />
+      <main className="flex-grow">
+        {children ? (
+          children
+        ) : (
+          <Outlet context={{ searchQuery, addToCart: handleAddToCart }} />
+        )}
+      </main>
 
-      {/* ✅ Toaster di pojok kanan atas */}
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

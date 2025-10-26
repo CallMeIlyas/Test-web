@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { FC } from "react";
-import { useOutletContext } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagination";
 import SortControl from "./SortControls";
@@ -11,11 +10,6 @@ interface Product {
   name: string;
   size: string;
   category: string;
-}
-
-// --- Context dari Layout ---
-interface LayoutContext {
-  searchQuery: string;
 }
 
 // --- Mapping folder → kategori ---
@@ -46,7 +40,7 @@ const allProducts: Product[] = Object.keys(allImages).map((path, i) => {
   const folder = parts[parts.length - 2];
   const fileName = parts[parts.length - 1];
   const productName = fileName.replace(/\.(jpg|jpeg|png|JPG)$/i, "");
-
+  
   return {
     imageUrl: allImages[path] as string,
     name: productName,
@@ -57,11 +51,13 @@ const allProducts: Product[] = Object.keys(allImages).map((path, i) => {
 
 interface ProductGridWithPaginationProps {
   filters: FilterOptions;
+  searchQuery?: string; // ✅ Terima sebagai props, bukan dari context
 }
 
-const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ filters }) => {
-  const { searchQuery } = useOutletContext<LayoutContext>(); // ✅ ambil dari Layout
-
+const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ 
+  filters, 
+  searchQuery = "" // ✅ Default value
+}) => {
   const PRODUCTS_PER_PAGE = 16;
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState("all");
@@ -72,10 +68,12 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ filters
     if (filters.categories.length > 0 && !filters.categories.includes(product.category)) {
       return false;
     }
+    
     // filter search
     if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
+    
     return true;
   });
 
@@ -89,7 +87,6 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ filters
   });
 
   const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
-
   const currentProducts = sortedProducts.slice(
     (currentPage - 1) * PRODUCTS_PER_PAGE,
     currentPage * PRODUCTS_PER_PAGE

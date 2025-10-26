@@ -46,16 +46,12 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
   {currentProducts.length > 0 ? (
     currentProducts.map((product) => {
       // Cari urutan asli di orderedProducts
-      const originalIndex = orderedProducts.findIndex(p => p.id === product.id) + 1;
+      // const originalIndex = orderedProducts.findIndex(p => p.id === product.id) + 1;
 
       return (
         <div key={product.id} className="relative">
           <ProductCard product={product as import("../../data/productDataLoader").Product} />
-          
-          {/* Debug badge untuk urutan asli */}
-          <span className="absolute top-1 right-1 text-xs font-bold bg-yellow-300 text-black px-1 rounded">
-            #{originalIndex}
-          </span>
+        
         </div>
       );
     })

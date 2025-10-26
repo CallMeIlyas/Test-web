@@ -123,12 +123,12 @@ const BestSelling = () => {
             <div
               key={product.id}
               onClick={() => handleCardClick(product)}
-              className="cursor-pointer text-center bg-white p-5 rounded-xl shadow-md hover:-translate-y-1 transition-transform scroll-float"
+              className="cursor-pointer text-center bg-white p-5 rounded-xl shadow-md hover:shadow-hover hover:-translate-y-1 transform transition-all duration-500 scroll-float group"
             >
               <img
                 src={product.imageUrl}
                 alt={product.displayName}
-                className="w-full h-48 object-cover rounded-lg mb-4"
+                className="w-full h-48 object-cover rounded-lg mb-4 group-hover:scale-110 transition-transform duration-500"
               />
               <p className="m-2.5 font-bold text-gray-600 text-base">
                 {product.displayName}
