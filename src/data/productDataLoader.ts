@@ -29,33 +29,6 @@ export const categoryMapping: Record<string, string> = {
 };
 
 // === Import Semua Gambar ===
-<<<<<<< HEAD
-// ✅ Kompatibel untuk semua OS (Windows/macOS/Linux/Vercel)
-// ✅ Baca semua varian case "2D" & "2d"
-// ✅ Support semua ekstensi umum
-const allMedia = {
-  // 📦 Semua folder umum
-  ...import.meta.glob(
-    "../assets/list-products/**/*.{jpg,jpeg,png,mp4,jfif,JPG,JPEG,PNG,MP4,JFIF}",
-    { eager: true, import: "default" }
-  ),
-  // 📦 Tambahan khusus untuk folder 2d lowercase (agar terbaca di Vercel/Linux)
-  ...import.meta.glob(
-    "../assets/list-products/2d/**/*.{jpg,jpeg,png,mp4,jfif,JPG,JPEG,PNG,MP4,JFIF}",
-    { eager: true, import: "default" }
-  ),
-} as Record<string, string>;
-
-// 🧩 Debugging jumlah & verifikasi folder 2D
-console.log("🧾 Total media files loaded:", Object.keys(allMedia).length);
-Object.keys(allMedia)
-  .filter((p) => p.toLowerCase().includes("2d/12r"))
-  .forEach((p) => console.log("   🖼️ Loaded (12R):", p.split("/").pop()));
-
-// === Import variasi 2D ===
-const shadingImages = import.meta.glob(
-  "../assets/list-products/2d/variations/shading/**/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
-=======
 const allMedia = import.meta.glob(
   "../assets/list-products/**/*.{jpg,JPG,jpeg,png,mp4}",
   { eager: true, import: "default" }
@@ -64,16 +37,11 @@ const allMedia = import.meta.glob(
 // === Import variasi 2D ===
 const shadingImages = import.meta.glob(
   "../assets/list-products/2D/variations/shading/**/*.{jpg,JPG,jpeg,png}",
->>>>>>> f3527d8 (pesan bebas)
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
 const sizeFrameImages = import.meta.glob(
-<<<<<<< HEAD
-  "../assets/list-products/2d/variations/size frame/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
-=======
   "../assets/list-products/2D/variations/size frame/*.{jpg,JPG,jpeg,png}",
->>>>>>> f3527d8 (pesan bebas)
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
@@ -91,17 +59,20 @@ Object.entries(allMedia).forEach(([path, imageUrl]) => {
   const baseIndex = parts.findIndex((p) => p.toLowerCase() === "list-products");
   if (baseIndex === -1) return;
 
-const rawCategory = (parts[baseIndex + 1] || "Unknown").toLowerCase();
-let subcategory = parts[baseIndex + 2] ? parts[baseIndex + 2].toLowerCase() : null;
+  const rawCategory = parts[baseIndex + 1] || "Unknown";
+  let subcategory = parts[baseIndex + 2] || null;
 
   // 🚫 Skip jika subcategory adalah variasi (khusus kategori 2D)
   if (subcategory) {
     const lowerSub = subcategory.toLowerCase();
+
     if (
       lowerSub === "variation" ||
       lowerSub === "variations" ||
-      (rawCategory.toLowerCase() === "2d" &&
-        (lowerSub.includes("shading") || lowerSub.includes("size frame")))
+      (
+        rawCategory.toLowerCase() === "2d" &&
+        (lowerSub.includes("shading") || lowerSub.includes("size frame"))
+      )
     ) {
       return;
     }
@@ -142,53 +113,17 @@ const get2DSizeFrameOptions = () => {
       image: imageUrl,
     });
   });
-
   const sizeOrder = ["4R", "6R", "8R", "12R", "15cm"];
   options.sort(
     (a, b) =>
-      (sizeOrder.indexOf(a.label) === -1 ? 99 : sizeOrder.indexOf(a.label)) -
+      (sizeOrder.indexOf(a.label) === -1
+        ? 99
+        : sizeOrder.indexOf(a.label)) -
       (sizeOrder.indexOf(b.label) === -1 ? 99 : sizeOrder.indexOf(b.label))
   );
   return options;
 };
 
-<<<<<<< HEAD
-/**
- * ✅ Helper function untuk deteksi main image
- * Case-insensitive & robust untuk Linux
- */
-function findMainImage(images: string[]): string {
-  const decodedImages = images.map((img) => decodeURIComponent(img));
-
-  // 1️⃣ Cari file yang namanya mengandung "main-image" / "main_image" / "mainimage"
-  const mainCandidate = decodedImages.find((url) => {
-    const file = url.split("/").pop()?.toLowerCase() || "";
-    return /(main[-_]?image|main)(\.[a-z0-9]+)?$/.test(file) ||
-           /(main[-_]?image|main)[-_.][a-z0-9]{4,10}/.test(file);
-  });
-
-  if (mainCandidate) {
-    console.log("✅ Found main image →", mainCandidate.split("/").pop());
-    return mainCandidate;
-  }
-
-  // 2️⃣ Jika tidak ada yang cocok, cari yang mendekati “main”
-  const relaxedCandidate = decodedImages.find((url) => {
-    const file = url.split("/").pop()?.toLowerCase() || "";
-    return file.includes("main");
-  });
-  if (relaxedCandidate) {
-    console.log("⚠️ Fallback (contains 'main') →", relaxedCandidate.split("/").pop());
-    return relaxedCandidate;
-  }
-
-  // 3️⃣ Jika benar-benar tidak ada, fallback ke file pertama (tapi log warning)
-  console.warn("🚨 No main image detected, fallback to:", decodedImages[0].split("/").pop());
-  return decodedImages[0];
-}
-
-=======
->>>>>>> f3527d8 (pesan bebas)
 // === Generate Semua Produk ===
 export const allProducts: Product[] = Object.entries(groupedImages).map(
   ([groupKey, images], index) => {
@@ -196,28 +131,6 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
     const mappedCategory =
       categoryMapping[rawCategory.toUpperCase()] || rawCategory;
 
-<<<<<<< HEAD
-    const mainImage = findMainImage(images);
-if (groupKey.startsWith("2d/")) {
-  console.log("\n📂 Group:", groupKey);
-  images.forEach(img => console.log("   →", img.split("/").pop()));
-  console.log("🏁 Chosen main image:", findMainImage(images).split("/").pop());
-}
-    const decodedImages = images.map((img) => decodeURIComponent(img));
-
-    // 🧩 Debug Log
-    console.log("──────────────────────────────");
-    console.log(`📂 Group: ${groupKey}`);
-    console.log(`🖼️ Files: ${images.length}`);
-    const hasMain = images.some((url) =>
-      url.toLowerCase().includes("main-image")
-    );
-    console.log(
-      hasMain
-        ? `✅ main-image detected → ${mainImage.split("/").pop()}`
-        : `⚠️ No main-image found, fallback → ${mainImage.split("/").pop()}`
-    );
-=======
     const decodedImages = images.map((img) => decodeURIComponent(img));
     
     const mainImage =
@@ -225,7 +138,6 @@ if (groupKey.startsWith("2d/")) {
         const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
         return fileName.includes("mainimage") || fileName.includes("main image");
       }) || decodedImages[0];
->>>>>>> f3527d8 (pesan bebas)
 
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
@@ -235,10 +147,7 @@ if (groupKey.startsWith("2d/")) {
       imageUrl: mainImage,
       name: fileName,
       displayName: subcategory
-        ? `${mappedCategory} ${subcategory.replace(
-            /-\s*\d+\s*x\s*\d+\s*cm/i,
-            ""
-          ).trim()}`
+        ? `${mappedCategory} ${subcategory.replace(/-\s*\d+\s*x\s*\d+\s*cm/i, "").trim()}`
         : mappedCategory,
       size: "Custom",
       category: mappedCategory,
@@ -257,6 +166,8 @@ if (groupKey.startsWith("2d/")) {
 );
 
 // === Custom Ordering ===
+
+// BARIS 1 (Top 3D)
 const baris1 = [
   { category: "3D Frame", name: "12R" },
   { category: "3D Frame", name: "10R" },
@@ -264,6 +175,7 @@ const baris1 = [
   { category: "3D Frame", name: "A1-55X80CM" },
 ];
 
+// BARIS 2 (2D)
 const baris2 = [
   { category: "2D Frame", name: "15cm" },
   { category: "2D Frame", name: "6R" },
@@ -271,6 +183,7 @@ const baris2 = [
   { category: "2D Frame", name: "12R" },
 ];
 
+// BARIS 3 (Acrylic & Softcopy)
 const baris3 = [
   { category: "Acrylic Stand", name: "ACRYLIC STAND 2CM" },
   { category: "Acrylic Stand", name: "ACRYLIC STAND 3MM" },
@@ -278,6 +191,7 @@ const baris3 = [
   { category: "Additional", name: "BACKGROUND CUSTOM" },
 ];
 
+// BARIS 4 (PENTING – Custom Fix)
 const baris4 = [
   { category: "3D Frame", name: "4R" },
   { category: "Additional", name: "BIAYA TAMBAHAN WAJAH KARIKATUR" },
@@ -303,12 +217,13 @@ const usedIds = new Set(orderedProducts.map((p) => p.id));
 const remainingProducts = allProducts.filter((p) => !usedIds.has(p.id));
 orderedProducts = [...orderedProducts, ...remainingProducts];
 
-// === Log tambahan untuk debugging ===
 console.log(
   "🧾 Semua Produk Additional:",
-  allProducts
-    .filter((p) => p.category === "Additional")
-    .map((p) => ({ name: p.name, price: p.price }))
+  allProducts.filter(p => p.category === "Additional").map(p => ({
+    name: p.name,
+    price: p.price
+  }))
 );
 
+// === EXPORT FINAL TANPA DUPLIKAT ===
 export { orderedProducts };
