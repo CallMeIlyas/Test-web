@@ -29,19 +29,20 @@ export const categoryMapping: Record<string, string> = {
 };
 
 // === Import Semua Gambar ===
+// ✅ Pattern mencakup semua case (.jpg, .JPG, .jpeg, .JPEG, dll)
 const allMedia = import.meta.glob(
-  "../assets/list-products/**/*.{jpg,JPG,jpeg,png,mp4}",
+  "../assets/list-products/**/*.{jpg,JPG,jpeg,JPEG,png,PNG,mp4,MP4,jfif,JFIF}",
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
 // === Import variasi 2D ===
 const shadingImages = import.meta.glob(
-  "../assets/list-products/2D/variations/shading/**/*.{jpg,JPG,jpeg,png}",
+  "../assets/list-products/2D/variations/shading/**/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
 const sizeFrameImages = import.meta.glob(
-  "../assets/list-products/2D/variations/size frame/*.{jpg,JPG,jpeg,png}",
+  "../assets/list-products/2D/variations/size frame/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
@@ -79,7 +80,7 @@ Object.entries(allMedia).forEach(([path, imageUrl]) => {
   }
 
   // Abaikan file langsung
-  if (subcategory?.match(/\.(jpg|jpeg|png|mp4)$/i)) subcategory = null;
+  if (subcategory?.match(/\.(jpg|jpeg|png|mp4|jfif)$/i)) subcategory = null;
 
   const groupKey = subcategory ? `${rawCategory}/${subcategory}` : rawCategory;
   if (!groupedImages[groupKey]) groupedImages[groupKey] = [];
@@ -124,6 +125,52 @@ const get2DSizeFrameOptions = () => {
   return options;
 };
 
+/**
+ * ✅ Helper function untuk deteksi main image
+ * Case-insensitive & robust untuk Linux
+ */
+function findMainImage(images: string[]): string {
+  const decodedImages = images.map((img) => decodeURIComponent(img));
+  
+  // Sort: main image patterns pertama, lalu alphabetical
+  const sortedImages = [...decodedImages].sort((a, b) => {
+    const fileA = a.split("/").pop()?.toLowerCase() || "";
+    const fileB = b.split("/").pop()?.toLowerCase() || "";
+    
+    // Ekstrak base name (tanpa ekstensi & hash Vite)
+    const getBaseName = (file: string) => 
+      file
+        .replace(/\.[a-z0-9]+$/i, '')           // hapus ekstensi
+        .replace(/-[a-z0-9]{6,10}$/i, '');      // hapus hash Vite
+    
+    const baseA = getBaseName(fileA);
+    const baseB = getBaseName(fileB);
+    
+    // Pattern main image (tanpa spasi/dash/underscore)
+    const mainPatterns = [
+      'mainimage',
+      'main-image', 
+      'main_image',
+      'main'
+    ];
+    
+    const isMainA = mainPatterns.some(pattern => 
+      baseA === pattern || baseA.startsWith(pattern + '-')
+    );
+    const isMainB = mainPatterns.some(pattern => 
+      baseB === pattern || baseB.startsWith(pattern + '-')
+    );
+    
+    if (isMainA && !isMainB) return -1;
+    if (!isMainA && isMainB) return 1;
+    
+    // Fallback: alphabetical
+    return fileA.localeCompare(fileB);
+  });
+  
+  return sortedImages[0];
+}
+
 // === Generate Semua Produk ===
 export const allProducts: Product[] = Object.entries(groupedImages).map(
   ([groupKey, images], index) => {
@@ -131,41 +178,11 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
     const mappedCategory =
       categoryMapping[rawCategory.toUpperCase()] || rawCategory;
 
-    // ✅ Gunakan versi yang sudah disortir, jangan ada 2x deklarasi
-    const decodedImages = images
-      .map((img) => decodeURIComponent(img))
-      // Urutkan supaya MAIN IMAGE.jpg selalu diprioritaskan
-      .sort((a, b) => {
-        const nameA = a.split("/").pop()?.toLowerCase() || "";
-        const nameB = b.split("/").pop()?.toLowerCase() || "";
-        if (nameA.includes("main")) return -1; // dorong ke atas
-        if (nameB.includes("main")) return 1;
-        return nameA.localeCompare(nameB);
-      });
+    // ✅ Gunakan helper function yang robust
+    const mainImage = findMainImage(images);
+    const decodedImages = images.map((img) => decodeURIComponent(img));
 
-const mainImage =
-  decodedImages.find((img) => {
-    const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
-    const baseName = fileName
-      .replace(/\.[a-z0-9]+$/, "") // hapus ekstensi
-      .replace(/-[a-z0-9]{6,10}$/i, ""); // hapus hash
-
-    return (
-      baseName.includes("mainimage") ||
-      baseName.includes("main image") ||
-      baseName.includes("main-image") ||
-      baseName.includes("main_image") ||
-      baseName.startsWith("main")
-    );
-  }) || decodedImages[0];
-
-    console.log("🖼️ Main pick for", subcategory, "→", mainImage.split("/").pop());
-    console.log("🧩 Checking files for:", subcategory);
-decodedImages.forEach(img => {
-  const f = decodeURIComponent(img.split("/").pop() || "");
-  console.log("   ↳", f);
-});
-console.log("👉 Main chosen:", mainImage.split("/").pop());
+    console.log("🖼️ Main pick for", subcategory || mappedCategory, "→", mainImage.split("/").pop());
 
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
