@@ -29,10 +29,27 @@ export const categoryMapping: Record<string, string> = {
 };
 
 // === Import Semua Gambar ===
-const allMedia = import.meta.glob(
-  "../assets/list-products/**/*.{jpg,JPG,jpeg,JPEG,png,PNG,mp4,MP4,jfif,JFIF}",
-  { eager: true, import: "default" }
-) as Record<string, string>;
+// ✅ Kompatibel untuk semua OS (Windows/macOS/Linux/Vercel)
+// ✅ Baca semua varian case "2D" & "2d"
+// ✅ Support semua ekstensi umum
+const allMedia = {
+  // 📦 Semua folder umum
+  ...import.meta.glob(
+    "../assets/list-products/**/*.{jpg,jpeg,png,mp4,jfif,JPG,JPEG,PNG,MP4,JFIF}",
+    { eager: true, import: "default" }
+  ),
+  // 📦 Tambahan khusus untuk folder 2d lowercase (agar terbaca di Vercel/Linux)
+  ...import.meta.glob(
+    "../assets/list-products/2d/**/*.{jpg,jpeg,png,mp4,jfif,JPG,JPEG,PNG,MP4,JFIF}",
+    { eager: true, import: "default" }
+  ),
+} as Record<string, string>;
+
+// 🧩 Debugging jumlah & verifikasi folder 2D
+console.log("🧾 Total media files loaded:", Object.keys(allMedia).length);
+Object.keys(allMedia)
+  .filter((p) => p.toLowerCase().includes("2d/12r"))
+  .forEach((p) => console.log("   🖼️ Loaded (12R):", p.split("/").pop()));
 
 // === Import variasi 2D ===
 const shadingImages = import.meta.glob(
