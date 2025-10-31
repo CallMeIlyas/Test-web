@@ -131,33 +131,31 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
     const mappedCategory =
       categoryMapping[rawCategory.toUpperCase()] || rawCategory;
 
-    const decodedImages = images.map((img) => decodeURIComponent(img));
-    
-const decodedImages = images
-  .map((img) => decodeURIComponent(img))
-  // ✅ Urutkan supaya MAIN IMAGE.jpg selalu dicek terakhir (lebih spesifik)
-  .sort((a, b) => {
-    const nameA = a.split("/").pop()?.toLowerCase() || "";
-    const nameB = b.split("/").pop()?.toLowerCase() || "";
-    if (nameA.includes("main")) return 1; // dorong ke belakang
-    if (nameB.includes("main")) return -1;
-    return nameA.localeCompare(nameB);
-  });
+    // ✅ Gunakan versi yang sudah disortir, jangan ada 2x deklarasi
+    const decodedImages = images
+      .map((img) => decodeURIComponent(img))
+      // Urutkan supaya MAIN IMAGE.jpg selalu diprioritaskan
+      .sort((a, b) => {
+        const nameA = a.split("/").pop()?.toLowerCase() || "";
+        const nameB = b.split("/").pop()?.toLowerCase() || "";
+        if (nameA.includes("main")) return -1; // dorong ke atas
+        if (nameB.includes("main")) return 1;
+        return nameA.localeCompare(nameB);
+      });
 
-const mainImage =
-  decodedImages.find((img) => {
-    const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
-    return (
-      fileName.replace(/\s+/g, "").includes("mainimage") ||
-      fileName.includes("main-image") ||
-      fileName.includes("main_image") ||
-      fileName.includes("mainimg")
-    );
-  }) || decodedImages[0];
+    const mainImage =
+      decodedImages.find((img) => {
+        const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
+        return (
+          fileName.replace(/\s+/g, "").includes("mainimage") ||
+          fileName.includes("main-image") ||
+          fileName.includes("main_image") ||
+          fileName.includes("mainimg")
+        );
+      }) || decodedImages[0];
 
-console.log(
-  "🖼️ Main pick for", subcategory, "→", mainImage.split("/").pop()
-);
+    console.log("🖼️ Main pick for", subcategory, "→", mainImage.split("/").pop());
+
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
 
