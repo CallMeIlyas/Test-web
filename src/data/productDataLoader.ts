@@ -145,18 +145,18 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
 
 const mainImage =
   decodedImages.find((img) => {
-    // Ambil nama file terakhir dan normalisasi ke lowercase
     const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
-
-    // Hilangkan ekstensi dan hash vercel
     const baseName = fileName
-      .replace(/\.[a-z0-9]+$/, "") // hapus .jpg/.jpeg/.png
-      .replace(/-[a-z0-9]{6,10}$/i, ""); // hapus hash build (contoh: -Dr8X1sDQ)
+      .replace(/\.[a-z0-9]+$/, "") // hapus ekstensi
+      .replace(/-[a-z0-9]{6,10}$/i, ""); // hapus hash
 
-    // Normalisasi semua spasi & simbol ke "mainimage"
-    const simplified = baseName.replace(/[\s_\-]+/g, "");
-
-    return simplified.includes("mainimage");
+    return (
+      baseName.includes("mainimage") ||
+      baseName.includes("main image") ||
+      baseName.includes("main-image") ||
+      baseName.includes("main_image") ||
+      baseName.startsWith("main")
+    );
   }) || decodedImages[0];
 
     console.log("🖼️ Main pick for", subcategory, "→", mainImage.split("/").pop());
