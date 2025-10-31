@@ -132,10 +132,12 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
       categoryMapping[rawCategory.toUpperCase()] || rawCategory;
 
     const decodedImages = images.map((img) => decodeURIComponent(img));
+    
     const mainImage =
-      decodedImages.find((img) =>
-        img.split("/").pop()?.toUpperCase().includes("MAIN IMAGE")
-      ) || decodedImages[0];
+      decodedImages.find((img) => {
+        const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
+        return fileName.includes("mainimage") || fileName.includes("main image");
+      }) || decodedImages[0];
 
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
