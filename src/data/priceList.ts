@@ -1,16 +1,16 @@
 export const priceList = {
   "3D frame": {
     "4R": 203800,
-    "15cm": 215800,
+    "15x15cm": 215800,
     "6R": 245800,
-    "20cm": 313800,
+    "20x20cm": 313800,
     "8R duskraft": 365800,
     "8R hardbox": 418800,
     "10R": 495800,
     "12R": 598800,
-    "40x55cm": 1428800,
-    "55x80cm": 2288800,
-    "80x110cm": 3259800,
+    "A0-80X110CM": 1428800,
+    "A1-55X80CM": 2288800,
+    "A2-40X55CM": 3259800,
     "12R by AI": 573800,
   },
   "2D frame": {
@@ -48,17 +48,27 @@ export const priceList = {
     "Tambahan Wajah Bold Shading": 120800,
     "Tambahan Wajah by AI": 15000,
     "Tambahan Wajah dari Foto Asli": 10000,
+    
     "Biaya Tambahan Wajah Banyak 1-9 wajah": 150000,
     "Biaya Tambahan Wajah Banyak diatas 10 wajah": 250000,
+    
     "Biaya Tambahan Packing untuk Order Banyak via Kargo": 100000,
+    "Biaya Tambahan Packing (Biasa)": 52800,
+    
+    "Biaya Tambahan Ganti Frame Kaca ke Acrylic": 175800, //harga awal
+    
+    // option
     "Biaya Tambahan Ganti Frame Kaca ke Acrylic A2": 175800,
     "Biaya Tambahan Ganti Frame Kaca ke Acrylic A1": 319800,
     "Biaya Tambahan Ganti Frame Kaca ke Acrylic A0": 695000,
+    
     "Biaya Ekspress 12R": 200000,
     "Biaya Ekspress A2": 250000,
     "Biaya Ekspress A1": 450000,
     "Biaya Ekspress A0": 550000,
-    "Biaya Ekspress General": 60000, // Note: Multiple values (60.000, 85.000, 100.000)
+    "Biaya Ekspress General": 60000, 
+    "Biaya Ekspress General 2": 85000,
+    "Biaya Ekspress General 3": 100000,
     "Biaya Tambahan Lainnya": 60000,
     "Pose Custom dengan Gradasi": 62800,
   },

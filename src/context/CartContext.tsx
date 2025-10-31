@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { priceList } from "../data/priceList";
 
 export interface CartItem {
   cartId: string;
@@ -10,12 +11,13 @@ export interface CartItem {
   price: number;
   quantity: number;
   imageUrl: string;
-  image: string; 
-  productType: "frame" | "face" | "background";
+  image: string;
+  productType: "frame" | "face" | "background" | "packing" | "additional";
   parentCartId?: string;
   attributes?: {
     isFace?: boolean;
     isBackground?: boolean;
+    isPacking?: boolean;
     backgroundType?: string;
   };
 }
@@ -24,7 +26,7 @@ interface CartContextType {
   cart: CartItem[];
   addToCart: (
     item: Omit<CartItem, "cartId"> & {
-      attributes?: { faceCount?: number; backgroundType?: string };
+      attributes?: { faceCount?: string; backgroundType?: string; includePacking?: boolean };
     }
   ) => void;
   updateQuantity: (cartId: string, delta: number) => void;
@@ -36,9 +38,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem("cart");
@@ -58,50 +58,107 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const addToCart = (
     item: Omit<CartItem, "cartId"> & {
-      attributes?: { faceCount?: number; backgroundType?: string };
+      attributes?: { faceCount?: string; backgroundType?: string; includePacking?: boolean };
     }
   ) => {
     const { attributes, ...rest } = item;
-    const faceCount = attributes?.faceCount || 0;
+    const faceCountLabel = attributes?.faceCount || "";
+    const bgSelected = attributes?.backgroundType || "BG Default";
+    const includePacking = attributes?.includePacking || false;
 
-    // Produk utama (frame)
-    const mainCartItem: CartItem = {
-      ...rest,
-      cartId: uuidv4(),
-      quantity: rest.quantity || 1,
-      productType: "frame",
-      variationOptions: ["Wood Frame", "Metal Frame", "No Frame"],
-      variation: "Wood Frame",
-      image: rest.imageUrl, 
-    };
-    setCart((prev) => [...prev, mainCartItem]);
+    // === Deteksi apakah produk ini termasuk Additional Custom atau Softcopy ===
+    const isAdditionalOrSoftcopy =
+      rest.name?.toLowerCase().includes("additional") ||
+      rest.name?.toLowerCase().includes("softcopy");
 
-    // Additional Face
-    if (faceCount > 0) {
-      const faceOptions = Array.from({ length: 9 }, (_, i) => `${i + 1} Face`);
-      const faceItem: CartItem = {
+    // === AUTO DETECT VARIANT untuk produk Additional tertentu ===
+    let detectedVariants: string[] = [];
+
+    if (isAdditionalOrSoftcopy) {
+      const name = rest.name.toLowerCase();
+
+      // 1️⃣ BIAYA TAMBAHAN GANTI FRAME KACA KE ACRYLIC
+      if (name.includes("ganti frame kaca ke acrylic")) {
+        detectedVariants = ["A2", "A1", "A0"];
+      }
+
+      // 2️⃣ BIAYA EKSPRESS GENERAL
+      else if (name.includes("ekspress general")) {
+        detectedVariants = ["Option 1", "Option 2", "Option 3"];
+      }
+
+      // 3️⃣ BIAYA TAMBAHAN WAJAH BANYAK (DESIGN DARI CUSTOMER)
+      else if (name.includes("wajah banyak")) {
+        detectedVariants = ["1–9 Wajah", "Di atas 10 Wajah"];
+      }
+    }
+
+// 🧹 Bersihkan nama produk agar tidak ada kata "Custom" tapi tetap utuh
+const rawName = (rest.name || "").toString().trim();
+
+// Hilangkan kata "Custom" di mana pun (case-insensitive)
+const cleanProductName = rawName
+  .replace(/\bCustom\b/gi, "")   // hapus kata Custom
+  .replace(/\s{2,}/g, " ")       // rapikan spasi ganda
+  .replace(/\s\/\s/g, " / ")     // pastikan jarak di tanda "/"
+  .trim();
+
+    // === Produk utama ===
+const mainCartItem: CartItem = {
+  ...rest,
+  name: cleanProductName, 
+  cartId: uuidv4(),
+  quantity: rest.quantity || 1,
+  productType: isAdditionalOrSoftcopy ? "additional" : "frame",
+  variationOptions:
+    isAdditionalOrSoftcopy && detectedVariants.length > 0
+      ? detectedVariants
+      : isAdditionalOrSoftcopy
+      ? ["Default"]
+      : ["Frame Kaca", "Frame Acrylic"],
+  variation:
+    isAdditionalOrSoftcopy && detectedVariants.length > 0
+      ? detectedVariants[0]
+      : isAdditionalOrSoftcopy
+      ? "Default"
+      : rest.selectedVariation ||
+        rest.variation ||
+        rest.attributes?.variation ||
+        "Frame Kaca",
+  image: rest.imageUrl,
+};
+
+    // 🧩 kalau produk Additional atau Softcopy, cuma masukin item utama
+    if (isAdditionalOrSoftcopy) {
+      setCart((prev) => [...prev, mainCartItem]);
+      return;
+    }
+
+    // === Normal products (2D / 3D frame) ===
+    const newItems: CartItem[] = [mainCartItem];
+
+    // 👤 Additional Face
+    if (faceCountLabel) {
+      const isAbove10 = faceCountLabel.includes("10");
+      newItems.push({
         cartId: uuidv4(),
         parentCartId: mainCartItem.cartId,
         id: `${rest.id}-face`,
         name: "Additional Faces",
-        price: 52800,
-        quantity: faceCount,
+        price: isAbove10 ? 62800 : 52800,
+        quantity: 1,
         imageUrl: rest.imageUrl,
-        image: rest.imageUrl, 
+        image: rest.imageUrl,
         productType: "face",
-        variation: faceOptions[faceCount - 1] || faceOptions[0],
-        variationOptions: faceOptions,
+        variation: isAbove10 ? "Di atas 10 wajah" : "1–9 wajah",
+        variationOptions: ["1–9 wajah", "Di atas 10 wajah"],
         attributes: { isFace: true },
-      };
-      setCart((prev) => [...prev, faceItem]);
+      });
     }
 
-    // Background
-    const bgSelected = attributes?.backgroundType || "BG Default";
-    const bgName =
-      bgSelected === "BG Custom" ? "Background Custom" : "Background Default";
-
-    const bgItem: CartItem = {
+    // 🎨 Background
+    const bgName = bgSelected === "BG Custom" ? "Background Custom" : "Background Default";
+    newItems.push({
       cartId: uuidv4(),
       parentCartId: mainCartItem.cartId,
       id: `${rest.id}-bg`,
@@ -109,14 +166,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       price: 52800,
       quantity: 1,
       imageUrl: rest.imageUrl,
-      image: rest.imageUrl, 
+      image: rest.imageUrl,
       productType: "background",
       attributes: { isBackground: true, backgroundType: bgSelected },
       variation: bgSelected,
       variationOptions: ["BG Default", "BG Custom"],
-    };
+    });
 
-    setCart((prev) => [...prev, bgItem]);
+    // 📦 Packing (opsional)
+    if (includePacking) {
+      newItems.push({
+        cartId: uuidv4(),
+        parentCartId: mainCartItem.cartId,
+        id: `${rest.id}-packing`,
+        name: "Additional Packing",
+        price:
+          priceList.Additional["Biaya Tambahan Packing (Biasa)"] || 52800,
+        quantity: 1,
+        imageUrl: rest.imageUrl,
+        image: rest.imageUrl,
+        productType: "packing",
+        attributes: { isPacking: true },
+        variation: "Additional Packing",
+        variationOptions: ["Additional Packing"],
+      });
+    }
+
+    setCart((prev) => [...prev, ...newItems]);
   };
 
   const updateQuantity = (cartId: string, delta: number) => {
@@ -142,17 +218,52 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const getProductGroup = (productId: string) =>
     cart.filter((item) => item.id === productId);
 
+  // 🧠 Update harga otomatis saat variant diubah
   const updateItemVariant = (cartId: string, newVariation: string) => {
     setCart((prev) =>
       prev.map((p) => {
         if (p.cartId === cartId) {
           const updated = { ...p, variation: newVariation };
+
           if (p.attributes?.isBackground) {
             updated.name =
               newVariation === "BG Default"
                 ? "Background Default"
                 : "Background Custom";
           }
+
+          if (p.attributes?.isFace) {
+            updated.price = newVariation.includes("10")
+              ? priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"] || 62800
+              : priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || 52800;
+          }
+
+          // === Additional Acrylic ===
+          if (p.name.toLowerCase().includes("ganti frame kaca ke acrylic")) {
+            const key = `Biaya Tambahan Ganti Frame Kaca ke Acrylic ${newVariation}`;
+            updated.price = priceList.Additional[key] || p.price;
+          }
+
+          // === Additional Ekspress ===
+          if (p.name.toLowerCase().includes("ekspress general")) {
+            const key =
+              newVariation === "Option 1"
+                ? "Biaya Ekspress General"
+                : newVariation === "Option 2"
+                ? "Biaya Ekspress General 2"
+                : "Biaya Ekspress General 3";
+            updated.price = priceList.Additional[key] || p.price;
+          }
+
+          // === Additional Wajah Banyak ===
+          if (p.name.toLowerCase().includes("wajah banyak")) {
+            const key =
+              newVariation.includes("10")
+                ? "Biaya Tambahan Wajah Banyak diatas 10 wajah"
+                : "Biaya Tambahan Wajah Banyak 1-9 wajah";
+            updated.price = priceList.Additional[key] || p.price;
+          }
+
           return updated;
         }
         return p;

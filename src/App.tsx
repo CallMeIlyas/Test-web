@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState, useCallback } from "react"; 
+import { useState, useCallback } from "react";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import OurProducts from "./pages/OurProducts";
@@ -9,14 +9,15 @@ import Faq from "./pages/Faq";
 import TermsOfService from "./pages/TermsOfService";
 import ContactUs from "./pages/ContactUs";
 import ShoppingCart from "./pages/ShoppingCart";
-import { CartProvider } from "./context/CartContext"; 
-import ProductDetail from "./pages/ProductDetail"; 
+import { CartProvider } from "./context/CartContext";
+import ProductDetail from "./pages/ProductDetail";
 import PageTransition from "./utils/PageTransition";
 import SlideUpTransition from "./utils/SlideUpTransition";
 
 const App = () => {
-  const [searchQuery, setSearchQuery] = useState(""); 
+  const [searchQuery, setSearchQuery] = useState("");
 
+  // Handle pencarian global
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
   }, []);
@@ -25,7 +26,6 @@ const App = () => {
     <CartProvider>
       <Router>
         <Routes>
-
           <Route
             element={
               <PageTransition>
@@ -40,30 +40,27 @@ const App = () => {
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/shoppingcart" element={<ShoppingCart />} />
             <Route path="/product/:id" element={<ProductDetail />} />
-          </Route>
 
             <Route
               path="/products"
               element={
                 <SlideUpTransition>
-                  <Layout onSearch={handleSearch}>
-                    <OurProducts />
-                  </Layout>
+                  <OurProducts />
                 </SlideUpTransition>
               }
             />
-            
-            <Route
-              path="/background-catalog"
-              element={
-                <SlideUpTransition>
-                  <Layout onSearch={handleSearch}>
-                    <BackgroundCatalog searchQuery={searchQuery} />
-                  </Layout>
-                </SlideUpTransition>
-              }
-            />
+          </Route>
 
+          <Route
+            path="/background-catalog"
+            element={
+              <SlideUpTransition>
+                <Layout onSearch={handleSearch}>
+                  <BackgroundCatalog searchQuery={searchQuery} />
+                </Layout>
+              </SlideUpTransition>
+            }
+          />
         </Routes>
       </Router>
     </CartProvider>

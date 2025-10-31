@@ -9,6 +9,8 @@ import GopayIcon from "../assets/icon-bank/gopay.png";
 import OVOIcon from "../assets/icon-bank/ovo.png";
 import ShopeePayIcon from "../assets/icon-bank/shopeepay.png";
 import { gsap } from "gsap";
+import { generateInvoice } from "../utils/generateInvoice";
+
 
 interface DateInputProps {
   value: string;
@@ -130,7 +132,7 @@ const FaceVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
   updateItemVariant,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState(item.variation || "1 Face");
+  const [selected, setSelected] = useState(item.variation || "1–9 wajah");
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -166,7 +168,7 @@ const FaceVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
       {isOpen && (
         <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
           <div className="max-h-[120px] overflow-y-auto py-1">
-            {Array.from({ length: 9 }, (_, i) => `${i + 1} Face`).map((opt) => (
+            {["1–9 wajah", "Di atas 10 wajah"].map((opt) => (
               <p
                 key={opt}
                 onClick={() => handleSelect(opt)}
@@ -190,7 +192,10 @@ const BackgroundVariantDropdown: React.FC<{ item: any; updateItemVariant: any }>
   updateItemVariant,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState(item.variation || "BG Default");
+  
+  const [selected, setSelected] = useState(
+  item.variation || item.attributes?.backgroundType || "BG Default"
+);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -519,8 +524,11 @@ useEffect(() => {
           <span>:</span>
           <input
             type="text"
+            name="companyName"
+            value={invoiceData.companyName}
+            onChange={handleInvoiceChange}
             className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-            placeholder="WhatsApp"
+            placeholder="Company name"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -561,12 +569,12 @@ useEffect(() => {
         <div className="flex items-center gap-2">
           <label className="w-48">Estimated Product Arrival</label>
           <span>:</span>
-          <input
-            type="text"
+          <DateInput
             name="estimatedArrival"
             value={invoiceData.estimatedArrival}
             onChange={handleInvoiceChange}
-            className="border border-black rounded-full px-4 py-1 flex-1"
+            placeholder="Select estimated arrival date"
+            className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -582,8 +590,9 @@ useEffect(() => {
         </div>
 
         <button
-          type="submit"
+          type="button"
           className="mt-4 translate-x-[-26px] text-[15px] font-poppinsSemiBold px-6 py-2 bg-[#dcbec1] rounded-full"
+          onClick={() => generateInvoice(cart, invoiceData)} 
         >
           Submit to get invoice
         </button>

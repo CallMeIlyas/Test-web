@@ -194,7 +194,7 @@ const baris4 = [
   { category: "3D Frame", name: "4R" },
   { category: "Additional", name: "BIAYA TAMBAHAN WAJAH KARIKATUR" },
   { category: "Additional", name: "BIAYA EKSPRESS GENERAL" },
-  { category: "Additional", name: "BIAYA GANTI KACA KE ACRYLIC" },
+  { category: "Additional", name: "BIAYA TAMBAHAN GANTI FRAME KACA KE ACRYLIC" },
 ];
 
 // === Pencarian Produk Berdasarkan Nama ===
@@ -216,9 +216,11 @@ const remainingProducts = allProducts.filter((p) => !usedIds.has(p.id));
 orderedProducts = [...orderedProducts, ...remainingProducts];
 
 console.log(
-  "%c📦 PRODUK ADDITIONAL TERDETEKSI:",
-  "color: yellow; font-weight: bold;",
-  allProducts.filter(p => p.category === "Additional").map(p => p.name)
+  "🧾 Semua Produk Additional:",
+  allProducts.filter(p => p.category === "Additional").map(p => ({
+    name: p.name,
+    price: p.price
+  }))
 );
 
 // === EXPORT FINAL TANPA DUPLIKAT ===

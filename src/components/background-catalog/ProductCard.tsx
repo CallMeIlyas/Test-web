@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { FC } from "react";
 import html2canvas from "html2canvas";
+import { createPortal } from "react-dom";
 
 interface ProductCardProps {
   imageUrl: string;
@@ -44,41 +45,41 @@ const ProductCard: FC<ProductCardProps> = ({ imageUrl, name }) => {
       </div>
 
       {/* ✅ MODAL PREVIEW */}
-      {openModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-          onClick={() => setOpenModal(false)}
-        >
-          <div
-            className="relative animate-zoomIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Tombol Close + Screenshot */}
-            <div className="absolute top-3 right-3 flex gap-2 z-50">
-              <button
-                onClick={handleScreenshot}
-                className="bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200 text-sm"
+        {openModal &&
+          createPortal(
+            <div
+              className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center"
+              onClick={() => setOpenModal(false)}
+            >
+              <div
+                className="relative animate-fadeZoomCenter max-w-[85vw] max-h-[90vh]"
+                onClick={(e) => e.stopPropagation()}
               >
-                Save Picture
-              </button>
-              <button
-                onClick={() => setOpenModal(false)}
-                className="bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200 text-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Gambar */}
-            <img
-              id="preview-image"
-              src={imageUrl}
-              alt={name}
-              className="max-w-[80vw] max-h-[85vh] rounded-lg object-contain shadow-lg"
-            />
-          </div>
-        </div>
-      )}
+                <div className="absolute top-3 right-3 flex gap-2 z-50">
+                  <button
+                    onClick={handleScreenshot}
+                    className="bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200 text-sm"
+                  >
+                    Save Picture
+                  </button>
+                  <button
+                    onClick={() => setOpenModal(false)}
+                    className="bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200 text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
+        
+              <img
+                id="preview-image"
+                src={imageUrl}
+                alt={name}
+                className="block w-auto max-w-[70vw] max-h-[75vh] mx-auto rounded-lg object-contain shadow-xl transition-transform duration-300 hover:scale-[1.02]"
+              />
+              </div>
+            </div>,
+            document.body
+          )}
     </>
   );
 };

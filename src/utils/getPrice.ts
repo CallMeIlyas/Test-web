@@ -28,13 +28,42 @@ export function getPrice(category: string, name: string, size?: string): number 
   }
 
   // 🔍 Cari key di dalam category yang mengandung size + name
-  const matchedKey = Object.keys(categoryData).find((key) => {
+let matchedKey: string | undefined;
+
+if (normalizedCategory === "additional") {
+  // 🟢 Jika mengandung 'ekspress' → cocokkan penuh
+  if (normalizedName.includes("ekspress")) {
+    matchedKey = Object.keys(categoryData).find(
+      (key) => normalize(key) === normalizedName
+    );
+  }
+  // 🟢 Jika mengandung 'wajah' → cocokkan berdasarkan jenis shading
+  else if (normalizedName.includes("wajah")) {
+    const shadingTypes = ["ai", "bold shading", "dari foto asli", "karikatur", "banyak"];
+    const foundType = shadingTypes.find((type) =>
+      normalizedName.includes(type)
+    );
+    matchedKey = Object.keys(categoryData).find(
+      (key) => normalize(key).includes(foundType || "wajah")
+    );
+  }
+  // 🟢 Fallback untuk additional lainnya
+  else {
+    matchedKey = Object.keys(categoryData).find(
+      (key) => normalize(key) === normalizedName
+    );
+  }
+} else {
+  // 🔄 Fallback default (3D, 2D, dll.)
+  matchedKey = Object.keys(categoryData).find((key) => {
     const normalizedKey = normalize(key);
     return (
       normalizedKey.includes(normalizedSize) &&
       normalizedKey.includes(normalizedName.split(" ")[1] ?? normalizedName)
     );
   });
+}
+
 
   if (!matchedKey) {
     console.warn(`⚠️ Size not found in priceList[${matchedCategory}]: ${name} (normalized: ${normalizedName})`);

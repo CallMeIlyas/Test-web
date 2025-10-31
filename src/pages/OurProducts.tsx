@@ -1,23 +1,26 @@
-import { useState, type FC, useEffect } from "react";
-import { useLocation } from "react-router-dom"; 
+import { useState, useEffect } from "react";
+import { useLocation, useOutletContext } from "react-router-dom"; 
 import Footer from "../components/home/Footer";
 import SidebarFilters from "../components/our-products/SidebarFilters";
 import ProductGridWithPagination from "../components/our-products/ProductGrid";
 import type { FilterOptions } from "../types/types";
 
-interface OurProductsProps {
-  searchQuery?: string; // ✅ Terima sebagai props
-}
+type LayoutContext = {
+  searchQuery: string;
+  addToCart: (item: any) => void;
+};
 
-const OurProducts: FC<OurProductsProps> = ({ searchQuery = "" }) => {
+const OurProducts = () => {
+  const { searchQuery } = useOutletContext<LayoutContext>(); // ✅ AMBIL DARI CONTEXT
   const location = useLocation();
+
   const [filters, setFilters] = useState<FilterOptions>({
     categories: [],
     shippedFrom: [],
     shippedTo: [],
   });
 
-  // ✅ AUTO FILTER kalau ada ?category= di URL
+  // ✅ AUTO FILTER dari ?category= di URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryFromURL = params.get("category");
@@ -37,7 +40,7 @@ const OurProducts: FC<OurProductsProps> = ({ searchQuery = "" }) => {
         <div className="flex-1">
           <ProductGridWithPagination
             filters={filters}
-            searchQuery={searchQuery}
+            searchQuery={searchQuery} // ✅ nilai context sekarang nyambung
           />
         </div>
       </div>

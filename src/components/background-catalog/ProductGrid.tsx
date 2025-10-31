@@ -16,7 +16,7 @@ interface Product {
 const folderToCategory: Record<string, string> = {
   "company-office-brand": "Company/Office/Brand",
   "goverment-police": "Goverment/Police",
-  "oil-construction-ship": "Oil/Construction",
+  "oil-construction-ship": "Oil/Construction/Ship",
   "hospital-medical": "Hospital/Medical",
   "graduation-school-children": "Graduation/School/Children",
   "couple-wedding-birthday": "Couple/Wedding/Birthday",

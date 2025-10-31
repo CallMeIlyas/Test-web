@@ -15,6 +15,7 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { productOptions } from "../data/productOptions";
+import { Check } from "lucide-react";
 
 type LayoutContext = {
   searchQuery: string;
@@ -81,16 +82,22 @@ const MOCK_PRODUCT_DATA = {
     {
       id: "add2",
       name: "Background Custom",
-      price: getAdditionalPrice("Background Custom"),
-      imageUrl: "https://i.ibb.co/8DBVHH1/background-custom.jpg",
+      price: 52800,
+      imageUrl: new URL(
+        "../assets/bg-catalog/goverment-police/KA-MAY23-01.jpg",
+        import.meta.url
+      ).href,
+      attributes: {},
       attributes: { isBackground: true },
     },
     {
       id: "add3",
       name: "Additional Packing",
-      price: getAdditionalPrice("Additional Packing"),
-      imageUrl: "https://i.ibb.co/hZ2vXfQ/additional-packing.jpg",
-      attributes: {},
+      price: 52800,
+      imageUrl: new URL(
+        "../assets/list-products/3D/A0-80X110CM/PACKING AIR COLUMN BAGS.jpg",
+        import.meta.url
+      ).href,
     },
   ],
 };
@@ -101,19 +108,34 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { addToCart } = useOutletContext<LayoutContext>();
 
-  const { imageUrl, name, category, size, type, price, allImages } = (location.state as any) || {};
+  const { imageUrl, name, category, size, type, price, allImages } =
+    (location.state as any) || {};
 
-  // State untuk product variations
-  const [selectedVariation, setSelectedVariation] = useState(MOCK_PRODUCT_DATA.variations[0]);
+  // 🧩 State utama
+  const [includePacking, setIncludePacking] = useState(false);
+  const [selectedAdditionalFaceOption, setSelectedAdditionalFaceOption] = useState<"1-9" | "10+" | null>(null);
+  const additionalSectionRef = useRef<HTMLDivElement | null>(null);
+  const [selectedVariation, setSelectedVariation] = useState(
+    MOCK_PRODUCT_DATA.variations[0]
+  );
   const [quantity, setQuantity] = useState<number | "">(1);
   const [faces] = useState<number | "">(1);
-  const [background] = useState<"Default" | "Custom">("Default");
-  const [selectedImage, setSelectedImage] = useState(imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg");
-  const [selectedProductVariation, setSelectedProductVariation] = useState<string>("");
+  const [background, setBackground] = useState<"Default" | "Custom">("Default");
+  const [selectedImage, setSelectedImage] = useState(
+    imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg"
+  );
+  const [selectedProductVariation, setSelectedProductVariation] =
+    useState<string>("");
+  const [displayedPrice, setDisplayedPrice] = useState<number>(price || getPrice(category, name) || 0);
   const [selectedShading, setSelectedShading] = useState<string>("");
   const [selectedSizeFrame, setSelectedSizeFrame] = useState<string>("");
-  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
+  // Untuk "Biaya Tambahan Wajah Banyak (Design dari Customer)"
+const [selectedFaceOptionCustom, setSelectedFaceOptionCustom] = useState<string>("");
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(
+    null
+  );
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [selectedExpressOption, setSelectedExpressOption] = useState<string>("");
 
 // ======== AUTO LOAD VARIATION IMAGES ========
 
@@ -213,6 +235,10 @@ const product = {
     product.category === "3D Frame" && normalizedSizeKey
       ? categoryOptions?.specialCases?.[normalizedSizeKey] || []
       : [];
+      
+
+
+// useEffect Utama
 
   // ðŸ”¹ Auto-select packaging option pertama jika available
   useEffect(() => {
@@ -220,26 +246,211 @@ const product = {
       setSelectedProductVariation(specialVariations[0].value);
     }
   }, [specialVariations, selectedProductVariation]);
+  
+  // 🆕 Update harga otomatis saat packaging 3D 8R diganti
+  useEffect(() => {
+    const categoryKey = "3D frame";
+    const nameKey = product.name?.toLowerCase() || "";
+    const isAcrylicAdditional =
+      product.name?.toLowerCase().includes("biaya tambahan ganti frame kaca ke acrylic");
+  
+    // 🧱 Proteksi kuat: kalau produk ini adalah "Additional Custom BIAYA TAMBAHAN GANTI FRAME KACA KE ACRYLIC"
+    if (isAcrylicAdditional) {
+      if (selectedSizeFrame) {
+        const acrylicPrice =
+          priceList.Additional[`Biaya Tambahan Ganti Frame Kaca ke Acrylic ${selectedSizeFrame}`] ||
+          priceList.Additional["Biaya Tambahan Ganti Frame Kaca ke Acrylic"] ||
+          0;
+  
+        // ✅ Set harga acrylic murni (bukan tambah)
+        setDisplayedPrice(acrylicPrice);
+      } else {
+        // ✅ Jika belum pilih ukuran — kembalikan ke harga base-nya
+        setDisplayedPrice(product.price);
+      }
+  
+      // 🚫 Jangan lanjut ke bawah, cegah efek 3D/variation menimpa harga
+      return;
+    }
+  
+    // 🧩 Efek khusus untuk produk kategori 3D Frame 8R (Packaging Options)
+    if (product.category?.toLowerCase().includes("3d") && nameKey.includes("8r")) {
+      let normalized = selectedProductVariation?.toLowerCase() || "";
+      normalized = normalized
+        .replace(/\s+/g, "")
+        .replace(/_/g, "")
+        .replace(/\+/g, "");
+  
+      let priceKey: string | null = null;
+  
+      if (normalized.includes("duskraft")) {
+        priceKey = "8R duskraft";
+      } else if (normalized.includes("hardbox")) {
+        priceKey = "8R hardbox";
+      }
+  
+      if (priceKey && priceList[categoryKey]?.[priceKey]) {
+        setDisplayedPrice(priceList[categoryKey][priceKey]);
+      } else {
+        setDisplayedPrice(product.price);
+      }
+  
+      return; // ✅ Cegah lanjut ke logika bawah
+    }
+  
+    // 🧩 Untuk 2D / produk umum — kontrol normal
+    if (
+      selectedVariation === "Frame Kaca" ||
+      (!selectedSizeFrame && selectedVariation !== "Frame Acrylic")
+    ) {
+      // Reset ke base price jika Frame Kaca atau belum pilih ukuran
+      setDisplayedPrice(product.price);
+    } else if (selectedVariation === "Frame Acrylic" && selectedSizeFrame) {
+      // Frame Acrylic: gunakan harga acrylic (bukan tambah)
+      const acrylicPrice =
+        priceList.Additional[`Biaya Tambahan Ganti Frame Kaca ke Acrylic ${selectedSizeFrame}`] || 0;
+      setDisplayedPrice(acrylicPrice);
+    }
+  }, [selectedProductVariation, product, selectedSizeFrame, selectedVariation]);
+  
+  // 🧠 Update harga otomatis untuk "Biaya Tambahan Wajah Banyak (Design dari Customer)"
+  useEffect(() => {
+    const isManyFaceProduct = product.name
+      ?.toLowerCase()
+      .includes("biaya tambahan wajah banyak (design dari customer)");
+  
+    if (!isManyFaceProduct) return;
+  
+    if (selectedFaceOptionCustom === "1–9 Wajah") {
+      setDisplayedPrice(
+        priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
+      );
+    } else if (selectedFaceOptionCustom === "Di atas 10 Wajah") {
+      setDisplayedPrice(
+        priceList.Additional["Biaya Tambahan Wajah Banyak diatas 10 wajah"] || product.price
+      );
+    } else {
+      setDisplayedPrice(product.price);
+    }
+  }, [selectedFaceOptionCustom, product]);
+  
+  // 🧠 Update harga otomatis untuk "Biaya Ekspress General"
+useEffect(() => {
+  const isExpressProduct = product.name
+    ?.toLowerCase()
+    .includes("biaya ekspress general");
+
+  if (!isExpressProduct) return;
+
+  if (selectedExpressOption === "Option 1") {
+    setDisplayedPrice(priceList.Additional["Biaya Ekspress General"] || product.price);
+  } else if (selectedExpressOption === "Option 2") {
+    setDisplayedPrice(priceList.Additional["Biaya Ekspress General 2"] || product.price);
+  } else if (selectedExpressOption === "Option 3") {
+    setDisplayedPrice(priceList.Additional["Biaya Ekspress General 3"] || product.price);
+  } else {
+    setDisplayedPrice(product.price);
+  }
+}, [selectedExpressOption, product]);
+  
+  // 🖼️ Update harga otomatis untuk produk kategori 2D Frame
+  useEffect(() => {
+    const is2DFrame = product.category?.toLowerCase().includes("2d");
+    if (!is2DFrame) return;
+  
+    if (selectedSizeFrame && selectedShading) {
+      const size = selectedSizeFrame.toLowerCase();
+  
+      // 🧠 Normalisasi shading agar cocok
+      const shadingRaw = selectedShading.toLowerCase().replace(/^2d\s+/i, "").trim();
+  
+      const shadingMap: Record<string, string> = {
+        "simple shading": "simple shading",
+        "background catalog": "background catalog",
+        "bold shading": "bold shading",
+        "by ai": "ai",
+        "ai": "ai",
+      };
+  
+      const shadingKey =
+        shadingMap[shadingRaw] ||
+        shadingMap[shadingRaw.replace("shading", "").trim()] ||
+        "simple shading";
+  
+      const key = `${size} ${shadingKey}`; // contoh: "6r ai"
+  
+      // 🧩 Buat versi lowercase dari semua key di priceList["2D frame"]
+      const twoDFramePriceList = Object.fromEntries(
+        Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
+      );
+  
+      const twoDPrice =
+        twoDFramePriceList[key] ||
+        twoDFramePriceList[`${size} simple shading`] ||
+        product.price;
+  
+      // console.log("🎨 Checking 2D price key:", key, "→", twoDFramePriceList[key]);
+  
+      setDisplayedPrice(twoDPrice);
+    } else if (selectedSizeFrame && !selectedShading) {
+      const key = `${selectedSizeFrame.toLowerCase()} simple shading`;
+  
+      const twoDFramePriceList = Object.fromEntries(
+        Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
+      );
+  
+      const twoDPrice = twoDFramePriceList[key] || product.price;
+      setDisplayedPrice(twoDPrice);
+    } else {
+      setDisplayedPrice(product.price);
+    }
+  }, [selectedSizeFrame, selectedShading, product]);
+  
+  // 🧠 Auto-select "Simple Shading" by default untuk produk 2D Frame
+  useEffect(() => {
+    if (product.category?.toLowerCase().includes("2d") && !selectedShading) {
+      // cari shading dengan nama "Simple Shading"
+      const simpleOption = product.shadingOptions.find((opt) =>
+        opt.label.toLowerCase().includes("simple shading")
+      );
+  
+      if (simpleOption) {
+        setSelectedShading(simpleOption.value);
+      }
+    }
+  }, [product, selectedShading]);
+
+
 
   const handleAddToCart = () => {
-    const finalQty = quantity === "" ? 1 : quantity;
-    const finalFaces = faces === "" ? 1 : faces;
+  const finalQty = quantity === "" ? 1 : quantity;
 
-    addToCart({
-      id: product.id || "p1",
-      name: [product.category, defaultSize, product.type, product.name].filter(Boolean).join(" "),
-      price: product.price,
-      quantity: finalQty,
-      imageUrl: product.imageUrl,
-      variation: selectedVariation,
-      productType: "frame",
-      attributes: {
-        faceCount: finalFaces > 1 ? finalFaces - 1 : 0,
-        backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
-        selectedProductVariation,
-      },
-    });
-  };
+  // 🧠 Ambil data dari Additional Faces
+  const faceCountLabel =
+    selectedAdditionalFaceOption === "1-9"
+      ? "1–9 wajah"
+      : selectedAdditionalFaceOption === "10+"
+      ? "Di atas 10 wajah"
+      : "";
+
+addToCart({
+  id: product.id || "p1",
+  name: [product.category, defaultSize, product.type, product.name]
+    .filter(Boolean)
+    .join(" "),
+  price: displayedPrice,
+  quantity: finalQty,
+  imageUrl: product.imageUrl,
+  variation: selectedVariation,
+  productType: "frame",
+  attributes: {
+    faceCount: faceCountLabel,
+    backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
+    selectedProductVariation,
+    includePacking,
+  },
+});
+};
 
   // console.log("DEBUG PRODUCT:", {
   //   category: product.category,
@@ -479,44 +690,43 @@ const previewRef = useRef<HTMLDivElement | null>(null);
     return null;
   })()}
 
-  <p className="text-[30px] font-poppinsMedium text-red-600">
-    Rp {product.price.toLocaleString("id-ID")}
-  </p>
-
+<p className="text-[30px] font-poppinsMedium text-red-600">
+  Rp {displayedPrice.toLocaleString("id-ID")}
+</p>
             {/* SPECIAL VARIATIONS - Packaging Options */}
             {specialVariations.length > 0 && (
-            <div className="mt-6 mb-4">
-              <label className="block text-[18px] font-poppinsSemiBold mb-3">
-                Packaging Option
-              </label>
-              <div className="flex gap-4 flex-wrap"> {/* horizontal */}
-                {specialVariations.map((opt) => (
-                  <div
-                    key={opt.value}
-                    onClick={() => setSelectedProductVariation(opt.value)}
-                    className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
-                      selectedProductVariation === opt.value
-                        ? "border-2 border-blue-500 bg-blue-50"
-                        : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-                    }`}
-                  >
-                    <img
-                      src={getPackagingImage(
-                        opt.value === "dus_kraft_paperbag"
-                          ? "PACKING DUS KRAFT.jpg"
-                          : "PACKING HARDBOX.jpg"
-                      )}
-                      alt={opt.label}
-                      className="w-20 h-20 object-cover rounded-xl" // persegi
-                    />
-                    <span className="text-base font-medium text-gray-800 text-center">
-                      {opt.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+  <div className="mt-6 mb-4">
+    <label className="block text-[18px] font-poppinsSemiBold mb-3">
+      Packaging Option
+    </label>
+    <div className="flex gap-4 flex-wrap">
+      {specialVariations.map((opt) => (
+        <div
+          key={opt.value}
+          onClick={() => setSelectedProductVariation(opt.value)}
+          className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
+            selectedProductVariation === opt.value
+              ? "border-2 border-blue-500 bg-blue-50"
+              : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+          }`}
+        >
+          <img
+            src={getPackagingImage(
+              opt.value === "dus_kraft_paperbag"
+                ? "PACKING DUS KRAFT.jpg"
+                : "PACKING HARDBOX.jpg"
+            )}
+            alt={opt.label}
+            className="w-20 h-20 object-cover rounded-xl"
+          />
+          <span className="text-base font-medium text-gray-800 text-center">
+            {opt.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
           
 {/* 🔹 2D FRAME - Shading & Frame Size Options */}
 {product.category === "2D Frame" && (
@@ -599,27 +809,156 @@ onClick={() => {
   </>
 )}
 
-            {/* Variation */}
-            <div className="flex items-start justify-between mt-4">
-              <label className="block text-[18px] font-poppinsSemiBold translate-y-3">
-                Variation
-              </label>
-              <div className="flex flex-col space-y-1 -translate-x-[160px] font-poppinsRegular">
-                {product.variations.map((variation) => (
-                  <button
-                    key={variation}
-                    onClick={() => setSelectedVariation(variation)}
-                    className={`px-6 py-2 border rounded-md text-sm transition-colors ${
-                      selectedVariation === variation
-                        ? "bg-[#dcbec1] border-[#bfa4a6]"
-                        : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-                    }`}
-                  >
-                    {variation}
-                  </button>
-                ))}
-              </div>
+{/* Variation — tampil hanya jika bukan Additional atau Softcopy Design */}
+{!["Additional", "Softcopy Design"].includes(product.category) && (
+  <div className="flex items-start justify-between mt-4">
+    <label className="block text-[18px] font-poppinsSemiBold translate-y-3">
+      Variation
+    </label>
+    <div className="flex flex-row flex-wrap gap-2 -translate-x-[25px] translate-y-2 font-poppinsRegular">
+      {product.variations.map((variation) => (
+        <button
+          key={variation}
+          onClick={() => setSelectedVariation(variation)}
+          className={`px-6 py-2 border rounded-md text-sm transition-colors ${
+            selectedVariation === variation
+              ? "bg-[#dcbec1] border-[#bfa4a6]"
+              : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+          }`}
+        >
+          {variation}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+            
+{/* 🧩 Additional Custom - Biaya Tambahan Ganti Frame Kaca ke Acrylic */}
+{product.name?.toLowerCase().includes("biaya tambahan ganti frame kaca ke acrylic") && (
+  <div className="mt-6 mb-4">
+    <p className="text-[15px] font-poppinsRegular text-gray-700 mb-3">
+      Pilih ukuran acrylic yang kamu inginkan. Harga utama akan otomatis menyesuaikan.
+    </p>
+
+    <div className="flex gap-4 flex-wrap">
+      {["A2", "A1", "A0"].map((size) => {
+        const acrylicPrice =
+          priceList.Additional[`Biaya Tambahan Ganti Frame Kaca ke Acrylic ${size}`] ||
+          priceList.Additional["Biaya Tambahan Ganti Frame Kaca ke Acrylic"] ||
+          0;
+
+        return (
+          <div
+            key={size}
+            onClick={() => {
+              // console.log("🖱️ Clicked size:", size);
+
+              setSelectedSizeFrame((prev) => {
+                const isSame = prev === size;
+                // kalau klik ulang ukuran sama → reset ke harga default
+                const newPrice = isSame ? product.price : product.price + acrylicPrice;
+                setDisplayedPrice(newPrice);
+                // console.log("✅ displayedPrice changed to:", newPrice);
+                return isSame ? "" : size;
+              });
+            }}
+            className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
+              selectedSizeFrame === size
+                ? "border-2 border-blue-500 bg-blue-50"
+                : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+            }`}
+          >
+            <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+              <span className="text-4xl font-bold text-gray-400">{size}</span>
             </div>
+            <span className="text-base font-medium text-gray-800 text-center">{size}</span>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
+
+{/* 🧩 Additional Custom - Biaya Tambahan Wajah Banyak (Design dari Customer) */}
+{product.name
+  ?.toLowerCase()
+  .includes("biaya tambahan wajah banyak (design dari customer)") && (
+  <div className="mt-6 mb-4">
+    <label className="block text-[18px] font-poppinsSemiBold mb-3">
+      Additional Custom — Wajah Banyak (Design dari Customer)
+    </label>
+
+    <p className="text-[15px] font-poppinsRegular text-gray-700 mb-3">
+      Pilih jumlah wajah yang kamu inginkan.
+    </p>
+
+    <div className="flex gap-4 flex-wrap">
+      {["1–9 Wajah", "Di atas 10 Wajah"].map((option) => (
+        <div
+          key={option}
+          onClick={() =>
+            setSelectedFaceOptionCustom((prev) =>
+              prev === option ? "" : option
+            )
+          }
+          className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
+            selectedFaceOptionCustom === option
+              ? "border-2 border-blue-500 bg-blue-50"
+              : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+          }`}
+        >
+          <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+            <span className="text-lg font-semibold text-gray-800 text-center leading-tight">
+              {option}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* 🧩 Additional Custom - Biaya Ekspress General */}
+{product.name?.toLowerCase().includes("biaya ekspress general") && (
+  <div className="mt-6 mb-4">
+    <label className="block text-[18px] font-poppinsSemiBold mb-3">
+      Additional Custom — Biaya Ekspress General
+    </label>
+
+    <p className="text-[15px] font-poppinsRegular text-gray-700 mb-3">
+      Pilih tingkat layanan ekspress yang kamu inginkan.
+    </p>
+
+    <div className="flex gap-4 flex-wrap">
+      {[
+        { label: "Option 1", price: priceList.Additional["Biaya Ekspress General"] },
+        { label: "Option 2", price: priceList.Additional["Biaya Ekspress General 2"] },
+        { label: "Option 3", price: priceList.Additional["Biaya Ekspress General 3"] },
+      ].map((option) => (
+        <div
+          key={option.label}
+          onClick={() =>
+            setSelectedExpressOption((prev) =>
+              prev === option.label ? "" : option.label
+            )
+          }
+          className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
+            selectedExpressOption === option.label
+              ? "border-2 border-blue-500 bg-blue-50"
+              : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+          }`}
+        >
+          <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+            <span className="text-[15px] font-semibold text-gray-800 text-center leading-tight">
+              {option.label}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
 
             {/* Quantity */}
             <div className="flex items-center justify-between mt-10">
@@ -660,7 +999,21 @@ onClick={() => {
             <div className="flex flex-col pt-4">
               <div className="flex space-x-4">
                 <button
-                  onClick={handleAddToCart}
+                  onClick={() => {
+                    const category = product.category?.toLowerCase() || "";
+                
+                    // Kalau produk Additional atau Softcopy → langsung Add to Cart
+                    if (category.includes("additional") || category.includes("softcopy")) {
+                      handleAddToCart();
+                      return;
+                    }
+                
+                    // Kalau produk utama (2D atau 3D) → scroll halus ke bawah
+                    additionalSectionRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }}
                   className="flex-1 px-6 py-3 border bg-[#dcbec1] font-bold rounded-lg hover:bg-[#c7a9ac] transition-colors"
                 >
                   Add to Cart
@@ -699,31 +1052,118 @@ onClick={() => {
             checkout for additional packing fee.
             <br />
             <br />
-            <span className="font-bold font-poppinsRegular">
-              Price for 1 pcs frame, 1 face caricature
-            </span>
           </p>
         </div>
 
-        {/* Additional Products */}
-        <div className="mt-16 pt-10">
-          <h2 className="text-xl font-bold font-poppinsRegular mb-6">
-            Additional for this products
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {product.additionalProducts.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded-lg p-3 text-center hover:shadow-md transition-shadow"
-              >
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="w-full h-32 object-cover rounded-md mb-3"
-                />
-                <h3 className="text-sm font-semibold text-gray-700">
-                  {item.name}
-                </h3>
+
+{/* 🧩 Additional Products — tampil hanya jika bukan Softcopy atau Additional */}
+<div ref={additionalSectionRef}>
+  <h2 className="text-xl font-bold font-poppinsRegular mb-6">
+    Additional for this products
+  </h2>
+
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+    {product.additionalProducts.map((item) => {
+      const isFaceProduct = item.name.toLowerCase().includes("faces");
+      const isPackingProduct = item.name.toLowerCase().includes("packing");
+      const [selectedFaceOption, setSelectedFaceOption] =
+        useState<"1-9" | "10+" | null>(null);
+      const [showPopup, setShowPopup] = useState(false);
+      const [isSelected, setIsSelected] = useState(false); //  Tambah state centang
+
+      // Harga default & aktif
+      const baseFacePrice =
+        priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || 0;
+      const activeFacePrice =
+        selectedFaceOption === "10+"
+          ? priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"]
+          : baseFacePrice;
+
+      return (
+        <div key={item.id} className="relative">
+          {/*  Centang kalau dipilih */}
+          {isSelected && (
+            <div className="absolute top-2 right-2 z-10">
+              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-[#dcbec1] flex-shrink-0">
+                <Check size={16} className="text-black" strokeWidth={3} />
+              </div>
+            </div>
+          )}
+
+          {/* CARD */}
+          <div
+            onClick={() => {
+              if (isFaceProduct) {
+                setShowPopup(true);
+                return;
+              }
+          
+              if (item.attributes?.isBackground) {
+                setBackground((prev) => (prev === "Custom" ? "Default" : "Custom"));
+                setIsSelected((prev) => !prev);
+                return;
+              }
+          
+              if (isPackingProduct) {
+                setIncludePacking((prev) => !prev);
+                setIsSelected((prev) => !prev);
+                return;
+              }
+          
+              setIsSelected((prev) => !prev);
+            }}
+            className={`border rounded-xl overflow-hidden text-center hover:shadow-md transition-all bg-white cursor-pointer flex flex-col items-center justify-between ${
+              isSelected ? "ring-2 ring-[#dcbec1]" : ""
+            } w-full h-[360px]`}
+          >
+            {/* ️ Gambar Produk Tambahan */}
+            <div className="relative w-full aspect-square overflow-hidden">
+              <img
+                src={
+                  item.name.toLowerCase().includes("faces")
+                    ? new URL(
+                        "../assets/list-products/ADDITIONAL/BIAYA TAMBAHAN WAJAH KARIKATUR/TAMBAHAN WAJAH 1.jpg",
+                        import.meta.url
+                      ).href
+                    : item.imageUrl
+                }
+                alt={item.name}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+              />
+            </div>
+
+            {/* 🧩 Info Produk */}
+            <div className="p-3 flex flex-col flex-grow justify-between">
+              <h3 className="text-sm font-semibold text-gray-700 line-clamp-2">
+                {item.name}
+              </h3>
+
+              {isFaceProduct ? (
+                <>
+                  {selectedFaceOption ? (
+                    <p className="text-xs font-poppinsMedium text-pink-600 mt-1">
+                      Dipilih:{" "}
+                      {selectedFaceOption === "1-9"
+                        ? "1–9 wajah"
+                        : "Di atas 10 wajah"}
+                    </p>
+                  ) : (
+                    <p className="text-xs font-poppinsRegular text-gray-500 mt-1 italic">
+                      Klik untuk pilih jumlah wajah
+                    </p>
+                  )}
+
+                  <p className="text-sm font-bold text-pink-600 mt-1">
+                    {selectedFaceOption
+                      ? `Rp ${activeFacePrice.toLocaleString("id-ID")}`
+                      : `Rp ${baseFacePrice.toLocaleString(
+                          "id-ID"
+                        )} - Rp ${priceList.Additional[
+                          "Tambahan Wajah Karikatur diatas 10 wajah"
+                        ].toLocaleString("id-ID")}`}
+                  </p>
+                </>
+              ) : (
                 <p className="text-sm font-bold text-pink-600 mt-1">
                   {typeof item.price === "string"
                     ? item.price
@@ -731,9 +1171,122 @@ onClick={() => {
                     ? `Rp ${item.price.toLocaleString("id-ID")}`
                     : "Custom"}
                 </p>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
+
+          {/* 🧩 Pop-up Pilihan Wajah */}
+          {showPopup && isFaceProduct && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
+              <div className="bg-white rounded-2xl shadow-xl p-6 w-[90%] max-w-sm text-center animate-fadeIn">
+                <h3 className="text-lg font-poppinsSemiBold mb-4">
+                  Pilih jumlah wajah
+                </h3>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => {
+                      setSelectedFaceOption("1-9");
+                      setSelectedAdditionalFaceOption("1-9");
+                      setIsSelected(true); // 🟢 otomatis pilih setelah pilih wajah
+                      setDisplayedPrice(
+                        priceList.Additional[
+                          "Tambahan Wajah Karikatur 1-9 wajah"
+                        ]
+                      );
+                      setShowPopup(false);
+                    }}
+                    className={`py-2 rounded-lg border text-sm font-medium transition-all ${
+                      selectedFaceOption === "1-9"
+                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        : "border-gray-300 hover:border-blue-400 text-gray-700"
+                    }`}
+                  >
+                    1–9 Wajah — Rp{" "}
+                    {priceList.Additional[
+                      "Tambahan Wajah Karikatur 1-9 wajah"
+                    ].toLocaleString("id-ID")}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSelectedFaceOption("10+");
+                      setSelectedAdditionalFaceOption("10+");
+                      setIsSelected(true);
+                      setDisplayedPrice(
+                        priceList.Additional[
+                          "Tambahan Wajah Karikatur diatas 10 wajah"
+                        ]
+                      );
+                      setShowPopup(false);
+                    }}
+                    className={`py-2 rounded-lg border text-sm font-medium transition-all ${
+                      selectedFaceOption === "10+"
+                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        : "border-gray-300 hover:border-blue-400 text-gray-700"
+                    }`}
+                  >
+                    Di atas 10 Wajah — Rp{" "}
+                    {priceList.Additional[
+                      "Tambahan Wajah Karikatur diatas 10 wajah"
+                    ].toLocaleString("id-ID")}
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="mt-5 text-sm text-gray-500 hover:text-gray-700 underline"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+
+{/* 🆕 Tombol Add to Cart Baru */}
+<div className="flex justify-center mt-8">
+  <button
+    onClick={() => {
+      const finalQty = quantity === "" ? 1 : quantity;
+
+      // ✅ Ambil jumlah wajah sesuai pilihan user
+      const faceCountLabel =
+        selectedAdditionalFaceOption === "10+"
+          ? "Di atas 10 wajah"
+          : "1–9 wajah"; // default kalau belum pilih apa-apa
+
+      // ✅ Tentukan background (default/custom)
+      const backgroundType = background === "Custom" ? "BG Custom" : "BG Default";
+
+      // ✅ Tentukan apakah user pilih packing tambahan
+      const packingIncluded = includePacking;
+
+      addToCart({
+        id: product.id || "p1",
+        name: [product.category, product.size, product.type, product.name]
+          .filter(Boolean)
+          .join(" "),
+        price: displayedPrice,
+        quantity: finalQty,
+        imageUrl: product.imageUrl,
+        variation: selectedVariation,
+        productType: "frame",
+        attributes: {
+          faceCount: faceCountLabel,
+          backgroundType: backgroundType,
+          includePacking: packingIncluded, // 🟢 tambahkan flag packing
+        },
+      });
+    }}
+    className="flex-1 max-w-xs px-6 py-3 border bg-[#dcbec1] font-bold rounded-lg hover:bg-[#c7a9ac] transition-colors"
+  >
+    Add to Cart
+  </button>
+</div>
         </div>
       </main>
       <Footer />
