@@ -143,16 +143,19 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
         return nameA.localeCompare(nameB);
       });
 
-    const mainImage =
-      decodedImages.find((img) => {
-        const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
-        return (
-          fileName.replace(/\s+/g, "").includes("mainimage") ||
-          fileName.includes("main-image") ||
-          fileName.includes("main_image") ||
-          fileName.includes("mainimg")
-        );
-      }) || decodedImages[0];
+const mainImage =
+  decodedImages.find((img) => {
+    const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
+    // Hapus ekstensi & hash dulu supaya "main image" tetap terdeteksi
+    const baseName = fileName.replace(/\.[a-z0-9]+$/, ""); // hapus ekstensi
+    return (
+      baseName.includes("mainimage") ||
+      baseName.includes("main image") ||
+      baseName.includes("main-image") ||
+      baseName.includes("main_image") ||
+      baseName.startsWith("main")
+    );
+  }) || decodedImages[0];
 
     console.log("🖼️ Main pick for", subcategory, "→", mainImage.split("/").pop());
 
