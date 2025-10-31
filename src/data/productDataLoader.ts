@@ -1,8 +1,5 @@
 import { getPrice } from "../utils/getPrice";
 
-// ========================
-// 💾 Interface
-// ========================
 export interface Product {
   id: string;
   imageUrl: string;
@@ -16,13 +13,13 @@ export interface Product {
   shippedFrom: string;
   shippedTo: string[];
   allImages?: string[];
+  specialVariations?: { label: string; value: string }[];
   shadingOptions?: { label: string; value: string; preview?: string }[];
   sizeFrameOptions?: { label: string; value: string; image: string }[];
+  details?: Record<string, any>;
 }
 
-// ========================
-// 🗂️ Mapping kategori
-// ========================
+// === Mapping Folder → Nama Kategori Custom ===
 export const categoryMapping: Record<string, string> = {
   "3D": "3D Frame",
   "2D": "2D Frame",
@@ -31,41 +28,30 @@ export const categoryMapping: Record<string, string> = {
   "ADDITIONAL": "Additional",
 };
 
-// ========================
-// 📦 Import semua media (glob aman untuk Vite di Linux)
-// ========================
+// === Import Semua Gambar ===
 const allMedia = import.meta.glob(
-  [
-    "../assets/list-products/**/*.{jpg,jpeg,png,mp4,jfif}",
-    "../assets/list-products/**/*.{JPG,JPEG,PNG,MP4,JFIF}",
-  ],
+  "../assets/list-products/**/*.{jpg,JPG,jpeg,JPEG,png,PNG,mp4,MP4,jfif,JFIF}",
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
-// Debug global
-console.log("🧭 Total imported media:", Object.keys(allMedia).length);
-
-// ========================
-// 🎨 Variasi 2D
-// ========================
+// === Import variasi 2D ===
 const shadingImages = import.meta.glob(
-  "../assets/list-products/2D/variations/shading/**/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
+  "../assets/list-products/2d/variations/shading/**/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
 const sizeFrameImages = import.meta.glob(
-  "../assets/list-products/2D/variations/size frame/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
+  "../assets/list-products/2d/variations/size frame/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
-// ========================
-// 🧩 Grouping Gambar
-// ========================
+// === Group images by folder ===
 const groupedImages: Record<string, string[]> = {};
 
 Object.entries(allMedia).forEach(([path, imageUrl]) => {
   const lowerPath = path.toLowerCase();
 
+  // 🚫 Abaikan folder variation
   if (lowerPath.includes("/variation/") || lowerPath.includes("/variations/"))
     return;
 
@@ -76,114 +62,29 @@ Object.entries(allMedia).forEach(([path, imageUrl]) => {
   const rawCategory = parts[baseIndex + 1] || "Unknown";
   let subcategory = parts[baseIndex + 2] || null;
 
-  // Skip folder 2D/variations/shading & size frame
-  if (
-    rawCategory.toLowerCase() === "2d" &&
-    subcategory &&
-    ["shading", "size frame", "size-frame"].some((v) =>
-      subcategory.toLowerCase().includes(v)
-    )
-  ) {
-    return;
+  // 🚫 Skip jika subcategory adalah variasi (khusus kategori 2D)
+  if (subcategory) {
+    const lowerSub = subcategory.toLowerCase();
+    if (
+      lowerSub === "variation" ||
+      lowerSub === "variations" ||
+      (rawCategory.toLowerCase() === "2d" &&
+        (lowerSub.includes("shading") || lowerSub.includes("size frame")))
+    ) {
+      return;
+    }
   }
 
-  // Jika file langsung di root kategori
+  // Abaikan file langsung
   if (subcategory?.match(/\.(jpg|jpeg|png|mp4|jfif)$/i)) subcategory = null;
 
   const groupKey = subcategory ? `${rawCategory}/${subcategory}` : rawCategory;
-
   if (!groupedImages[groupKey]) groupedImages[groupKey] = [];
   groupedImages[groupKey].push(imageUrl);
 });
 
-// ========================
-// 🧠 Fungsi deteksi main image
-// ========================
-function findMainImage(images: string[]): string {
-  const decodedImages = images.map((img) => decodeURIComponent(img));
-
-  console.log("📂 Checking images in group:", decodedImages.map((i) => i.split("/").pop()));
-
-  const priorityImages = decodedImages.filter((url) => {
-    const fileName = url.split("/").pop()?.toLowerCase() || "";
-    const normalized = fileName
-      .replace(/\.[a-z0-9]+$/i, "")
-      .replace(/[^a-z0-9]/g, "");
-
-    return (
-      normalized.includes("mainimage") ||
-      normalized.includes("cover") ||
-      normalized.includes("utama") ||
-      normalized === "main"
-    );
-  });
-
-  if (priorityImages.length > 0) {
-    console.log("✅ Found main image →", priorityImages[0].split("/").pop());
-    return priorityImages[0];
-  }
-
-  // 🧩 Fallback khusus 2D
-  const fallback2D = decodedImages.find((url) =>
-    url.toLowerCase().includes("/2d/") &&
-    url.toLowerCase().endsWith("main-image.jpg")
-  );
-  if (fallback2D) {
-    console.log("⚙️ Fallback 2D main →", fallback2D.split("/").pop());
-    return fallback2D;
-  }
-
-  console.warn("⚠️ No main image detected, fallback to first:", decodedImages[0]);
-  return decodedImages.sort((a, b) => a.localeCompare(b))[0];
-}
-
-// ========================
-// 🧱 Generate Produk
-// ========================
-export const allProducts: Product[] = Object.entries(groupedImages).map(
-  ([groupKey, images], index) => {
-    const [rawCategory, subcategory] = groupKey.split("/");
-    const mappedCategory =
-      categoryMapping[rawCategory.toUpperCase()] || rawCategory;
-
-    const mainImage = findMainImage(images);
-
-    console.log(
-      "🖼️ Main pick for",
-      subcategory || mappedCategory,
-      "→",
-      mainImage.split("/").pop()
-    );
-
-    const decodedImages = images.map((img) => decodeURIComponent(img));
-
-    return {
-      id: `prod-${index + 1}`,
-      imageUrl: mainImage,
-      name: subcategory || mappedCategory,
-      displayName: subcategory
-        ? `${mappedCategory} ${subcategory.replace(/-\s*\d+\s*x\s*\d+\s*cm/i, "").trim()}`
-        : mappedCategory,
-      size: "Custom",
-      category: mappedCategory,
-      subcategory: subcategory || null,
-      fullPath: `${mappedCategory}${subcategory ? " / " + subcategory : ""}`,
-      price: getPrice(mappedCategory, subcategory || mappedCategory),
-      shippedFrom: ["Bogor", "Jakarta"][index % 2],
-      shippedTo: ["Worldwide"],
-      allImages: decodedImages,
-      shadingOptions:
-        mappedCategory === "2D Frame" ? get2DShadingOptions() : undefined,
-      sizeFrameOptions:
-        mappedCategory === "2D Frame" ? get2DSizeFrameOptions() : undefined,
-    };
-  }
-);
-
-// ========================
-// 🧮 2D Variations Helper
-// ========================
-function get2DShadingOptions() {
+// === Helper 2D ===
+const get2DShadingOptions = () => {
   const options: { label: string; value: string; preview?: string }[] = [];
   Object.entries(shadingImages).forEach(([path, imageUrl]) => {
     const parts = path.split("/");
@@ -196,9 +97,9 @@ function get2DShadingOptions() {
     });
   });
   return options;
-}
+};
 
-function get2DSizeFrameOptions() {
+const get2DSizeFrameOptions = () => {
   const options: { label: string; value: string; image: string }[] = [];
   Object.entries(sizeFrameImages).forEach(([path, imageUrl]) => {
     const filename = path.split("/").pop() || "";
@@ -209,24 +110,144 @@ function get2DSizeFrameOptions() {
       image: imageUrl,
     });
   });
+
   const sizeOrder = ["4R", "6R", "8R", "12R", "15cm"];
   options.sort(
     (a, b) =>
-      (sizeOrder.indexOf(a.label) === -1
-        ? 99
-        : sizeOrder.indexOf(a.label)) -
+      (sizeOrder.indexOf(a.label) === -1 ? 99 : sizeOrder.indexOf(a.label)) -
       (sizeOrder.indexOf(b.label) === -1 ? 99 : sizeOrder.indexOf(b.label))
   );
   return options;
+};
+
+/**
+ * ✅ Helper function untuk deteksi main image
+ * Case-insensitive & robust untuk Linux
+ */
+function findMainImage(images: string[]): string {
+  const decodedImages = images.map((img) => decodeURIComponent(img));
+
+  const priorityImages = decodedImages.filter((url) => {
+    const fileName = url.split("/").pop()?.toLowerCase() || "";
+    const normalized = fileName
+      .replace(/\.[a-z0-9]+$/i, "")
+      .replace(/[^a-z0-9]/g, "");
+    return (
+      normalized.includes("mainimage") ||
+      normalized === "main" ||
+      normalized.startsWith("main")
+    );
+  });
+
+  if (priorityImages.length > 0) return priorityImages[0];
+  return decodedImages.sort((a, b) => a.localeCompare(b))[0];
 }
 
-// ========================
-// 📊 Log tambahan
-// ========================
-console.log("📊 Total groups:", Object.keys(groupedImages).length);
-Object.keys(groupedImages).forEach((key) => {
-  console.log("   -", key, "(", groupedImages[key].length, "files )");
-});
+// === Generate Semua Produk ===
+export const allProducts: Product[] = Object.entries(groupedImages).map(
+  ([groupKey, images], index) => {
+    const [rawCategory, subcategory] = groupKey.split("/");
+    const mappedCategory =
+      categoryMapping[rawCategory.toUpperCase()] || rawCategory;
 
-// Export default ordered list (kamu bisa tambahkan urutan custom di bawah)
-export { allProducts as orderedProducts };
+    const mainImage = findMainImage(images);
+    const decodedImages = images.map((img) => decodeURIComponent(img));
+
+    // 🧩 Debug Log
+    console.log("──────────────────────────────");
+    console.log(`📂 Group: ${groupKey}`);
+    console.log(`🖼️ Files: ${images.length}`);
+    const hasMain = images.some((url) =>
+      url.toLowerCase().includes("main-image")
+    );
+    console.log(
+      hasMain
+        ? `✅ main-image detected → ${mainImage.split("/").pop()}`
+        : `⚠️ No main-image found, fallback → ${mainImage.split("/").pop()}`
+    );
+
+    const cleanSubcategory = subcategory?.trim() || null;
+    const fileName = cleanSubcategory || `Product ${index + 1}`;
+
+    return {
+      id: `prod-${index + 1}`,
+      imageUrl: mainImage,
+      name: fileName,
+      displayName: subcategory
+        ? `${mappedCategory} ${subcategory.replace(
+            /-\s*\d+\s*x\s*\d+\s*cm/i,
+            ""
+          ).trim()}`
+        : mappedCategory,
+      size: "Custom",
+      category: mappedCategory,
+      subcategory: subcategory || null,
+      fullPath: `${mappedCategory}${subcategory ? " / " + subcategory : ""}`,
+      price: getPrice(mappedCategory, fileName),
+      shippedFrom: ["Bogor", "Jakarta"][index % 2],
+      shippedTo: ["Worldwide"],
+      allImages: decodedImages,
+      shadingOptions:
+        mappedCategory === "2D Frame" ? get2DShadingOptions() : undefined,
+      sizeFrameOptions:
+        mappedCategory === "2D Frame" ? get2DSizeFrameOptions() : undefined,
+    };
+  }
+);
+
+// === Custom Ordering ===
+const baris1 = [
+  { category: "3D Frame", name: "12R" },
+  { category: "3D Frame", name: "10R" },
+  { category: "3D Frame", name: "A2-40X55CM" },
+  { category: "3D Frame", name: "A1-55X80CM" },
+];
+
+const baris2 = [
+  { category: "2D Frame", name: "15cm" },
+  { category: "2D Frame", name: "6R" },
+  { category: "2D Frame", name: "8R" },
+  { category: "2D Frame", name: "12R" },
+];
+
+const baris3 = [
+  { category: "Acrylic Stand", name: "ACRYLIC STAND 2CM" },
+  { category: "Acrylic Stand", name: "ACRYLIC STAND 3MM" },
+  { category: "Softcopy Design", name: "WITH BACKGROUND CUSTOM" },
+  { category: "Additional", name: "BACKGROUND CUSTOM" },
+];
+
+const baris4 = [
+  { category: "3D Frame", name: "4R" },
+  { category: "Additional", name: "BIAYA TAMBAHAN WAJAH KARIKATUR" },
+  { category: "Additional", name: "BIAYA EKSPRESS GENERAL" },
+  { category: "Additional", name: "BIAYA TAMBAHAN GANTI FRAME KACA KE ACRYLIC" },
+];
+
+// === Pencarian Produk Berdasarkan Nama ===
+const findProduct = (item: { category: string; name: string }) =>
+  allProducts.find(
+    (p) => p.category === item.category && p.name === item.name
+  ) || null;
+
+// === Filter Produk Valid
+const part1 = baris1.map(findProduct).filter((p): p is Product => p !== null);
+const part2 = baris2.map(findProduct).filter((p): p is Product => p !== null);
+const part3 = baris3.map(findProduct).filter((p): p is Product => p !== null);
+const part4 = baris4.map(findProduct).filter((p): p is Product => p !== null);
+
+// === Gabungkan & Hilangkan Duplikat
+let orderedProducts = [...part1, ...part2, ...part3, ...part4];
+const usedIds = new Set(orderedProducts.map((p) => p.id));
+const remainingProducts = allProducts.filter((p) => !usedIds.has(p.id));
+orderedProducts = [...orderedProducts, ...remainingProducts];
+
+// === Log tambahan untuk debugging ===
+console.log(
+  "🧾 Semua Produk Additional:",
+  allProducts
+    .filter((p) => p.category === "Additional")
+    .map((p) => ({ name: p.name, price: p.price }))
+);
+
+export { orderedProducts };
