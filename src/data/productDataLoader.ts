@@ -59,8 +59,8 @@ Object.entries(allMedia).forEach(([path, imageUrl]) => {
   const baseIndex = parts.findIndex((p) => p.toLowerCase() === "list-products");
   if (baseIndex === -1) return;
 
-  const rawCategory = parts[baseIndex + 1] || "Unknown";
-  let subcategory = parts[baseIndex + 2] || null;
+const rawCategory = (parts[baseIndex + 1] || "Unknown").toLowerCase();
+let subcategory = parts[baseIndex + 2] ? parts[baseIndex + 2].toLowerCase() : null;
 
   // 🚫 Skip jika subcategory adalah variasi (khusus kategori 2D)
   if (subcategory) {
