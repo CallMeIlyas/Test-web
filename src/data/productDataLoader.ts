@@ -129,12 +129,20 @@ function findMainImage(images: string[]): string {
 
   const priorityImages = decodedImages.filter((url) => {
     const fileName = url.split("/").pop()?.toLowerCase() || "";
-    const normalized = fileName
-      .replace(/\.[a-z0-9]+$/i, "")
-      .replace(/[^a-z0-9]/g, "");
+
+    // hapus ekstensi
+    const nameWithoutExt = fileName.replace(/\.[a-z0-9]+$/i, "");
+
+    // hapus hash build (contoh: -ABCD1234 atau .ABCD1234)
+    const baseName = nameWithoutExt.replace(/[-_.][a-z0-9]{6,10}$/i, "");
+
+    // hilangkan semua simbol biar bisa bandingkan dengan "mainimage"
+    const normalized = baseName.replace(/[^a-z0-9]/g, "");
+
     return (
-      normalized.includes("mainimage") ||
+      normalized === "mainimage" ||
       normalized === "main" ||
+      normalized.startsWith("mainimage") ||
       normalized.startsWith("main")
     );
   });
@@ -151,6 +159,11 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
       categoryMapping[rawCategory.toUpperCase()] || rawCategory;
 
     const mainImage = findMainImage(images);
+    if (groupKey.startsWith("2d/")) {
+  console.log("🧩 Debug 2D:", groupKey);
+  images.forEach(img => console.log("   →", img.split("/").pop()));
+  console.log("   🏁 Picked:", mainImage.split("/").pop());
+}
     const decodedImages = images.map((img) => decodeURIComponent(img));
 
     // 🧩 Debug Log
