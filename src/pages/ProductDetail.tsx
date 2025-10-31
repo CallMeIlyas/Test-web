@@ -87,7 +87,6 @@ const MOCK_PRODUCT_DATA = {
         "../assets/bg-catalog/goverment-police/KA-MAY23-01.jpg",
         import.meta.url
       ).href,
-      attributes: {},
       attributes: { isBackground: true },
     },
     {
@@ -136,6 +135,7 @@ const [selectedFaceOptionCustom, setSelectedFaceOptionCustom] = useState<string>
   );
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [selectedExpressOption, setSelectedExpressOption] = useState<string>("");
+  const [selectedAcrylicOption, setSelectedAcrylicOption] = useState<string>("");
 
 // ======== AUTO LOAD VARIATION IMAGES ========
 
@@ -419,6 +419,39 @@ useEffect(() => {
       }
     }
   }, [product, selectedShading]);
+  
+// 🧠 Update harga otomatis untuk Acrylic Stand 3mm
+useEffect(() => {
+  const name = product.name?.toLowerCase() || "";
+  const category = product.category?.toLowerCase() || "";
+
+  // Pastikan ini produk acrylic 3mm
+  const isAcrylic3mm =
+    category.includes("acrylic") && name.includes("3mm");
+
+  if (!isAcrylic3mm) return;
+
+  // Ambil daftar harga dari kategori Acrylic Stand
+  const acrylicPriceList = priceList["Acrylic Stand"] || {};
+
+  let newPrice = product.price;
+
+  if (selectedAcrylicOption === "15x15cm 1 sisi") {
+    newPrice =
+      acrylicPriceList["Acrylic Stand 3mm size 15x15cm 1 sisi"] ||
+      product.price;
+  } else if (selectedAcrylicOption === "A4 2 sisi") {
+    newPrice =
+      acrylicPriceList["Acrylic Stand 3mm size A4 2 sisi"] ||
+      product.price;
+  } else if (selectedAcrylicOption === "A3 2 sisi") {
+    newPrice =
+      acrylicPriceList["Acrylic Stand 3mm size A3 2 sisi"] ||
+      product.price;
+  }
+
+  setDisplayedPrice(newPrice);
+}, [selectedAcrylicOption, product]);
 
 
 
@@ -959,7 +992,42 @@ onClick={() => {
   </div>
 )}
 
+{/* 🧩 Acrylic Stand 3mm Options */}
+{product.name?.toLowerCase().includes("acrylic stand 3mm") && (
+  <div className="mt-6 mb-4">
+    <label className="block text-[18px] font-poppinsSemiBold mb-3">
+      Choose Size & Sides
+    </label>
 
+    <div className="flex gap-4 flex-wrap">
+      {[
+        { label: "15x15cm 1 sisi", key: "15x15cm 1 sisi" },
+        { label: "A4 2 sisi", key: "A4 2 sisi" },
+        { label: "A3 2 sisi", key: "A3 2 sisi" },
+      ].map((option) => (
+        <div
+          key={option.key}
+          onClick={() =>
+            setSelectedAcrylicOption((prev) =>
+              prev === option.key ? "" : option.key
+            )
+          }
+          className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-2 p-3 w-36 h-36 transition-all duration-150 ${
+            selectedAcrylicOption === option.key
+              ? "border-2 border-blue-500 bg-blue-50"
+              : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+          }`}
+        >
+          <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+            <span className="text-[15px] font-semibold text-gray-800 text-center leading-tight">
+              {option.label}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
             {/* Quantity */}
             <div className="flex items-center justify-between mt-10">
               <label className="text-[18px] font-poppinsSemiBold">
