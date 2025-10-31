@@ -48,15 +48,6 @@ const sizeFrameImages = import.meta.glob(
 // === Group images by folder ===
 const groupedImages: Record<string, string[]> = {};
 
-console.log("🧩 Loaded media count:", Object.keys(allMedia).length);
-console.log(
-  "🧩 Sample 2D/6R:",
-  Object.keys(allMedia).filter(p => p.includes("2D/6R"))
-);
-console.log(
-  "🧩 Sample 3D/12R:",
-  Object.keys(allMedia).filter(p => p.includes("3D/12R"))
-);
 Object.entries(allMedia).forEach(([path, imageUrl]) => {
   const lowerPath = path.toLowerCase();
 
@@ -142,24 +133,31 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
 
     const decodedImages = images.map((img) => decodeURIComponent(img));
     
+const decodedImages = images
+  .map((img) => decodeURIComponent(img))
+  // ✅ Urutkan supaya MAIN IMAGE.jpg selalu dicek terakhir (lebih spesifik)
+  .sort((a, b) => {
+    const nameA = a.split("/").pop()?.toLowerCase() || "";
+    const nameB = b.split("/").pop()?.toLowerCase() || "";
+    if (nameA.includes("main")) return 1; // dorong ke belakang
+    if (nameB.includes("main")) return -1;
+    return nameA.localeCompare(nameB);
+  });
+
 const mainImage =
   decodedImages.find((img) => {
     const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
     return (
-      fileName.includes("main image") || // cocok untuk "MAIN IMAGE.jpg"
-      fileName.includes("mainimage") ||
+      fileName.replace(/\s+/g, "").includes("mainimage") ||
       fileName.includes("main-image") ||
       fileName.includes("main_image") ||
       fileName.includes("mainimg")
     );
   }) || decodedImages[0];
-  console.log(
-  "🖼️ Product:",
-  subcategory,
-  "→ Main Image:",
-  mainImage.split("/").pop()
-);
 
+console.log(
+  "🖼️ Main pick for", subcategory, "→", mainImage.split("/").pop()
+);
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
 
