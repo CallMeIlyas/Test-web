@@ -30,7 +30,7 @@ export const categoryMapping: Record<string, string> = {
 
 // === Import Semua Gambar ===
 const allMedia = import.meta.glob(
-  "../assets/list-products/**/**/*.{jpg,JPG,jpeg,png,mp4}",
+  "../assets/list-products/**/*.{jpg,JPG,jpeg,png,mp4}",
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
@@ -48,6 +48,15 @@ const sizeFrameImages = import.meta.glob(
 // === Group images by folder ===
 const groupedImages: Record<string, string[]> = {};
 
+console.log("🧩 Loaded media count:", Object.keys(allMedia).length);
+console.log(
+  "🧩 Sample 2D/6R:",
+  Object.keys(allMedia).filter(p => p.includes("2D/6R"))
+);
+console.log(
+  "🧩 Sample 3D/12R:",
+  Object.keys(allMedia).filter(p => p.includes("3D/12R"))
+);
 Object.entries(allMedia).forEach(([path, imageUrl]) => {
   const lowerPath = path.toLowerCase();
 
@@ -135,21 +144,21 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
     
 const mainImage =
   decodedImages.find((img) => {
-    // Pastikan nama file ter-decode dari %20 dan lowercase semua
     const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
-
-    // Gunakan pencocokan longgar biar tetap match walau beda kapital / spasi / format
     return (
-      fileName.replace(/\s+/g, "").includes("mainimage") || // cocok untuk "MAIN IMAGE", "mainimage", "Main Image"
+      fileName.includes("main image") || // cocok untuk "MAIN IMAGE.jpg"
+      fileName.includes("mainimage") ||
       fileName.includes("main-image") ||
       fileName.includes("main_image") ||
       fileName.includes("mainimg")
     );
   }) || decodedImages[0];
-
-if (import.meta.env.PROD) {
-  console.log("🖼️ [PROD] Main Image:", mainImage.split("/").pop());
-}
+  console.log(
+  "🖼️ Product:",
+  subcategory,
+  "→ Main Image:",
+  mainImage.split("/").pop()
+);
 
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
