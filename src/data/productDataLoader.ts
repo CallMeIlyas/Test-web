@@ -127,28 +127,31 @@ const get2DSizeFrameOptions = () => {
 function findMainImage(images: string[]): string {
   const decodedImages = images.map((img) => decodeURIComponent(img));
 
-  const priorityImages = decodedImages.filter((url) => {
-    const fileName = url.split("/").pop()?.toLowerCase() || "";
-
-    // hapus ekstensi
-    const nameWithoutExt = fileName.replace(/\.[a-z0-9]+$/i, "");
-
-    // hapus hash build (contoh: -ABCD1234 atau .ABCD1234)
-    const baseName = nameWithoutExt.replace(/[-_.][a-z0-9]{6,10}$/i, "");
-
-    // hilangkan semua simbol biar bisa bandingkan dengan "mainimage"
-    const normalized = baseName.replace(/[^a-z0-9]/g, "");
-
-    return (
-      normalized === "mainimage" ||
-      normalized === "main" ||
-      normalized.startsWith("mainimage") ||
-      normalized.startsWith("main")
-    );
+  // 1️⃣ Cari file yang namanya mengandung "main-image" / "main_image" / "mainimage"
+  const mainCandidate = decodedImages.find((url) => {
+    const file = url.split("/").pop()?.toLowerCase() || "";
+    return /(main[-_]?image|main)(\.[a-z0-9]+)?$/.test(file) ||
+           /(main[-_]?image|main)[-_.][a-z0-9]{4,10}/.test(file);
   });
 
-  if (priorityImages.length > 0) return priorityImages[0];
-  return decodedImages.sort((a, b) => a.localeCompare(b))[0];
+  if (mainCandidate) {
+    console.log("✅ Found main image →", mainCandidate.split("/").pop());
+    return mainCandidate;
+  }
+
+  // 2️⃣ Jika tidak ada yang cocok, cari yang mendekati “main”
+  const relaxedCandidate = decodedImages.find((url) => {
+    const file = url.split("/").pop()?.toLowerCase() || "";
+    return file.includes("main");
+  });
+  if (relaxedCandidate) {
+    console.log("⚠️ Fallback (contains 'main') →", relaxedCandidate.split("/").pop());
+    return relaxedCandidate;
+  }
+
+  // 3️⃣ Jika benar-benar tidak ada, fallback ke file pertama (tapi log warning)
+  console.warn("🚨 No main image detected, fallback to:", decodedImages[0].split("/").pop());
+  return decodedImages[0];
 }
 
 // === Generate Semua Produk ===
@@ -159,10 +162,10 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
       categoryMapping[rawCategory.toUpperCase()] || rawCategory;
 
     const mainImage = findMainImage(images);
-    if (groupKey.startsWith("2d/")) {
-  console.log("🧩 Debug 2D:", groupKey);
+if (groupKey.startsWith("2d/")) {
+  console.log("\n📂 Group:", groupKey);
   images.forEach(img => console.log("   →", img.split("/").pop()));
-  console.log("   🏁 Picked:", mainImage.split("/").pop());
+  console.log("🏁 Chosen main image:", findMainImage(images).split("/").pop());
 }
     const decodedImages = images.map((img) => decodeURIComponent(img));
 
