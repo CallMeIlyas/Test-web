@@ -135,21 +135,21 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
     
 const mainImage =
   decodedImages.find((img) => {
+    // Pastikan nama file ter-decode dari %20 dan lowercase semua
     const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
+
+    // Gunakan pencocokan longgar biar tetap match walau beda kapital / spasi / format
     return (
-      fileName.includes("main image") || // cocok untuk "MAIN IMAGE.jpg"
-      fileName.includes("mainimage") ||
+      fileName.replace(/\s+/g, "").includes("mainimage") || // cocok untuk "MAIN IMAGE", "mainimage", "Main Image"
       fileName.includes("main-image") ||
       fileName.includes("main_image") ||
       fileName.includes("mainimg")
     );
   }) || decodedImages[0];
-  console.log(
-  "🖼️ Product:",
-  subcategory,
-  "→ Main Image:",
-  mainImage.split("/").pop()
-);
+
+if (import.meta.env.PROD) {
+  console.log("🖼️ [PROD] Main Image:", mainImage.split("/").pop());
+}
 
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
