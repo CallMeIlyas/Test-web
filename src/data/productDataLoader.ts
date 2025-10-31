@@ -145,19 +145,27 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
 
 const mainImage =
   decodedImages.find((img) => {
+    // Ambil nama file terakhir dan normalisasi ke lowercase
     const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
-    // Hapus ekstensi & hash dulu supaya "main image" tetap terdeteksi
-    const baseName = fileName.replace(/\.[a-z0-9]+$/, ""); // hapus ekstensi
-    return (
-      baseName.includes("mainimage") ||
-      baseName.includes("main image") ||
-      baseName.includes("main-image") ||
-      baseName.includes("main_image") ||
-      baseName.startsWith("main")
-    );
+
+    // Hilangkan ekstensi dan hash vercel
+    const baseName = fileName
+      .replace(/\.[a-z0-9]+$/, "") // hapus .jpg/.jpeg/.png
+      .replace(/-[a-z0-9]{6,10}$/i, ""); // hapus hash build (contoh: -Dr8X1sDQ)
+
+    // Normalisasi semua spasi & simbol ke "mainimage"
+    const simplified = baseName.replace(/[\s_\-]+/g, "");
+
+    return simplified.includes("mainimage");
   }) || decodedImages[0];
 
     console.log("🖼️ Main pick for", subcategory, "→", mainImage.split("/").pop());
+    console.log("🧩 Checking files for:", subcategory);
+decodedImages.forEach(img => {
+  const f = decodeURIComponent(img.split("/").pop() || "");
+  console.log("   ↳", f);
+});
+console.log("👉 Main chosen:", mainImage.split("/").pop());
 
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
