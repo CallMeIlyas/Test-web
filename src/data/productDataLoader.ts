@@ -130,27 +130,22 @@ const get2DSizeFrameOptions = () => {
  * Case-insensitive & robust untuk Linux
  */
 function findMainImage(images: string[]): string {
-const decodedImages = images.map((img) => decodeURIComponent(img));
+  const decodedImages = images.map((img) => decodeURIComponent(img));
 
-const priorityImages = decodedImages.filter((url) => {
-const fileName = url.split("/").pop()?.toLowerCase() || "";
-const normalized = fileName
-.replace(/.[a-z0-9]+$/i, "") // hapus ekstensi
-.replace(/[^a-z0-9]/g, "");  // hapus spasi, dash, underscore, dll
+  const priorityImages = decodedImages.filter((url) => {
+    const fileName = url.split("/").pop()?.toLowerCase() || "";
+    const normalized = fileName
+      .replace(/\.[a-z0-9]+$/i, "") // hapus ekstensi
+      .replace(/[^a-z0-9]/g, "");  // hapus spasi, dash, underscore, dll
 
-// match “mainimage” di mana pun di nama  
-return normalized.includes("mainimage") || normalized === "main";
+    // match “mainimage” di mana pun di nama
+    return normalized.includes("mainimage") || normalized === "main";
+  });
 
-});
-
-// Jika ada main-image → pilih pertama
-if (priorityImages.length > 0) return priorityImages[0];
-
-// Kalau tidak ada, fallback ke gambar pertama alfabet
-return decodedImages.sort((a, b) => a.localeCompare(b))[0];
+  if (priorityImages.length > 0) return priorityImages[0];
+  return decodedImages.sort((a, b) => a.localeCompare(b))[0];
 }
-console.log("🖼️ Detected main image for:", groupKey, "→", mainImage);
-Gini
+
 
 // === Generate Semua Produk ===
 export const allProducts: Product[] = Object.entries(groupedImages).map(
