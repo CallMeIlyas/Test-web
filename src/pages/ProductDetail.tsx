@@ -95,7 +95,7 @@ const MOCK_PRODUCT_DATA = {
       name: "Additional Packing",
       price: 52800,
       imageUrl: new URL(
-        "../assets/list-products/3D/A0-80X110CM/packing-air-column-bags.jpg",
+        "../assets/list-products/3D/A0-80X110CM/PACKING AIR COLUMN BAGS.jpg",
         import.meta.url
       ).href,
     },
@@ -1123,7 +1123,7 @@ onClick={() => {
                   src={
                     item.name.toLowerCase().includes("faces")
                       ? new URL(
-                          "../assets/list-products/ADDITIONAL/BIAYA TAMBAHAN WAJAH KARIKATUR/tambahan-wajah-1.jpg",
+                          "../assets/list-products/ADDITIONAL/BIAYA TAMBAHAN WAJAH KARIKATUR/TAMBAHAN WAJAH 1.jpg",
                           import.meta.url
                         ).href
                       : item.imageUrl

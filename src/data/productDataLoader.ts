@@ -29,6 +29,7 @@ export const categoryMapping: Record<string, string> = {
 };
 
 // === Import Semua Gambar ===
+<<<<<<< HEAD
 // ✅ Kompatibel untuk semua OS (Windows/macOS/Linux/Vercel)
 // ✅ Baca semua varian case "2D" & "2d"
 // ✅ Support semua ekstensi umum
@@ -54,11 +55,25 @@ Object.keys(allMedia)
 // === Import variasi 2D ===
 const shadingImages = import.meta.glob(
   "../assets/list-products/2d/variations/shading/**/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
+=======
+const allMedia = import.meta.glob(
+  "../assets/list-products/**/*.{jpg,JPG,jpeg,png,mp4}",
+  { eager: true, import: "default" }
+) as Record<string, string>;
+
+// === Import variasi 2D ===
+const shadingImages = import.meta.glob(
+  "../assets/list-products/2D/variations/shading/**/*.{jpg,JPG,jpeg,png}",
+>>>>>>> f3527d8 (pesan bebas)
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
 const sizeFrameImages = import.meta.glob(
+<<<<<<< HEAD
   "../assets/list-products/2d/variations/size frame/*.{jpg,JPG,jpeg,JPEG,png,PNG}",
+=======
+  "../assets/list-products/2D/variations/size frame/*.{jpg,JPG,jpeg,png}",
+>>>>>>> f3527d8 (pesan bebas)
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
@@ -93,7 +108,7 @@ let subcategory = parts[baseIndex + 2] ? parts[baseIndex + 2].toLowerCase() : nu
   }
 
   // Abaikan file langsung
-  if (subcategory?.match(/\.(jpg|jpeg|png|mp4|jfif)$/i)) subcategory = null;
+  if (subcategory?.match(/\.(jpg|jpeg|png|mp4)$/i)) subcategory = null;
 
   const groupKey = subcategory ? `${rawCategory}/${subcategory}` : rawCategory;
   if (!groupedImages[groupKey]) groupedImages[groupKey] = [];
@@ -137,6 +152,7 @@ const get2DSizeFrameOptions = () => {
   return options;
 };
 
+<<<<<<< HEAD
 /**
  * ✅ Helper function untuk deteksi main image
  * Case-insensitive & robust untuk Linux
@@ -171,6 +187,8 @@ function findMainImage(images: string[]): string {
   return decodedImages[0];
 }
 
+=======
+>>>>>>> f3527d8 (pesan bebas)
 // === Generate Semua Produk ===
 export const allProducts: Product[] = Object.entries(groupedImages).map(
   ([groupKey, images], index) => {
@@ -178,6 +196,7 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
     const mappedCategory =
       categoryMapping[rawCategory.toUpperCase()] || rawCategory;
 
+<<<<<<< HEAD
     const mainImage = findMainImage(images);
 if (groupKey.startsWith("2d/")) {
   console.log("\n📂 Group:", groupKey);
@@ -198,6 +217,15 @@ if (groupKey.startsWith("2d/")) {
         ? `✅ main-image detected → ${mainImage.split("/").pop()}`
         : `⚠️ No main-image found, fallback → ${mainImage.split("/").pop()}`
     );
+=======
+    const decodedImages = images.map((img) => decodeURIComponent(img));
+    
+    const mainImage =
+      decodedImages.find((img) => {
+        const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
+        return fileName.includes("mainimage") || fileName.includes("main image");
+      }) || decodedImages[0];
+>>>>>>> f3527d8 (pesan bebas)
 
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
