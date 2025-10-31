@@ -133,11 +133,23 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
 
     const decodedImages = images.map((img) => decodeURIComponent(img));
     
-    const mainImage =
-      decodedImages.find((img) => {
-        const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
-        return fileName.includes("mainimage") || fileName.includes("main image");
-      }) || decodedImages[0];
+const mainImage =
+  decodedImages.find((img) => {
+    const fileName = decodeURIComponent(img.split("/").pop() || "").toLowerCase();
+    return (
+      fileName.includes("main image") || // cocok untuk "MAIN IMAGE.jpg"
+      fileName.includes("mainimage") ||
+      fileName.includes("main-image") ||
+      fileName.includes("main_image") ||
+      fileName.includes("mainimg")
+    );
+  }) || decodedImages[0];
+  console.log(
+  "🖼️ Product:",
+  subcategory,
+  "→ Main Image:",
+  mainImage.split("/").pop()
+);
 
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
