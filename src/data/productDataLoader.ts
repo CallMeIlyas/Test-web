@@ -30,7 +30,7 @@ export const categoryMapping: Record<string, string> = {
 
 // === Import Semua Gambar ===
 const allMedia = import.meta.glob(
-  "../assets/list-products/**/*.{jpg,JPG,jpeg,png,mp4}",
+  "../assets/list-products/**/**/*.{jpg,JPG,jpeg,png,mp4}",
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
