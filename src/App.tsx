@@ -1,70 +1,83 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState, useCallback } from "react";
-import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import OurProducts from "./pages/OurProducts";
-import Location from "./pages/Location";
-import BackgroundCatalog from "./pages/BackgroundCatalog";
-import Faq from "./pages/Faq";
-import TermsOfService from "./pages/TermsOfService";
-import ContactUs from "./pages/ContactUs";
-import ShoppingCart from "./pages/ShoppingCart";
-import { CartProvider } from "./context/CartContext";
-import ProductDetail from "./pages/ProductDetail";
-import PageTransition from "./utils/PageTransition";
-import SlideUpTransition from "./utils/SlideUpTransition";
-
-const App = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Handle pencarian global
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-  }, []);
-
-  return (
-    <CartProvider>
-      <Router>
-        <Routes>
-          <Route
-            element={
-              <PageTransition>
-                <Layout onSearch={handleSearch} />
-              </PageTransition>
-            }
-          >
-            <Route path="/" element={<Home />} />
-            <Route path="/location" element={<Location />} />
-            <Route path="/faq" element={<Faq />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/shoppingcart" element={<ShoppingCart />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-
-            <Route
-              path="/products"
-              element={
-                <SlideUpTransition>
-                  <OurProducts />
-                </SlideUpTransition>
-              }
-            />
-          </Route>
-
-          <Route
-            path="/background-catalog"
-            element={
-              <SlideUpTransition>
-                <Layout onSearch={handleSearch}>
-                  <BackgroundCatalog searchQuery={searchQuery} />
-                </Layout>
-              </SlideUpTransition>
-            }
-          />
-        </Routes>
-      </Router>
-    </CartProvider>
-  );
-};
-
-export default App;
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";  
+import { useState, useCallback } from "react";  
+import Layout from "./components/Layout";  
+import Home from "./pages/Home";  
+import OurProducts from "./pages/OurProducts";  
+import SizeGuide from "./pages/SizeGuide";  
+import Location from "./pages/Location";  
+import BackgroundCatalog from "./pages/BackgroundCatalog";  
+import Faq from "./pages/Faq";  
+import TermsOfService from "./pages/TermsOfService";  
+import ContactUs from "./pages/ContactUs";  
+import ShoppingCart from "./pages/ShoppingCart";  
+import ProductDetail from "./pages/ProductDetail";  
+  
+import { CartProvider } from "./context/CartContext";  
+import PageTransition from "./utils/PageTransition";  
+import SlideUpTransition from "./utils/SlideUpTransition";  
+import SmoothScrollProvider from "./utils/SmoothScrollProvider";  
+  
+const App = () => {  
+  const [searchQuery, setSearchQuery] = useState("");  
+  
+  const handleSearch = useCallback((query: string) => {  
+    setSearchQuery(query);  
+  }, []);  
+  
+  return (  
+    <CartProvider>  
+      <Router>  
+        {/* ✅ PageTransition di luar agar tiap route smooth */}  
+        <PageTransition>  
+          {/* 🎢 Smooth scroll hanya untuk konten, tidak untuk overlay */}  
+          <SmoothScrollProvider>  
+            <Routes>  
+              <Route element={<Layout onSearch={handleSearch} />}>  
+                <Route path="/" element={<Home />} />  
+                <Route path="/location" element={<Location />} />  
+                <Route path="/faq" element={<Faq />} />  
+                <Route path="/terms" element={<TermsOfService />} />  
+                <Route path="/contact" element={<ContactUs />} />  
+                <Route path="/shoppingcart" element={<ShoppingCart />} />  
+                <Route path="/product/:id" element={<ProductDetail />} />  
+  
+                {/* ✅ Tambahkan SizeGuide di dalam Layout utama */}  
+                <Route  
+                  path="/size-guide"  
+                  element={  
+                    <SlideUpTransition>  
+                      <SizeGuide />  
+                    </SlideUpTransition>  
+                  }  
+                />  
+  
+                <Route  
+                  path="/products"  
+                  element={  
+                    <SlideUpTransition>  
+                      <OurProducts />  
+                    </SlideUpTransition>  
+                  }  
+                />  
+              </Route>  
+  
+              {/* Background Catalog di luar Layout utama */}  
+              <Route  
+                path="/background-catalog"  
+                element={  
+                  <SlideUpTransition>  
+                    <Layout onSearch={handleSearch}>  
+                      <BackgroundCatalog searchQuery={searchQuery} />  
+                    </Layout>  
+                  </SlideUpTransition>  
+                }  
+              />  
+            </Routes>  
+          </SmoothScrollProvider>  
+        </PageTransition>  
+      </Router>  
+    </CartProvider>  
+  );  
+};  
+  
+export default App;  
