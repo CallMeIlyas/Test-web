@@ -1,6 +1,8 @@
 import { useState, useEffect, type FC } from "react";
 import type { VideoItem } from "../../types/types";
 import useScrollFloat from "../../utils/scrollFloat"; 
+import { useNavigate } from "react-router-dom";
+import { allProducts } from "../../data/productDataLoader";
 
 import IGIcon from "../../assets/Icons/IG.png";
 import TikTokIcon from "../../assets/Icons/TIKTOD2.png";
@@ -19,6 +21,59 @@ const GallerySection: FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
+const navigate = useNavigate();
+
+const handleLabelClick = (label: string, e: React.MouseEvent) => {
+  e.stopPropagation();
+
+  // Ambil bagian ukuran utama (misal "12R / A3 30x40cm" -> "12R")
+  const cleanLabel = label.split(/[\/\s(]/)[0].trim().toLowerCase();
+
+  // Ambil semua produk 3D Frame
+  const frameProducts = allProducts.filter(
+    (p) => p.category?.toLowerCase() === "3d frame"
+  );
+
+  // Cari produk 3D Frame yang cocok banget dengan ukuran
+  const strictMatch = frameProducts.find((p) => {
+    const name = p.name.trim().toLowerCase();
+    // nama mengandung ukuran, tapi tidak ada kata "ai"
+    return (
+      name.includes(cleanLabel) &&
+      !name.includes("ai") &&
+      !name.includes("artificial") &&
+      !name.includes("preview")
+    );
+  });
+
+  if (strictMatch) {
+    navigate(`/product/${strictMatch.id}`, {
+      state: {
+        ...strictMatch,
+        specialVariations: strictMatch.specialVariations || [],
+        details: strictMatch.details || {},
+      },
+    });
+    return;
+  }
+
+  // fallback ke versi biasa kalau gak ketemu
+  const fallback = frameProducts.find((p) =>
+    p.name.trim().toLowerCase().includes(cleanLabel)
+  );
+
+  if (fallback) {
+    navigate(`/product/${fallback.id}`, {
+      state: {
+        ...fallback,
+        specialVariations: fallback.specialVariations || [],
+        details: fallback.details || {},
+      },
+    });
+  } else {
+    console.warn("❌ Produk tidak ditemukan untuk label:", cleanLabel);
+  }
+};
 
   useScrollFloat(".scroll-float", {
     yIn: 50,
@@ -47,10 +102,10 @@ const GallerySection: FC = () => {
   ];
 
   const photos = [
-    { id: 1, image: foto1, label: "12R" },
-    { id: 2, image: foto2, label: "10R" },
-    { id: 3, image: foto3, label: "12R" },
-    { id: 4, image: foto4, label: "12R" },
+    { id: 1, image: foto1, label: "12R / A3 30x40cm" },
+    { id: 2, image: foto2, label: "10R / A4 25x30cm" },
+    { id: 3, image: foto3, label: "12R / A3 30x40cm" },
+    { id: 4, image: foto4, label: "12R / A3 30x40cm" },
     { id: 5, image: foto5, label: "A0 (80×110 cm)" },
   ];
 
@@ -142,21 +197,24 @@ const GallerySection: FC = () => {
             
                 {/* 🔖 Tombol ukuran di tengah bawah */}
                 {photo.label && (
-                  <div
-                    className="
-                      absolute bottom-4 left-1/2 -translate-x-1/2
-                      bg-white/95 backdrop-blur-sm text-black 
-                      font-semibold text-sm md:text-[15px]
-                      px-4 md:px-5 py-[6px] md:py-2
-                      rounded-full shadow-lg
-                      whitespace-nowrap
-                      transition-all duration-300
-                      group-hover:scale-105 group-hover:shadow-xl
-                    "
-                  >
-                    {photo.label}
-                  </div>
-                )}
+  <button
+    onClick={(e) => handleLabelClick(photo.label, e)}
+    className="
+      absolute bottom-4 left-4
+      flex items-center gap-2
+      bg-white/20 backdrop-blur-lg
+      text-white font-semibold text-sm md:text-[15px]
+      px-4 py-[6px] md:py-2
+      rounded-full shadow-lg border border-white/30
+      whitespace-nowrap
+      transition-all duration-300
+      hover:scale-105 hover:shadow-xl hover:bg-white/30
+    "
+  >
+    <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-sm"></span>
+    {photo.label}
+  </button>
+)}
               </div>
             ))}
               </div>
@@ -237,22 +295,25 @@ const GallerySection: FC = () => {
                 />
             
                 {/* Tombol ukuran di tengah bawah */}
-                {photo.label && (
-                  <div
-                    className="
-                      absolute bottom-4 left-1/2 -translate-x-1/2
-                      bg-white/95 backdrop-blur-sm text-black 
-                      font-semibold text-sm md:text-[15px]
-                      px-4 md:px-5 py-[6px] md:py-2
-                      rounded-full shadow-lg
-                      whitespace-nowrap
-                      transition-all duration-300
-                      group-hover:scale-105 group-hover:shadow-xl
-                    "
-                  >
-                    {photo.label}
-                  </div>
-                )}
+               {photo.label && (
+  <button
+    onClick={(e) => handleLabelClick(photo.label, e)}
+    className="
+      absolute bottom-4 left-4
+      flex items-center gap-2
+      bg-white/20 backdrop-blur-lg
+      text-white font-semibold text-sm md:text-[15px]
+      px-4 py-[6px] md:py-2
+      rounded-full shadow-lg border border-white/30
+      whitespace-nowrap
+      transition-all duration-300
+      hover:scale-105 hover:shadow-xl hover:bg-white/30
+    "
+  >
+    <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-sm"></span>
+    {photo.label}
+  </button>
+)}
               </div>
             ))}
               </div>
