@@ -1,59 +1,58 @@
-import React, { useEffect, useRef } from "react";
+// utils/SmoothScrollProvider.tsx
+import React, { useEffect } from "react";
+import Lenis from "@studio-freight/lenis";
 import gsap from "gsap";
-import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-gsap.registerPlugin(ScrollSmoother, ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger);
 
 const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const smootherRef = useRef<ScrollSmoother | null>(null);
-
   useEffect(() => {
-    if (!wrapperRef.current || !contentRef.current) return;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    let lenis: Lenis | null = null;
+    let rafId: number;
 
-    // 🔥 Inisialisasi sekali saja
-    if (!smootherRef.current) {
-      smootherRef.current = ScrollSmoother.create({
-        wrapper: wrapperRef.current,
-        content: contentRef.current,
-        smooth: 6.5,
-        smoothTouch: 1.2,
-        inertia: 1.3,
-        speed: 0.6,
-        normalizeScroll: true,
-        ignoreMobileResize: true,
-        effects: true,
+    // 🧠 Desktop pakai smooth inertia, Mobile pakai scroll native
+    if (!isMobile) {
+      lenis = new Lenis({
+        duration: 1.6,           // smooth halus kayak GSAP ScrollSmoother
+        smoothWheel: true,
+        smoothTouch: false,      // disable inertia di mobile
+        touchMultiplier: 1.4,
+        wheelMultiplier: 1.15,
+        lerp: 0.08,              // ~ smooth:6.5 equivalent
+        easing: (t: number) => 1 - Math.pow(1 - t, 3),
       });
 
-      gsap.ticker.fps(120);
-      gsap.ticker.lagSmoothing(1500, 16);
-      ScrollTrigger.refresh(true);
+      const raf = (time: number) => {
+        lenis!.raf(time);
+        gsap.ticker.tick(time / 1000);
+        rafId = requestAnimationFrame(raf);
+      };
+      rafId = requestAnimationFrame(raf);
     }
 
-    // 🚀 Refresh halus setiap transisi selesai
+    // 🚀 Sinkronisasi dengan PageTransition
     const handleTransitionDone = () => {
-      setTimeout(() => {
-        smootherRef.current?.refresh();
-        smootherRef.current?.scrollTo(0, false);
-      }, 100);
+      if (lenis) {
+        lenis.scrollTo(0, { immediate: true });
+        ScrollTrigger.refresh(true);
+      } else {
+        ScrollTrigger.refresh(true);
+        window.scrollTo({ top: 0 });
+      }
     };
 
     window.addEventListener("pageTransition:done", handleTransitionDone);
 
     return () => {
+      cancelAnimationFrame(rafId);
       window.removeEventListener("pageTransition:done", handleTransitionDone);
+      lenis?.destroy();
     };
   }, []);
 
-  return (
-    <div id="smooth-wrapper" ref={wrapperRef}>
-      <div id="smooth-content" ref={contentRef}>
-        {children}
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 };
 
 export default SmoothScrollProvider;
