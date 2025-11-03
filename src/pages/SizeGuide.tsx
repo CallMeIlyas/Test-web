@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Footer from "../components/home/Footer";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import ReactDOM from "react-dom";
 
 // 🖼️ Import semua gambar
 import mainImage1 from "../assets/size-guide/main-image1.png";
@@ -16,11 +17,11 @@ import onHand6 from "../assets/size-guide/6.png";
 const SizeGuide: React.FC = () => {
   const images = [onHand1, onHand2, onHand3, onHand4, onHand5, onHand6];
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [zoomed, setZoomed] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // ✨ Fade-in on scroll
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
 
+  // ✨ Fade-in observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -31,31 +32,38 @@ const SizeGuide: React.FC = () => {
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 }
     );
 
     sectionsRef.current.forEach((el) => el && observer.observe(el));
+    setTimeout(() => window.dispatchEvent(new Event("resize")), 500);
     return () => observer.disconnect();
   }, []);
 
-      const SectionTitle = ({ title }: { title: string }) => (
-        <div className="relative my-8 mb-10 text-center w-screen left-1/2 -translate-x-1/2">
-          <h1 className="inline-block px-5 text-4xl md:text-5xl font-nataliecaydence relative z-10">
-            {title}
-          </h1>
-          <div className="absolute top-1/2 left-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
-          <div className="absolute top-1/2 right-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
-        </div>
-      );
+  const SectionTitle = ({ title }: { title: string }) => (
+    <div className="relative my-8 mb-10 text-center w-screen left-1/2 -translate-x-1/2">
+      <h1 className="inline-block px-5 text-4xl md:text-5xl font-nataliecaydence relative z-10">
+        {title}
+      </h1>
+      <div className="absolute top-1/2 left-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
+      <div className="absolute top-1/2 right-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
+    </div>
+  );
 
   // 🧭 Navigasi carousel
-  const prevImage = () => {
+  const prevImage = () =>
     setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-  const nextImage = () => {
+  const nextImage = () =>
     setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
 
+  // 🚫 Nonaktifkan scroll saat fullscreen aktif
+  useEffect(() => {
+    if (selectedImage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [selectedImage]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -70,7 +78,7 @@ const SizeGuide: React.FC = () => {
             <img
               src={mainImage1}
               alt="Frame Size Base"
-              className="rounded-lg shadow-lg w-full md:w-4/5 lg:w-3/4 object-contain"
+              className="w-full md:w-4/5 lg:w-3/4 object-contain"
             />
             <img
               src={mainImage2}
@@ -90,7 +98,7 @@ const SizeGuide: React.FC = () => {
             <img
               src={mainImage3}
               alt="Size Comparison"
-              className="rounded-lg shadow-lg w-full md:w-4/5 lg:w-3/4 object-contain"
+              className="w-full md:w-4/5 lg:w-3/4 object-contain"
             />
           </div>
         </section>
@@ -102,22 +110,24 @@ const SizeGuide: React.FC = () => {
         >
           <SectionTitle title="Size on Hand" />
 
-          <div className="relative flex justify-center items-center overflow-hidden px-10">
-            {/* Gambar kiri & kanan sebagai preview */}
-            <div className="flex items-center justify-center w-full">
+          <div className="relative flex justify-center items-center overflow-visible px-10">
+            <div className="flex items-center justify-center w-full relative min-h-[400px]">
               {images.map((img, index) => {
-                const position =
-                  index === currentIndex
-                    ? "scale-100 opacity-100 z-20"
-                    : index === (currentIndex + 1) % images.length ||
-                      (currentIndex === images.length - 1 && index === 0)
-                    ? "scale-90 opacity-70 translate-x-[5%] z-10"
-                    : index ===
-                        (currentIndex === 0
-                          ? images.length - 1
-                          : currentIndex - 1)
-                    ? "-translate-x-[5%] scale-90 opacity-70 z-10"
-                    : "hidden";
+                const isActive = index === currentIndex;
+                const isNext = index === (currentIndex + 1) % images.length;
+                const isPrev =
+                  index ===
+                  (currentIndex === 0
+                    ? images.length - 1
+                    : currentIndex - 1);
+
+                const position = isActive
+                  ? "scale-100 opacity-100 z-20"
+                  : isNext
+                  ? "translate-x-[15%] scale-90 opacity-70 z-10"
+                  : isPrev
+                  ? "-translate-x-[15%] scale-90 opacity-70 z-10"
+                  : "opacity-0 pointer-events-none";
 
                 return (
                   <img
@@ -125,13 +135,13 @@ const SizeGuide: React.FC = () => {
                     src={img}
                     alt={`On Hand ${index + 1}`}
                     className={`absolute transition-all duration-700 ease-in-out rounded-xl shadow-xl cursor-pointer w-[85vw] md:w-[55vw] lg:w-[40vw] object-cover ${position}`}
-                    onClick={() => setZoomed(img)}
+                    onClick={() => setSelectedImage(img)}
                   />
                 );
               })}
             </div>
 
-            {/* Tombol navigasi kiri-kanan */}
+            {/* Tombol navigasi */}
             <button
               onClick={prevImage}
               className="absolute left-4 md:left-10 bg-white/70 hover:bg-white text-black p-2 rounded-full shadow-md z-30"
@@ -150,22 +160,41 @@ const SizeGuide: React.FC = () => {
 
       <Footer />
 
-      {/* ========== MODAL ZOOMED IMAGE ========== */}
-      {zoomed && (
-        <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-50">
-          <button
-            onClick={() => setZoomed(null)}
-            className="absolute top-5 right-5 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
-          >
-            <X className="w-6 h-6 text-black" />
-          </button>
-          <img
-            src={zoomed}
-            alt="Zoomed"
-            className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl transition-transform duration-500"
-          />
-        </div>
-      )}
+      {/* ✅ Fullscreen Preview */}
+{selectedImage &&
+  ReactDOM.createPortal(
+    <div
+      className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center animate-fadeIn"
+      onClick={() => setSelectedImage(null)}
+    >
+      {/* Tombol close */}
+      <button
+        className="absolute top-6 right-6 bg-black/60 hover:bg-black/80 text-white text-3xl font-bold w-10 h-10 rounded-full flex items-center justify-center z-[1000]"
+        onClick={() => setSelectedImage(null)}
+      >
+        ✕
+      </button>
+
+      {/* Gambar tengah */}
+      <div
+        className="relative flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={selectedImage}
+          alt="Full view"
+          className="
+            object-contain rounded-xl shadow-2xl
+            max-w-[80vw] max-h-[80vh]
+            md:max-w-[70vw] md:max-h-[80vh]
+            transition-transform duration-300 ease-out
+            scale-100 hover:scale-[1.03]
+          "
+        />
+      </div>
+    </div>,
+    document.body
+  )}
     </div>
   );
 };

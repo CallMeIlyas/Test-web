@@ -13,6 +13,7 @@ import foto1 from "../../assets/karya/foto/foto1.jpeg";
 import foto2 from "../../assets/karya/foto/foto2.jpeg";
 import foto3 from "../../assets/karya/foto/foto3.jpeg";
 import foto4 from "../../assets/karya/foto/foto4.jpeg";
+import foto5 from "../../assets/karya/foto/foto5.jpeg";
 
 const GallerySection: FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -46,10 +47,11 @@ const GallerySection: FC = () => {
   ];
 
   const photos = [
-    { id: 1, image: foto1 },
-    { id: 2, image: foto2 },
-    { id: 3, image: foto3 },
-    { id: 4, image: foto4 },
+    { id: 1, image: foto1, label: "12R" },
+    { id: 2, image: foto2, label: "10R" },
+    { id: 3, image: foto3, label: "12R" },
+    { id: 4, image: foto4, label: "12R" },
+    { id: 5, image: foto5, label: "A0 (80×110 cm)" },
   ];
 
   return (
@@ -122,23 +124,41 @@ const GallerySection: FC = () => {
               </a>
             </div>
 
-            {/* Photo Grid Section */}
-            <div className="float-item mt-8">
-              <div className="grid grid-cols-1 gap-4 w-full">
+            {/* Photo Grid Section (desktop) */}
+            <div className="scroll-float mt-16 max-w-2xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                 {photos.map((photo) => (
+              <div
+                key={photo.id}
+                className="relative float-item aspect-[9/16] overflow-hidden rounded-xl shadow-md transition-transform duration-300 bg-gray-100 scale-90 hover:scale-100 cursor-pointer group"
+                onClick={() => setSelectedImage(photo.image)}
+              >
+                <img
+                  src={photo.image}
+                  alt={`Gallery photo ${photo.id}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+            
+                {/* 🔖 Tombol ukuran di tengah bawah */}
+                {photo.label && (
                   <div
-                    key={photo.id}
-                    className="aspect-[9/16] overflow-hidden rounded-xl shadow-md bg-gray-100 cursor-pointer"
-                    onClick={() => setSelectedImage(photo.image)}
+                    className="
+                      absolute bottom-4 left-1/2 -translate-x-1/2
+                      bg-white/95 backdrop-blur-sm text-black 
+                      font-semibold text-sm md:text-[15px]
+                      px-4 md:px-5 py-[6px] md:py-2
+                      rounded-full shadow-lg
+                      whitespace-nowrap
+                      transition-all duration-300
+                      group-hover:scale-105 group-hover:shadow-xl
+                    "
                   >
-                    <img
-                      src={photo.image}
-                      alt={`Gallery photo ${photo.id}`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
+                    {photo.label}
                   </div>
-                ))}
+                )}
+              </div>
+            ))}
               </div>
             </div>
           </div>
@@ -203,39 +223,38 @@ const GallerySection: FC = () => {
               className="scroll-float mt-16 max-w-2xl mx-auto"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-                {photos.map((photo, index) => {
-                  if (index === 3) {
-                    return (
-                      <div
-                        key={photo.id}
-                        className="float-item col-span-1 lg:col-start-2 aspect-[9/16] overflow-hidden rounded-xl shadow-md transition-transform duration-300 bg-gray-100 scale-90 hover:scale-100 cursor-pointer"
-                        onClick={() => setSelectedImage(photo.image)}
-                      >
-                        <img
-                          src={photo.image}
-                          alt={`Gallery photo ${photo.id}`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div
-                      key={photo.id}
-                      className="float-item aspect-[9/16] overflow-hidden rounded-xl shadow-md transition-transform duration-300 bg-gray-100 scale-90 hover:scale-100 cursor-pointer"
-                      onClick={() => setSelectedImage(photo.image)}
-                    >
-                      <img
-                        src={photo.image}
-                        alt={`Gallery photo ${photo.id}`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  );
-                })}
+                {photos.map((photo) => (
+              <div
+                key={photo.id}
+                className="relative float-item aspect-[9/16] overflow-hidden rounded-xl shadow-md transition-transform duration-300 bg-gray-100 scale-90 hover:scale-100 cursor-pointer group"
+                onClick={() => setSelectedImage(photo.image)}
+              >
+                <img
+                  src={photo.image}
+                  alt={`Gallery photo ${photo.id}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+            
+                {/* Tombol ukuran di tengah bawah */}
+                {photo.label && (
+                  <div
+                    className="
+                      absolute bottom-4 left-1/2 -translate-x-1/2
+                      bg-white/95 backdrop-blur-sm text-black 
+                      font-semibold text-sm md:text-[15px]
+                      px-4 md:px-5 py-[6px] md:py-2
+                      rounded-full shadow-lg
+                      whitespace-nowrap
+                      transition-all duration-300
+                      group-hover:scale-105 group-hover:shadow-xl
+                    "
+                  >
+                    {photo.label}
+                  </div>
+                )}
+              </div>
+            ))}
               </div>
             </div>
           </>
@@ -265,4 +284,4 @@ const GallerySection: FC = () => {
   );
 };
 
-export default GallerySection;
+export default GallerySection
