@@ -102,7 +102,7 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
   ];
 
   const photos = [
-    { id: 1, image: foto1, label: "12R / A3 30x40cm" },
+    { id: 1, image: foto1, label: "A2 (40×55CM)" },
     { id: 2, image: foto2, label: "10R / A4 25x30cm" },
     { id: 3, image: foto3, label: "12R / A3 30x40cm" },
     { id: 4, image: foto4, label: "12R / A3 30x40cm" },
