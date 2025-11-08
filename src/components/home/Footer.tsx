@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import logoFooter from "../../assets/logo/logo-amora-footer2.png";
+import {useTranslation} from "react-i18next";
 
 const Footer = () => {
   const [isMobile, setIsMobile] = useState(false);
-
+  const { t } = useTranslation();
+  
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -31,7 +33,7 @@ const Footer = () => {
                 href="/terms"
                 className="no-underline text-black font-poppinsBold whitespace-nowrap text-sm"
               >
-                Terms of Service
+                {t("footer.terms")}
               </a>
             </li>
             <li>
@@ -39,7 +41,7 @@ const Footer = () => {
                 href="/contact"
                 className="no-underline text-black font-poppinsBold whitespace-nowrap text-sm"
               >
-                Contact Us
+                {t("footer.contact")}
               </a>
             </li>
           </ul>
@@ -52,14 +54,14 @@ const Footer = () => {
             alt="Little Amora Logo"
             className="h-[86px] -translate-x-20"
           />
-          {/* ubah ke flex-row juga */}
+          {/* ubah ke flex-row */}
           <ul className="flex flex-row gap-x-8 p-0 m-0 text-right translate-x-20">
             <li>
               <a
                 href="/terms"
                 className="no-underline text-black font-poppinsBold whitespace-nowrap text-base"
               >
-                Terms of Service
+                {t("footer.terms")}
               </a>
             </li>
             <li>
@@ -67,7 +69,7 @@ const Footer = () => {
                 href="/contact"
                 className="no-underline text-black font-poppinsBold whitespace-nowrap text-base"
               >
-                Contact Us
+                {t("footer.contact")}
               </a>
             </li>
           </ul>

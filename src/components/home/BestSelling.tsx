@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { allProducts } from "../../data/productDataLoader";
 import type { Product } from "../../data/productDataLoader";
-import { useScrollFloat } from "../../utils/scrollFloat"; 
+import { useScrollFloat } from "../../utils/scrollFloat";
+import { useTranslation } from "react-i18next";
 
 // 🖼️ Import gambar best selling
 import img10R from "../../assets/karya/10R.jpg";
@@ -13,6 +14,7 @@ import imgA1 from "../../assets/karya/80x110cm.jpeg";
 const BestSelling = () => {
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Jalankan animasi scroll halus
   useScrollFloat(".scroll-float");
@@ -26,47 +28,20 @@ const BestSelling = () => {
 
   // 🗺️ Data best selling
   const bestSellingMap = [
-    {
-      displayName: "10R / A4 25x30cm",
-      match: "10R",
-      target3D: "10R",
-      imageUrl: img10R,
-    },
-    {
-      displayName: "12R / A3 30x40cm",
-      match: "12R",
-      target3D: "12R",
-      imageUrl: img12R,
-    },
-    {
-      displayName: "A2 40x55cm",
-      match: "A2-40X55CM",
-      target3D: "A1-55X80CM",
-      imageUrl: imgA2,
-    },
-    {
-      displayName: "A1 55x80cm",
-      match: "A1-55X80CM",
-      target3D: "A0-80X110CM",
-      imageUrl: imgA1,
-    },
+    { displayName: "10R / A4 25x30cm", match: "10R", target3D: "10R", imageUrl: img10R },
+    { displayName: "12R / A3 30x40cm", match: "12R", target3D: "12R", imageUrl: img12R },
+    { displayName: "A2 40x55cm", match: "A2-40X55CM", target3D: "A1-55X80CM", imageUrl: imgA2 },
+    { displayName: "A1 55x80cm", match: "A1-55X80CM", target3D: "A0-80X110CM", imageUrl: imgA1 },
   ];
 
-  // 🎯 Ambil produk yang sesuai di allProducts (khusus kategori 3D Frame)
+  // 🎯 Ambil produk yang sesuai
   const bestSellingProducts = bestSellingMap
     .map((b) => {
       const found = allProducts.find(
-        (p) =>
-          p.category === "3D Frame" &&
-          p.name.toLowerCase().includes(b.match.toLowerCase())
+        (p) => p.category === "3D Frame" && p.name.toLowerCase().includes(b.match.toLowerCase())
       );
       return found
-        ? {
-            ...found,
-            displayName: b.displayName,
-            target3D: b.target3D,
-            imageUrl: b.imageUrl,
-          }
+        ? { ...found, displayName: b.displayName, target3D: b.target3D, imageUrl: b.imageUrl }
         : null;
     })
     .filter(Boolean) as (Product & {
@@ -78,9 +53,7 @@ const BestSelling = () => {
   const handleCardClick = (product: Product & { target3D: string }) => {
     const targetName = product.target3D.trim().toLowerCase();
     const targetProduct = allProducts.find(
-      (p) =>
-        p.category === "3D Frame" &&
-        p.name.trim().toLowerCase() === targetName
+      (p) => p.category === "3D Frame" && p.name.trim().toLowerCase() === targetName
     );
 
     if (targetProduct) {
@@ -101,15 +74,13 @@ const BestSelling = () => {
         <div className="absolute top-0 right-0 w-1/4 border-t-[5px] border-black"></div>
       </div>
 
-      <section
-        className={`bg-white ${isMobile ? "py-8" : "py-16"} scroll-float`}
-      >
+      <section className={`bg-white ${isMobile ? "py-8" : "py-16"} scroll-float`}>
         <h2
           className={`font-nataliecaydence text-center text-black ${
             isMobile ? "text-3xl mb-6" : "text-[46px] text-4xl mb-10"
           } scroll-float`}
         >
-          Best Selling Frames
+          {t("bestSelling.title")}
         </h2>
 
         <div
@@ -130,9 +101,7 @@ const BestSelling = () => {
                 alt={product.displayName}
                 className="w-full h-48 object-cover rounded-lg mb-4 group-hover:scale-110 transition-transform duration-500"
               />
-              <p className="m-2.5 font-bold text-gray-600 text-base">
-                {product.displayName}
-              </p>
+              <p className="m-2.5 font-bold text-gray-600 text-base">{product.displayName}</p>
             </div>
           ))}
         </div>

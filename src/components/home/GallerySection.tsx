@@ -3,6 +3,7 @@ import type { VideoItem } from "../../types/types";
 import useScrollFloat from "../../utils/scrollFloat"; 
 import { useNavigate } from "react-router-dom";
 import { allProducts } from "../../data/productDataLoader";
+import { useTranslation } from "react-i18next";
 
 import IGIcon from "../../assets/Icons/IG.png";
 import TikTokIcon from "../../assets/Icons/TIKTOD2.png";
@@ -21,7 +22,8 @@ const GallerySection: FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
 const handleLabelClick = (label: string, e: React.MouseEvent) => {
   e.stopPropagation();
@@ -123,7 +125,7 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
             isMobile ? "text-3xl mb-6" : "text-[46px] mb-10"
           }`}
         >
-          Our Gallery
+          {t("gallery.title")}
         </h2>
 
         {isMobile ? (
@@ -228,7 +230,7 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
             >
               {/* Instagram Button */}
               <div className="float-item social-wrapper">
-                <span className="social-title">Photo Gallery</span>
+                <span className="social-title">{t("gallery.photo")}</span>
                 <a
                   href="https://www.instagram.com/alittleamora"
                   className="social-button"
@@ -259,7 +261,7 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
 
               {/* TikTok Button */}
               <div className="float-item social-wrapper">
-                <span className="social-title">Video Gallery</span>
+                <span className="social-title">{t("gallery.video")}</span>
                 <a
                   href="https://www.tiktok.com/@alittleamora"
                   className="social-button"
