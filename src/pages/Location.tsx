@@ -1,10 +1,11 @@
 import React from "react";
 import Footer from "../components/home/Footer";
 import LocationSection from "../components/location/LocationSection";
+import { useTranslation } from "react-i18next";
 
 interface LocationData {
   city: string;
-  gmapsLink?: string; 
+  gmapsLink?: string;
   description: (string | React.ReactNode)[];
   whatsapp: {
     number: string;
@@ -21,14 +22,16 @@ interface LocationData {
 }
 
 const Location: React.FC = () => {
+  const { t } = useTranslation();
+
   const locations: LocationData[] = [
     {
       city: "Bogor",
       gmapsLink: "https://share.google/3NK3xtA32ThyT5hxH",
       description: [
-        "Our original production process based in Bogor.",
-        "Currently offline store not available, only online store.",
-        "Our team or customer can order courier to pickup from this address below.",
+        t("location.bogor.desc1"),
+        t("location.bogor.desc2"),
+        t("location.bogor.desc3"),
       ],
       whatsapp: {
         name: "Claresta",
@@ -54,11 +57,12 @@ const Location: React.FC = () => {
       city: "Jakarta",
       gmapsLink: "https://share.google/12ERghjGjZ2vg6dbK",
       description: [
-        "Our team or customer can order courier to pickup from this address below.",
-        "Please note, this address only for small or medium frame size,",
+        t("location.jakarta.desc1"),
+        t("location.jakarta.desc2"),
         <>
-          maximum{" "}
-          <span className="font-poppinsSemiBold">1 pcs 10R or 1 pcs 12R.</span>
+          <span className="font-poppinsSemiBold">
+            {t("location.jakarta.desc3")}
+          </span>
         </>,
       ],
       whatsapp: {
@@ -84,14 +88,16 @@ const Location: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow">
+        {/* 🌍 Section Title */}
         <div className="relative my-8 mb-10 text-center">
           <h1 className="inline-block px-5 text-4xl md:text-5xl font-nataliecaydence relative z-10">
-            Location
+            {t("location.title")}
           </h1>
           <div className="absolute top-1/2 left-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
           <div className="absolute top-1/2 right-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
         </div>
 
+        {/* 📍 Render lokasi */}
         {locations.map((location, index) => (
           <LocationSection
             key={`${location.city}-${index}`}
@@ -100,6 +106,7 @@ const Location: React.FC = () => {
           />
         ))}
       </main>
+
       <Footer />
     </div>
   );

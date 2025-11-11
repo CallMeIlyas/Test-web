@@ -1,0 +1,30 @@
+{
+  "category": "Kategori",
+  "categories": {
+    "3d": "3D Frame",
+    "2d": "2D Frame",
+    "additional": "Tambahan",
+    "acrylic": "Plakat Acrylic",
+    "softcopy": "Desainnya Aja"
+  },
+  "subcategories": {
+    "backgroundCustom": "Background Custom",
+    "boldShading": "Tambahan Wajah Bold Shading",
+    "byAI": "Tambahan Wajah by AI",
+    "caricature": "Tambahan Wajah Karikatur",
+    "acrylic2cm": "Plakat Acrylic 2CM",
+    "acrylic3mm": "Plakat Acrylic 3MM",
+    "withBackgroundCatalog": "Dengan Background Katalog",
+    "withBackgroundCustom": "Dengan Background Custom",
+    "withoutBackground": "Tanpa Background"
+  },
+  "shippedFrom": "Dikirim Dari",
+  "from": {
+    "bogor": "Bogor",
+    "jakarta": "Jakarta"
+  },
+  "shippedTo": "Dikirim Ke",
+  "to": {
+    "worldwide": "Luar Negeri"
+  }
+}

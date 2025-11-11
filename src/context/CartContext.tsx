@@ -103,12 +103,47 @@ const cleanProductName = rawName
   .replace(/\s\/\s/g, " / ")     // pastikan jarak di tanda "/"
   .trim();
 
-    // === Produk utama ===
+// === Produk utama (otomatis untuk 2D Frame) ===
+
+// deteksi apakah produk 2D Frame
+const is2DFrame = rest.name?.toLowerCase().includes("2d");
+
+// ambil atribut frame size & shading style (dikirim dari ProductDetail)
+const frameSize = attributes?.frameSize?.toLowerCase() || "";
+const shadingStyle = attributes?.shadingStyle?.toLowerCase() || "";
+
+// siapkan daftar harga 2D frame
+const twoDPrices = Object.fromEntries(
+  Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
+);
+
+// tentukan kombinasi key (contoh: "8r bold shading")
+let priceKey = `${frameSize} ${shadingStyle}`.trim();
+
+// fallback kalau shading kosong → simple shading
+if (!twoDPrices[priceKey] && frameSize) {
+  priceKey = `${frameSize} simple shading`;
+}
+
+// ambil harga sesuai pricelist atau fallback ke base
+const autoPrice = is2DFrame ? twoDPrices[priceKey] || rest.price || 0 : rest.price;
+
+// buat nama produk agar jelas
+const productName = is2DFrame
+  ? `2D Frame ${frameSize.toUpperCase()} ${shadingStyle
+      .replace(/^2d\s+/i, "")
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .replace("Ai", "AI")
+      .trim()}`
+  : cleanProductName;
+
+// buat produk utama
 const mainCartItem: CartItem = {
   ...rest,
-  name: cleanProductName, 
+  name: productName,
   cartId: uuidv4(),
   quantity: rest.quantity || 1,
+  price: autoPrice,
   productType: isAdditionalOrSoftcopy ? "additional" : "frame",
   variationOptions:
     isAdditionalOrSoftcopy && detectedVariants.length > 0
@@ -156,22 +191,30 @@ const mainCartItem: CartItem = {
       });
     }
 
-    // 🎨 Background
-    const bgName = bgSelected === "BG Custom" ? "Background Custom" : "Background Default";
-    newItems.push({
-      cartId: uuidv4(),
-      parentCartId: mainCartItem.cartId,
-      id: `${rest.id}-bg`,
-      name: bgName,
-      price: 52800,
-      quantity: 1,
-      imageUrl: rest.imageUrl,
-      image: rest.imageUrl,
-      productType: "background",
-      attributes: { isBackground: true, backgroundType: bgSelected },
-      variation: bgSelected,
-      variationOptions: ["BG Default", "BG Custom"],
-    });
+// 🎨 Background
+const bgName =
+  bgSelected === "BG Custom" ? "Background Custom" : "Background Default";
+
+// 🧠 Gunakan harga berbeda untuk Default & Custom
+const bgPrice =
+  bgSelected === "BG Custom"
+    ? priceList.Additional["Background Custom"] || 62800
+    : priceList.Additional["Background Default"] || 52800;
+
+newItems.push({
+  cartId: uuidv4(),
+  parentCartId: mainCartItem.cartId,
+  id: `${rest.id}-bg`,
+  name: bgName,
+  price: bgPrice,
+  quantity: 1,
+  imageUrl: rest.imageUrl,
+  image: rest.imageUrl,
+  productType: "background",
+  attributes: { isBackground: true, backgroundType: bgSelected },
+  variation: bgSelected,
+  variationOptions: ["BG Default", "BG Custom"],
+});
 
     // 📦 Packing (opsional)
     if (includePacking) {
@@ -230,6 +273,12 @@ const mainCartItem: CartItem = {
               newVariation === "BG Default"
                 ? "Background Default"
                 : "Background Custom";
+          
+            // 🧠 Update harga otomatis saat ubah variant
+            updated.price =
+              newVariation === "BG Default"
+                ? priceList.Additional["Background Default"] || 52800
+                : priceList.Additional["Background Custom"] || 62800;
           }
 
           if (p.attributes?.isFace) {

@@ -16,6 +16,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { productOptions } from "../data/productOptions";
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type LayoutContext = {
   searchQuery: string;
@@ -82,7 +83,7 @@ const MOCK_PRODUCT_DATA = {
     {
       id: "add2",
       name: "Background Custom",
-      price: 52800,
+      price: 62800,
       imageUrl: new URL(
         "../assets/bg-catalog/goverment-police/KA-MAY23-01.jpg",
         import.meta.url
@@ -102,6 +103,7 @@ const MOCK_PRODUCT_DATA = {
 };
 
 const ProductDetail = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -455,10 +457,9 @@ useEffect(() => {
 
 
 
-  const handleAddToCart = () => {
+const handleAddToCart = () => {
   const finalQty = quantity === "" ? 1 : quantity;
 
-  // 🧠 Ambil data dari Additional Faces
   const faceCountLabel =
     selectedAdditionalFaceOption === "1-9"
       ? "1–9 wajah"
@@ -466,23 +467,22 @@ useEffect(() => {
       ? "Di atas 10 wajah"
       : "";
 
-addToCart({
-  id: product.id || "p1",
-  name: [product.category, defaultSize, product.type, product.name]
-    .filter(Boolean)
-    .join(" "),
-  price: displayedPrice,
-  quantity: finalQty,
-  imageUrl: product.imageUrl,
-  variation: selectedVariation,
-  productType: "frame",
-  attributes: {
-    faceCount: faceCountLabel,
-    backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
-    selectedProductVariation,
-    includePacking,
-  },
-});
+  addToCart({
+    id: product.id || "p1",
+    name: product.category, // cukup category (nama lengkap nanti dirakit di CartContext)
+    price: displayedPrice,
+    quantity: finalQty,
+    imageUrl: product.imageUrl,
+    variation: selectedVariation,
+    productType: "frame",
+    attributes: {
+      faceCount: faceCountLabel,
+      backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
+      includePacking,
+      frameSize: selectedSizeFrame,        // 🆕 kirim frame size
+      shadingStyle: selectedShading,       // 🆕 kirim shading style
+    },
+  });
 };
 
   // console.log("DEBUG PRODUCT:", {
@@ -508,7 +508,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
           </Link>{" "}
           &gt;
           <Link to="/products" className="mx-1">
-            Our Products
+              {t("product.breadcrumbProducts")}
           </Link>{" "}
           &gt;
           <span
@@ -626,7 +626,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
     }}
   >
     <h3 className="text-[18px] font-poppinsSemiBold mb-4">
-      Preview {selectedSizeFrame}
+        {t("product.preview")} {selectedSizeFrame}
     </h3>
 
     {/* 🖼️ Gambar besar preview */}
@@ -702,9 +702,9 @@ const previewRef = useRef<HTMLDivElement | null>(null);
     // ✅ 3D Frame 12R → Best Selling for The Most Fitting Size
     if (category.includes("3d") && /\b12r\b/.test(name)) {
       return (
-        <div className="flex items-center space-x-2 text-yellow-500 px-3 py-1 rounded-full text-[15px] font-poppinsMediumItalic w-fit">
+        <div className="flex items-center space-x-2 text-yellow-600 px-3 py-1 rounded-full text-[15px] font-poppinsMediumItalic w-fit">
           <FaStar />
-          <span>Best Selling for The Most Fitting Size</span>
+          <span>{t("product.bestSellingSize")}</span>
         </div>
       );
     }
@@ -714,7 +714,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
       return (
         <div className="flex items-center space-x-2 text-yellow-600 px-3 py-1 rounded-full text-[15px] font-poppinsMediumItalic w-fit">
           <FaStar />
-          <span>Best Selling for The Most Affordable Gift</span>
+          <span>{t("product.bestSellingGift")}</span>
         </div>
       );
     }
@@ -730,7 +730,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
             {specialVariations.length > 0 && (
   <div className="mt-6 mb-4">
     <label className="block text-[18px] font-poppinsSemiBold mb-3">
-      Packaging Option
+        {t("product.packagingOption")}
     </label>
     <div className="flex gap-4 flex-wrap">
       {specialVariations.map((opt) => (
@@ -768,7 +768,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
     {product.sizeFrameOptions.length > 0 && (
       <div className="mt-6 mb-4">
         <label className="block text-[18px] font-poppinsSemiBold mb-3">
-          Frame Size
+         {t("product.frameSize")}
         </label>
         <div className="flex gap-4 flex-wrap">
           {product.sizeFrameOptions.map((opt) => (
@@ -811,7 +811,7 @@ onClick={() => {
     {product.shadingOptions.length > 0 && (
       <div className="mt-6 mb-4">
         <label className="block text-[18px] font-poppinsSemiBold mb-3">
-          Shading Style
+        {t("product.shadingStyle")}
         </label>
         <div className="flex gap-4 flex-wrap">
           {product.shadingOptions.map((opt) => (
@@ -846,7 +846,7 @@ onClick={() => {
 {!["Additional", "Softcopy Design"].includes(product.category) && (
   <div className="flex items-start justify-between mt-4">
     <label className="block text-[18px] font-poppinsSemiBold translate-y-3">
-      Variation
+        {t("product.variation")}
     </label>
     <div className="flex flex-row flex-wrap gap-2 -translate-x-[25px] translate-y-2 font-poppinsRegular">
       {product.variations.map((variation) => (
@@ -870,7 +870,7 @@ onClick={() => {
 {product.name?.toLowerCase().includes("biaya tambahan ganti frame kaca ke acrylic") && (
   <div className="mt-6 mb-4">
     <p className="text-[15px] font-poppinsRegular text-gray-700 mb-3">
-      Pilih ukuran acrylic yang kamu inginkan. Harga utama akan otomatis menyesuaikan.
+        {t("product.chooseAcrylicSize")}
     </p>
 
     <div className="flex gap-4 flex-wrap">
@@ -918,11 +918,11 @@ onClick={() => {
   .includes("biaya tambahan wajah banyak (design dari customer)") && (
   <div className="mt-6 mb-4">
     <label className="block text-[18px] font-poppinsSemiBold mb-3">
-      Additional Custom — Wajah Banyak (Design dari Customer)
+        {t("product.additionalCustomManyFaces")}
     </label>
 
     <p className="text-[15px] font-poppinsRegular text-gray-700 mb-3">
-      Pilih jumlah wajah yang kamu inginkan.
+        {t("product.chooseFaceCount")}
     </p>
 
     <div className="flex gap-4 flex-wrap">
@@ -955,11 +955,11 @@ onClick={() => {
 {product.name?.toLowerCase().includes("biaya ekspress general") && (
   <div className="mt-6 mb-4">
     <label className="block text-[18px] font-poppinsSemiBold mb-3">
-      Additional Custom — Biaya Ekspress General
+        {t("product.additionalCustomExpress")}
     </label>
 
     <p className="text-[15px] font-poppinsRegular text-gray-700 mb-3">
-      Pilih tingkat layanan ekspress yang kamu inginkan.
+        {t("product.chooseExpress")}
     </p>
 
     <div className="flex gap-4 flex-wrap">
@@ -996,7 +996,7 @@ onClick={() => {
 {product.name?.toLowerCase().includes("acrylic stand 3mm") && (
   <div className="mt-6 mb-4">
     <label className="block text-[18px] font-poppinsSemiBold mb-3">
-      Choose Size & Sides
+        {t("product.chooseSizeAndSides")}
     </label>
 
     <div className="flex gap-4 flex-wrap">
@@ -1031,7 +1031,7 @@ onClick={() => {
             {/* Quantity */}
             <div className="flex items-center justify-between mt-10">
               <label className="text-[18px] font-poppinsSemiBold">
-                Quantity
+                {t("product.quantity")}
               </label>
               <div className="flex items-center -translate-x-[160px] font-poppinsRegular border border-gray-300 rounded-md w-fit">
                 <button
@@ -1084,18 +1084,18 @@ onClick={() => {
                   }}
                   className="flex-1 px-6 py-3 border bg-[#dcbec1] font-bold rounded-lg hover:bg-[#c7a9ac] transition-colors"
                 >
-                  Add to Cart
+                    {t("product.addToCart")}
                 </button>
                 <button
                   className="flex-1 px-6 py-3 bg-[#E2DAD8] font-bold rounded-lg hover:bg-[#D3C7C4] transition-colors"
                 >
-                  Buy Now
+                    {t("product.buyNow")}
                 </button>
               </div>
             
               {/* Info Price */}
               <p className="mt-[17%] text-[16px] font-poppinsSemiBoldItalic text-black">
-                • All price for 1 face caricature & 1 pcs frame
+                • {t("product.priceInfo")}
               </p>
             </div>
           </div>
@@ -1104,7 +1104,7 @@ onClick={() => {
         {/* Product Details */}
         <div className="mt-16 pt-10">
           <h2 className="text-[24px] font-poppinsSemiBold mb-4">
-            Product Details:
+              {t("product.details")}
           </h2>
           <div className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-[15px]">
             {Object.entries(product.details).map(([key, value]) => (
@@ -1115,9 +1115,7 @@ onClick={() => {
             ))}
           </div>
           <p className="font-poppinsRegular mt-6">
-            Packing bubblewrap inside and outside, generally it's safe for Instant or
-            Regular Shipping, for Cargo to different island or country, please
-            checkout for additional packing fee.
+            {t("product.packingInfo")}
             <br />
             <br />
           </p>
@@ -1127,7 +1125,7 @@ onClick={() => {
 {!["Additional", "Softcopy Design"].includes(product.category) && (
   <div ref={additionalSectionRef}>
     <h2 className="text-xl font-bold font-poppinsRegular mb-6">
-      Additional for this products
+        {t("product.additionalProducts")}
     </h2>
 
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -1211,14 +1209,14 @@ onClick={() => {
                   <>
                     {selectedFaceOption ? (
                       <p className="text-xs font-poppinsMedium text-pink-600 mt-1">
-                        Dipilih:{" "}
+                          {t("product.selected")}{" "}
                         {selectedFaceOption === "1-9"
                           ? "1–9 wajah"
                           : "Di atas 10 wajah"}
                       </p>
                     ) : (
                       <p className="text-xs font-poppinsRegular text-gray-500 mt-1 italic">
-                        Klik untuk pilih jumlah wajah
+                          {t("product.clickToChooseFace")}
                       </p>
                     )}
 
@@ -1233,13 +1231,13 @@ onClick={() => {
                     </p>
                   </>
                 ) : (
-                  <p className="text-sm font-bold text-pink-600 mt-1">
-                    {typeof item.price === "string"
-                      ? item.price
-                      : item.price > 0
-                      ? `Rp ${item.price.toLocaleString("id-ID")}`
-                      : "Custom"}
-                  </p>
+                <p className="text-sm font-bold text-pink-600 mt-1">
+                  {typeof item.price === "string"
+                    ? item.price
+                    : item.price > 0
+                    ? `Rp ${item.price.toLocaleString("id-ID")}`
+                    : t("product.customPrice")}
+                </p>
                 )}
               </div>
             </div>
@@ -1249,7 +1247,7 @@ onClick={() => {
               <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
                 <div className="bg-white rounded-2xl shadow-xl p-6 w-[90%] max-w-sm text-center animate-fadeIn">
                   <h3 className="text-lg font-poppinsSemiBold mb-4">
-                    Pilih jumlah wajah
+                      {t("product.selectFaceCountPopup")}
                   </h3>
 
                   <div className="flex flex-col gap-3">
@@ -1306,7 +1304,7 @@ onClick={() => {
                     onClick={() => setShowPopup(false)}
                     className="mt-5 text-sm text-gray-500 hover:text-gray-700 underline"
                   >
-                    Tutup
+                      {t("product.close")}
                   </button>
                 </div>
               </div>
@@ -1346,12 +1344,14 @@ onClick={() => {
               faceCount: faceCountLabel,
               backgroundType: backgroundType,
               includePacking: packingIncluded,
+              frameSize: selectedSizeFrame,
+              shadingStyle: selectedShading,
             },
           });
         }}
         className="flex-1 max-w-xs px-6 py-3 border bg-[#dcbec1] font-bold rounded-lg hover:bg-[#c7a9ac] transition-colors"
       >
-        Add to Cart
+          {t("product.addToCart")}
       </button>
     </div>
   </div>

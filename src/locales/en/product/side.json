@@ -1,0 +1,30 @@
+{
+  "category": "Category",
+  "categories": {
+    "3d": "3D Frame",
+    "2d": "2D Frame",
+    "additional": "Additional",
+    "acrylic": "Acrylic Stand",
+    "softcopy": "Softcopy Design"
+  },
+  "subcategories": {
+    "backgroundCustom": "Background Custom",
+    "boldShading": "Additional Face (Bold Shading)",
+    "byAI": "Additional Face (by AI)",
+    "caricature": "Additional Face (Caricature)",
+    "acrylic2cm": "Acrylic Stand 2CM",
+    "acrylic3mm": "Acrylic Stand 3MM",
+    "withBackgroundCatalog": "With Background Catalog",
+    "withBackgroundCustom": "With Background Custom",
+    "withoutBackground": "Without Background"
+  },
+  "shippedFrom": "Shipped From",
+  "from": {
+    "bogor": "Bogor",
+    "jakarta": "Jakarta"
+  },
+  "shippedTo": "Shipped To",
+  "to": {
+    "worldwide": "Worldwide"
+  }
+}

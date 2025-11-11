@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
+import {useTranslation} from "react-i18next";
 
 interface SortControlsProps {
   sortOption?: string; // default "all"
@@ -8,12 +9,13 @@ interface SortControlsProps {
 }
 
 const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   const options = [
-    { label: "All", value: "all" },
-    { label: "Ascending", value: "name-asc" },
-    { label: "Discending", value: "name-desc" },
+    { label: t("sortBg.all"), value: "all" },
+    { label: t("sortBg.asc"), value: "name-asc" },
+    { label: t("sortBg.disc"), value: "name-desc" },
   ];
 
   const handleSelect = (value: string) => {
@@ -32,8 +34,8 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
 
   return (
     <div className="bg-[#f0f0f0] px-4 py-2 rounded-[var(--radius)] mb-2">
-      <div className="flex items-center gap-7">
-        <span className="font-poppinsBold text-base text-sm text-black">Sort by</span>
+      <div className="flex font-poppinsBold items-center gap-7">
+        <span className="text-base text-sm text-black">{t("sortBg.sortby")}</span>
 
           <div className="flex gap-7 font-poppinsBold">
             {/* Frequently Used */}
@@ -47,7 +49,7 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
                   : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
               }`}
             >
-              Frequently Used
+              {t("sortBg.frequentlyused")}
             </button>
           
             {/* Rarely Used */}
@@ -61,7 +63,7 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
                   : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
               }`}
             >
-              Rarely Used
+              {t("sortBg.rarelyused")}
             </button>
           </div>
 

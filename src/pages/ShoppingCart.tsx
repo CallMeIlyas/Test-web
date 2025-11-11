@@ -1,6 +1,7 @@
 import React, {useEffect, useState, useMemo, useRef } from "react";
 import Footer from "../components/home/Footer";
 import { useCart } from "../context/CartContext";
+import { useTranslation } from "react-i18next";
 import BCAIcon from "../assets/icon-bank/bca.png";
 import TMRWIcon from "../assets/icon-bank/tmrw.png";
 import AladinIcon from "../assets/icon-bank/aladin.png";
@@ -68,6 +69,9 @@ const FrameVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
   item,
   updateItemVariant,
 }) => {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
+  
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(item.variation || item.variationOptions?.[0] || "");
 
@@ -86,7 +90,7 @@ const FrameVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
         onClick={toggleDropdown}
         className="font-poppinsRegular text-[15px] cursor-pointer select-none"
       >
-        Variations:{" "}
+        {currentLang === "id" ? "Variasi" : "Variations"}:{" "}
         <span
           className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -131,8 +135,11 @@ const FaceVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
   item,
   updateItemVariant,
 }) => {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
+  
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState(item.variation || "1–9 wajah");
+  const [selected, setSelected] = useState(item.variation || (currentLang === "id" ? "1–9 wajah" : "1–9 faces"));
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -142,13 +149,17 @@ const FaceVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
     setIsOpen(false);
   };
 
+  const options = currentLang === "id" 
+    ? ["1–9 wajah", "Di atas 10 wajah"]
+    : ["1–9 faces", "Above 10 faces"];
+
   return (
     <div className="w-[200px] ml-20 relative">
       <p
         onClick={toggleDropdown}
         className="font-poppinsRegular text-[15px] cursor-pointer select-none"
       >
-        Variations:{" "}
+        {currentLang === "id" ? "Variasi" : "Variations"}:{" "}
         <span
           className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -168,7 +179,7 @@ const FaceVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
       {isOpen && (
         <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
           <div className="max-h-[120px] overflow-y-auto py-1">
-            {["1–9 wajah", "Di atas 10 wajah"].map((opt) => (
+            {options.map((opt) => (
               <p
                 key={opt}
                 onClick={() => handleSelect(opt)}
@@ -191,10 +202,13 @@ const BackgroundVariantDropdown: React.FC<{ item: any; updateItemVariant: any }>
   item,
   updateItemVariant,
 }) => {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
+  
   const [isOpen, setIsOpen] = useState(false);
   
   const [selected, setSelected] = useState(
-  item.variation || item.attributes?.backgroundType || "BG Default"
+  item.variation || item.attributes?.backgroundType || (currentLang === "id" ? "BG Default" : "BG Default")
 );
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -205,13 +219,17 @@ const BackgroundVariantDropdown: React.FC<{ item: any; updateItemVariant: any }>
     setIsOpen(false);
   };
 
+  const options = currentLang === "id" 
+    ? ["BG Default", "BG Custom"]
+    : ["BG Default", "BG Custom"];
+
   return (
     <div className="w-[200px] ml-20 relative">
       <p
         onClick={toggleDropdown}
         className="font-poppinsRegular text-[15px] cursor-pointer select-none"
       >
-        Variations:{" "}
+        {currentLang === "id" ? "Variasi" : "Variations"}:{" "}
         <span
           className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -231,7 +249,7 @@ const BackgroundVariantDropdown: React.FC<{ item: any; updateItemVariant: any }>
       {isOpen && (
         <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
           <div className="max-h-[100px] overflow-y-auto py-1">
-            {["BG Default", "BG Custom"].map((opt) => (
+            {options.map((opt) => (
               <p
                 key={opt}
                 onClick={() => handleSelect(opt)}
@@ -251,6 +269,9 @@ const BackgroundVariantDropdown: React.FC<{ item: any; updateItemVariant: any }>
 
 const ShoppingCart: React.FC = () => {
   const { cart, updateQuantity, deleteItem, updateItemVariant } = useCart();
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
+  
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   
   // STATE UNTUK MENGELOLA SEMUA DATA FORM INVOICE
@@ -276,7 +297,7 @@ const ShoppingCart: React.FC = () => {
     e.preventDefault();
     // Logika untuk submit form, misalnya kirim data ke API
     console.log("Invoice data submitted:", invoiceData);
-    alert("Invoice data has been submitted! (Check console)");
+    alert(currentLang === "id" ? "Data invoice telah dikirim! (Lihat console)" : "Invoice data has been submitted! (Check console)");
   };
 
   const groupedItems = useMemo(() => {
@@ -319,7 +340,9 @@ useEffect(() => {
         {/* Box Cart */}
         <div className="rounded-[30px] border border-black p-6 bg-white shadow-sm">
         {cart.length === 0 ? (
-            <p className="text-center text-gray-500">Cart is empty</p>
+            <p className="text-center text-gray-500">
+              {currentLang === "id" ? "Keranjang kosong" : "Cart is empty"}
+            </p>
           ) : (
             <>
               {/* Select All Atas */}
@@ -331,7 +354,7 @@ useEffect(() => {
                   onChange={toggleSelectAll}
                 />
                 <span className="font-poppinsSemiBold">
-                  Select All ({cart.length})
+                  {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
                 </span>
               </div>
               {Object.values(groupedItems).map((group: any[], idx) => (
@@ -403,7 +426,7 @@ useEffect(() => {
                           className="font-poppinsRegular"
                           onClick={() => deleteItem(item.cartId)}
                         >
-                          Delete
+                          {currentLang === "id" ? "Hapus" : "Delete"}
                         </button>
                       </div>
                     </div>
@@ -419,12 +442,12 @@ useEffect(() => {
                     className="w-4 h-4"
                   />
                   <span className="font-poppinsSemiBold">
-                    Select All ({cart.length})
+                    {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
                   </span>
                 </label>
                 <div className="text-right">
                   <p className="font-poppinsSemiBold">
-                    Total ({selectedItems.length} items):{" "}
+                    {currentLang === "id" ? "Total" : "Total"} ({selectedItems.length} {currentLang === "id" ? "item" : "items"}):{" "}
                     <span className="font-poppinsBold text-red-500">
                       Rp {totalPrice.toLocaleString("id-ID")}
                     </span>
@@ -443,15 +466,19 @@ useEffect(() => {
       onClick={() => setShowCheckout(true)}
       className="bg-[#dcbec1] text-black font-poppinsSemiBold text-[15px] px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition"
     >
-      Checkout
+      {currentLang === "id" ? "Checkout" : "Checkout"}
     </button>
   </div>
 ) : (
   <div ref={checkoutRef} className="grid md:grid-cols-2 gap-8 mt-8">
     {/* Payment Section */}
     <div>
-      <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">Payment</h2>
-      <p className="mb-4 font-poppinsRegular">Please make a payment to:</p>
+      <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
+        {currentLang === "id" ? "Pembayaran" : "Payment"}
+      </h2>
+      <p className="mb-4 font-poppinsRegular">
+        {currentLang === "id" ? "Mohon melakukan pembayaran ke:" : "Please make a payment to:"}
+      </p>
       <ul className="space-y-2">
         <li className="flex items-center gap-3">
           <img src={BCAIcon} alt="BCA" className="w-[65px] h-auto" />
@@ -504,23 +531,43 @@ useEffect(() => {
         </li>
       </ul>
       <div className="mt-6 -space-y-1">
-        <p className="text-[12px] font-poppinsItalic text-[#a23728]">*Please give the bank payment receipt to our team via WhatsApp</p>
-        <p className="text-[12px] font-poppinsItalic text-[#a23728]">*This invoice is valid and published by Claresta, owner of Little Amora Karikatur</p>
-        <p className="text-[12px] font-poppinsItalic text-[#a23728]">*Copying or changing in any form is prohibited</p>
+        <p className="text-[12px] font-poppinsItalic text-[#a23728]">
+          {currentLang === "id" 
+            ? "*Silahkan screenshoot bukti bayar dan kirim ke WhatsApp admin kami"
+            : "*Please give the bank payment receipt to our team via WhatsApp"
+          }
+        </p>
+        <p className="text-[12px] font-poppinsItalic text-[#a23728]">
+          {currentLang === "id" 
+            ? "*Kwitansi ini valid dan dibuat oleh Claresta, pemilik dari Little Amora Karikatur"
+            : "*This invoice is valid and published by Claresta, owner of Little Amora Karikatur"
+          }
+        </p>
+        <p className="text-[12px] font-poppinsItalic text-[#a23728]">
+          {currentLang === "id" 
+            ? "*Dilarang menyalin dan merubah kwitansi ini dalam bentuk apapun"
+            : "*Copying or changing in any form is prohibited"
+          }
+        </p>
       </div>
     </div>
 
     {/* Invoice Section */}
     <div className="text-[13px]">
       <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
-        Get Invoice
+        {currentLang === "id" ? "Isi Kwitansi" : "Get Invoice"}
       </h2>
       <p className="mb-4 font-poppinsRegular">
-        Please fill the data to get the order invoice:
+        {currentLang === "id" 
+          ? "Silahkan isi data berikut untuk mendapatkan kwitansi"
+          : "Please fill the data to get the order invoice:"
+        }
       </p>
       <form onSubmit={handleSubmitInvoice} className="space-y-1 font-poppinsRegular">
         <div className="flex items-center gap-2">
-          <label className="w-48">Company name</label>
+          <label className="w-48">
+            {currentLang === "id" ? "Nama perusahaan" : "Company name"}
+          </label>
           <span>:</span>
           <input
             type="text"
@@ -528,11 +575,13 @@ useEffect(() => {
             value={invoiceData.companyName}
             onChange={handleInvoiceChange}
             className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-            placeholder="Company name"
+            placeholder={currentLang === "id" ? "Nama perusahaan" : "Company name"}
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="w-48">Name & Contact Person</label>
+          <label className="w-48">
+            {currentLang === "id" ? "Nama dan Nomor Kontak" : "Name & Contact Person"}
+          </label>
           <span>:</span>
           <input
             type="text"
@@ -543,7 +592,9 @@ useEffect(() => {
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="w-48">Order via</label>
+          <label className="w-48">
+            {currentLang === "id" ? "Order melalui" : "Order via"}
+          </label>
           <span>:</span>
           <input
             type="text"
@@ -553,32 +604,38 @@ useEffect(() => {
             className="border border-black rounded-full px-4 py-1 flex-1"
           />
         </div>
-              {/*kalender*/}
-              <div className="flex items-center gap-2">
-                <label className="w-48">Payment date</label>
-                <span>:</span>
-                <DateInput
-                  name="paymentDate"
-                  value={invoiceData.paymentDate}
-                  onChange={handleInvoiceChange}
-                  placeholder="BCA / Gopay / ..."
-                  className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-                />
-              </div>
+        {/*kalender*/}
+        <div className="flex items-center gap-2">
+          <label className="w-48">
+            {currentLang === "id" ? "Tanggal bayar" : "Payment date"}
+          </label>
+          <span>:</span>
+          <DateInput
+            name="paymentDate"
+            value={invoiceData.paymentDate}
+            onChange={handleInvoiceChange}
+            placeholder={currentLang === "id" ? "BCA / Gopay / ..." : "BCA / Gopay / ..."}
+            className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
+          />
+        </div>
 
         <div className="flex items-center gap-2">
-          <label className="w-48">Estimated Product Arrival</label>
+          <label className="w-48">
+            {currentLang === "id" ? "Estimasi barang sampai" : "Estimated Product Arrival"}
+          </label>
           <span>:</span>
           <DateInput
             name="estimatedArrival"
             value={invoiceData.estimatedArrival}
             onChange={handleInvoiceChange}
-            placeholder="Select estimated arrival date"
+            placeholder={currentLang === "id" ? "Pilih tanggal estimasi sampai" : "Select estimated arrival date"}
             className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="w-48">Payment transfer via Bank</label>
+          <label className="w-48">
+            {currentLang === "id" ? "Bayar melalui" : "Payment transfer via Bank"}
+          </label>
           <span>:</span>
           <input
             type="text"
@@ -594,7 +651,7 @@ useEffect(() => {
           className="mt-4 translate-x-[-26px] text-[15px] font-poppinsSemiBold px-6 py-2 bg-[#dcbec1] rounded-full"
           onClick={() => generateInvoice(cart, invoiceData)} 
         >
-          Submit to get invoice
+          {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
         </button>
       </form>
     </div>

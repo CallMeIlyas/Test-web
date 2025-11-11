@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Footer from "../components/home/Footer";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import ReactDOM from "react-dom";
+import { useTranslation } from "react-i18next";
 
 // 🖼️ Import semua gambar
 import mainImage1 from "../assets/size-guide/main-image1.png";
@@ -15,6 +16,7 @@ import onHand5 from "../assets/size-guide/5.png";
 import onHand6 from "../assets/size-guide/6.png";
 
 const SizeGuide: React.FC = () => {
+  const { t } = useTranslation();
   const images = [onHand1, onHand2, onHand3, onHand4, onHand5, onHand6];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -73,7 +75,7 @@ const SizeGuide: React.FC = () => {
           ref={(el) => (sectionsRef.current[0] = el)}
           className="transition-all duration-700 opacity-0 translate-y-5 max-w-7xl mx-auto px-5 md:px-10"
         >
-          <SectionTitle title="Frame Size" />
+          <SectionTitle title={t("size.frameSize")} />
           <div className="relative flex justify-center items-center">
             <img
               src={mainImage1}
@@ -93,7 +95,7 @@ const SizeGuide: React.FC = () => {
           ref={(el) => (sectionsRef.current[1] = el)}
           className="transition-all duration-700 opacity-0 translate-y-5 max-w-7xl mx-auto px-5 md:px-10 mt-20"
         >
-          <SectionTitle title="Size Comparison" />
+          <SectionTitle title={t("size.sizeComparison")} />
           <div className="flex justify-center">
             <img
               src={mainImage3}
@@ -108,10 +110,10 @@ const SizeGuide: React.FC = () => {
           ref={(el) => (sectionsRef.current[2] = el)}
           className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-20 mb-24 relative"
         >
-          <SectionTitle title="Size on Hand" />
+          <SectionTitle title={t("size.sizeOnHand")} />
 
           <div className="relative flex justify-center items-center overflow-visible px-10">
-            <div className="flex items-center justify-center w-full relative min-h-[400px]">
+            <div className="flex items-center justify-center w-full relative min-h-[400px] mt-10">
               {images.map((img, index) => {
                 const isActive = index === currentIndex;
                 const isNext = index === (currentIndex + 1) % images.length;

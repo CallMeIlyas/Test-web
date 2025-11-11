@@ -1,12 +1,14 @@
 import type { FC } from "react";
 import SplitBorder from "./SplitBorder";
 import type { FilterOptions } from "../../types/types";
+import { useTranslation } from "react-i18next";
 
 interface SidebarFiltersProps {
   onFilterChange: React.Dispatch<React.SetStateAction<FilterOptions>>;
 }
 
 const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
+  const { t } = useTranslation();
   const handleCheckboxChange = (
     type: keyof FilterOptions,
     value: string,
@@ -45,7 +47,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
       {/* Category */}
       <SplitBorder />
       <div className="mb-8">
-        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">Category</h3>
+        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">{t("sideBg.category")}</h3>
         {categories.map((item) => (
           <div key={item} className="font-poppinsRegular flex items-start gap-2 mb-3 ml-6">
             <input

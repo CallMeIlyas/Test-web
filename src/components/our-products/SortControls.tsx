@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 interface SortControlsProps {
   sortOption: string;
@@ -8,32 +9,31 @@ interface SortControlsProps {
 }
 
 const SortControls: FC<SortControlsProps> = ({ sortOption, onSortChange }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
-  // 🔹 Daftar opsi sorting harga
+  // 🔹 Opsi sorting harga (menggunakan i18n)
   const options = [
-    { label: "Price", value: "price" },
-    { label: "Low to High", value: "price-asc" },
-    { label: "High to Low", value: "price-desc" },
+    { label: t("sort.price"), value: "price" },
+    { label: t("sort.lowToHigh"), value: "price-asc" },
+    { label: t("sort.highToLow"), value: "price-desc" },
   ];
 
-  // 🔹 Ganti opsi sort & tutup dropdown
   const handleSelect = (value: string) => {
     onSortChange(value);
     setOpen(false);
   };
 
-  // 🔹 Ambil label aktif
   const getCurrentLabel = () => {
     const current = options.find((opt) => opt.value === sortOption);
-    return current ? current.label : "Price";
+    return current ? current.label : t("sort.price");
   };
 
   return (
     <div className="bg-[#f0f0f0] px-4 py-2 rounded-[var(--radius)] mb-2">
       <div className="flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8 text-sm font-poppinsBold text-black">
-        {/* Label */}
-        <span className="whitespace-nowrap">Sort by</span>
+        {/* Label utama */}
+        <span className="whitespace-nowrap">{t("sort.sortBy")}</span>
 
         {/* 🔹 Tombol Best Selling */}
         <button
@@ -46,7 +46,7 @@ const SortControls: FC<SortControlsProps> = ({ sortOption, onSortChange }) => {
               : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
           }`}
         >
-          Best Selling
+          {t("sort.bestSelling")}
         </button>
 
         {/* 🔹 Tombol All Products */}
@@ -58,7 +58,7 @@ const SortControls: FC<SortControlsProps> = ({ sortOption, onSortChange }) => {
               : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
           }`}
         >
-          All Products
+          {t("sort.allProducts")}
         </button>
 
         {/* 🔹 Dropdown Sort by Price */}

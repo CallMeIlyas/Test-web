@@ -1,5 +1,6 @@
 import React from "react";
 import Footer from "../components/home/Footer";
+import { useTranslation } from "react-i18next";
 import ShopeeIcon from "../assets/icon-contact/shopee.png";
 import GmailIcon from "../assets/icon-contact/gmail.png";
 import GMapsIcon from "../assets/icon-contact/gmaps.png";
@@ -8,12 +9,15 @@ import TikTokIcon from "../assets/icon-contact/TIKTOK.png";
 import WhatsAppIcon from "../assets/icon-contact/whatsapp.png";
 
 const ContactUs: React.FC = () => {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Split Border Title */}
       <div className="relative my-8 mb-10 text-center">
         <h1 className="inline-block px-5 text-4xl md:text-5xl font-nataliecaydence relative z-10">
-          Contact Us
+          {currentLang === "id" ? "Kontak Kami" : "Contact Us"}
         </h1>
         <div className="absolute top-1/2 left-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
         <div className="absolute top-1/2 right-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
@@ -105,20 +109,39 @@ const ContactUs: React.FC = () => {
 
         {/* Deskripsi */}
         <div className="font-poppinsRegular text-justify mb-[100px] mt-8 max-w-[700px] text-center leading-relaxed text-[15px]">
-          <p className="mb-4">
-            <strong>All discussion and order</strong> available on WhatsApp only.  
-            Our social media used for gallery purpose. Email or Google Drive used for  
-            transferring big size data. Our team do not reply and open discussion on any  
-            platform besides WhatsApp.
-          </p>
+          {currentLang === "id" ? (
+            <>
+              <p className="mb-4">
+                <span className="font-poppinsSemiBold">Seluruh diskusi order dan tanya jawab</span> hanya melalui WhatsApp saja.  
+                Social Media hanya bertujuan untuk menjadi galeri foto atau video. Email dan Google Drive bisa untuk  
+                kirim data yang lebih besar dan lengkap. Tim kami tidak berkewajiban membalas dan berdiskusi di  
+                platform social media.
+              </p>
 
-          <p>
-            Please note for all payment only on behalf of   
-            <strong> Claresta</strong> or <strong>Little Amora Karikatur</strong>, please  
-            ensure to copy the payment info directly on the chat that our team gave to the  
-            customer. For worldwide shipping our team used Paypal, please contact us for  
-            further information.
-          </p>
+              <p>
+                Mohon mengingat bahwa payment hanya atas nama <span className="font-poppinsSemiBold">Claresta</span> atau <span className="font-poppinsSemiBold">Little Amora Karikatur</span> dengan nomor WhatsApp tertera diatas,  
+                silahkan berikan bukti pembayaran ke chat WhatsApp kami. Untuk pengiriman luar negeri, pembayaran bisa menggunakan Paypal,  
+                silahkan kontak admin lebih lanjut.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mb-4">
+                <span className="font-poppinsSemiBold">All discussion and order</span> available on WhatsApp only.  
+                Our social media used for gallery purpose. Email or Google Drive used for  
+                transferring big size data. Our team do not reply and open discussion on any  
+                platform besides WhatsApp.
+              </p>
+
+              <p>
+                Please note for all payment only on behalf of   
+                <span className="font-poppinsSemiBold"> Claresta</span> or <span className="font-poppinsSemiBold">Little Amora Karikatur</span>, please  
+                ensure to copy the payment info directly on the chat that our team gave to the  
+                customer. For worldwide shipping our team used Paypal, please contact us for  
+                further information.
+              </p>
+            </>
+          )}
         </div>
       </main>
 
