@@ -335,329 +335,660 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-1 px-6 md:px-16 py-10 space-y-10">
-        
-        {/* Box Cart */}
-        <div className="rounded-[30px] border border-black p-6 bg-white shadow-sm">
-        {cart.length === 0 ? (
-            <p className="text-center text-gray-500">
-              {currentLang === "id" ? "Keranjang kosong" : "Cart is empty"}
-            </p>
-          ) : (
-            <>
-              {/* Select All Atas */}
-              <div className="flex items-center mb-4">
-                <input
-                  type="checkbox"
-                  className="mr-2"
-                  checked={allSelected}
-                  onChange={toggleSelectAll}
-                />
-                <span className="font-poppinsSemiBold">
-                  {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
-                </span>
-              </div>
-              {Object.values(groupedItems).map((group: any[], idx) => (
-                <div key={idx} className="mb-6 pb-6 last:pb-0">
-                  {group.map((item) => (
-                    <div
-                      key={item.cartId}
-                      className="flex items-center justify-between py-3"
-                    >
-                      <input
-                        type="checkbox"
-                        className="mr-3"
-                        checked={selectedItems.includes(item.cartId)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedItems([...selectedItems, item.cartId]);
-                          } else {
-                            setSelectedItems(
-                              selectedItems.filter((id) => id !== item.cartId)
-                            );
-                          }
-                        }}
-                      />
-                      <div className="flex items-center gap-3 flex-1">
-                        <ProductImage src={item.imageUrl} alt={item.name} />
-                        <ProductName name={item.name} />
-                        {item.attributes?.isFace ? (
-                          <FaceVariantDropdown
-                            item={item}
-                            updateItemVariant={updateItemVariant}
-                          />
-                        ) : item.attributes?.isBackground ? (
-                          <BackgroundVariantDropdown
-                            item={item}
-                            updateItemVariant={updateItemVariant}
-                          />
-                        ) : (
-                          <FrameVariantDropdown
-                            item={item}
-                            updateItemVariant={updateItemVariant}
-                          />
-                        )}
-                        <div className="flex-shrink-0 -translate-x-7">
-                          <ProductPrice price={item.price} />
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 mt-2">
-                        <div className="flex items-center rounded-[30px] border border-black overflow-hidden">
-                          <button
-                            className="px-3 py-[0.1rem] border-r border-black"
-                            onClick={() => updateQuantity(item.cartId, -1)}
-                          >
-                            -
-                          </button>
-                          <span className="px-4 py-[0.1rem]">
-                            {item.quantity}
-                          </span>
-                          <button
-                            className="px-3 py-[0.1rem] border-l border-black"
-                            onClick={() => updateQuantity(item.cartId, 1)}
-                          >
-                            +
-                          </button>
-                        </div>
-                        <p className="w-28 text-right font-bold text-red-600">
-                          Rp{(item.price * item.quantity).toLocaleString("id-ID")}
-                        </p>
-                        <button
-                          className="font-poppinsRegular"
-                          onClick={() => deleteItem(item.cartId)}
-                        >
-                          {currentLang === "id" ? "Hapus" : "Delete"}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <div className="flex items-center justify-between pt-4 mt-4">
-                <label className="flex items-center gap-2 cursor-pointer">
+      {/* MOBILE LAYOUT - hanya tampil di mobile */}
+      <div className="block md:hidden">
+        <main className="flex-1 px-4 py-6 space-y-6">
+          
+          {/* Box Cart - Mobile */}
+          <div className="rounded-2xl border border-black p-4 bg-white shadow-sm">
+          {cart.length === 0 ? (
+              <p className="text-center text-gray-500 text-sm">
+                {currentLang === "id" ? "Keranjang kosong" : "Cart is empty"}
+              </p>
+            ) : (
+              <>
+                {/* Select All Atas - Mobile */}
+                <div className="flex items-center mb-3">
                   <input
                     type="checkbox"
+                    className="mr-2 w-4 h-4"
                     checked={allSelected}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4"
+                  />
+                  <span className="font-poppinsSemiBold text-sm">
+                    {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
+                  </span>
+                </div>
+                {Object.values(groupedItems).map((group: any[], idx) => (
+                  <div key={idx} className="mb-4 pb-4 last:pb-0 border-b border-gray-200 last:border-b-0">
+                    {group.map((item) => (
+                      <div
+                        key={item.cartId}
+                        className="flex items-start py-3 space-y-2"
+                      >
+                        <input
+                          type="checkbox"
+                          className="mr-3 mt-2 w-4 h-4"
+                          checked={selectedItems.includes(item.cartId)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedItems([...selectedItems, item.cartId]);
+                            } else {
+                              setSelectedItems(
+                                selectedItems.filter((id) => id !== item.cartId)
+                              );
+                            }
+                          }}
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-start gap-3">
+                            <ProductImage src={item.imageUrl} alt={item.name} />
+                            <div className="flex-1 min-w-0">
+                              <ProductName name={item.name} />
+                              <div className="mt-1">
+                                {item.attributes?.isFace ? (
+                                  <FaceVariantDropdown
+                                    item={item}
+                                    updateItemVariant={updateItemVariant}
+                                  />
+                                ) : item.attributes?.isBackground ? (
+                                  <BackgroundVariantDropdown
+                                    item={item}
+                                    updateItemVariant={updateItemVariant}
+                                  />
+                                ) : (
+                                  <FrameVariantDropdown
+                                    item={item}
+                                    updateItemVariant={updateItemVariant}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between mt-2">
+                            <ProductPrice price={item.price} />
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center rounded-[20px] border border-black overflow-hidden">
+                                <button
+                                  className="px-2 py-1 border-r border-black text-xs"
+                                  onClick={() => updateQuantity(item.cartId, -1)}
+                                >
+                                  -
+                                </button>
+                                <span className="px-2 py-1 text-xs">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  className="px-2 py-1 border-l border-black text-xs"
+                                  onClick={() => updateQuantity(item.cartId, 1)}
+                                >
+                                  +
+                                </button>
+                              </div>
+                              <p className="text-sm font-bold text-red-600">
+                                Rp{(item.price * item.quantity).toLocaleString("id-ID")}
+                              </p>
+                              <button
+                                className="font-poppinsRegular text-xs text-red-500"
+                                onClick={() => deleteItem(item.cartId)}
+                              >
+                                {currentLang === "id" ? "Hapus" : "Delete"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4"
+                    />
+                    <span className="font-poppinsSemiBold text-sm">
+                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
+                    </span>
+                  </label>
+                  <div className="text-right">
+                    <p className="font-poppinsSemiBold text-sm">
+                      {currentLang === "id" ? "Total" : "Total"} ({selectedItems.length} {currentLang === "id" ? "item" : "items"}):{" "}
+                      <span className="font-poppinsBold text-red-500">
+                        Rp {totalPrice.toLocaleString("id-ID")}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Checkout Section - Mobile */}
+          {!showCheckout ? (
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => setShowCheckout(true)}
+                className="bg-[#dcbec1] text-black font-poppinsSemiBold text-sm px-6 py-2 rounded-full shadow-sm hover:opacity-90 transition w-full max-w-[200px]"
+              >
+                {currentLang === "id" ? "Checkout" : "Checkout"}
+              </button>
+            </div>
+          ) : (
+            <div ref={checkoutRef} className="space-y-6 mt-6">
+              {/* Payment Section - Mobile */}
+              <div className="bg-white rounded-2xl border border-black p-4">
+                <h2 className="font-poppinsSemiBold text-sm mb-3 bg-[#dcbec1] px-3 py-1 rounded-full inline-block">
+                  {currentLang === "id" ? "Pembayaran" : "Payment"}
+                </h2>
+                <p className="mb-3 font-poppinsRegular text-sm">
+                  {currentLang === "id" ? "Mohon melakukan pembayaran ke:" : "Please make a payment to:"}
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-3">
+                    <img src={BCAIcon} alt="BCA" className="w-12 h-auto" />
+                    <div className="flex flex-col">
+                      <span className="font-poppinsRegular text-sm">7370-2351-33</span>
+                      <span className="text-xs font-poppinsBold">Claresta</span>
+                    </div>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <img src={TMRWIcon} alt="TMRW" className="w-12 h-auto" />
+                    <div className="flex flex-col">
+                      <span className="font-poppinsRegular text-sm">7293-8666-12</span>
+                      <span className="text-xs font-poppinsBold">Claresta</span>
+                    </div>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <img src={AladinIcon} alt="Aladin" className="w-12 h-auto" />
+                    <div className="flex flex-col">
+                      <span className="font-poppinsRegular text-sm">2022-7324-139</span>
+                      <span className="text-xs font-poppinsBold">Claresta</span>
+                    </div>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <img src={DANAIcon} alt="DANA" className="w-12 h-auto" />
+                    <div className="flex flex-col">
+                      <span className="font-poppinsRegular text-sm">0813-7313-1988</span>
+                      <span className="text-xs font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+                    </div>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <img src={GopayIcon} alt="Gopay" className="w-12 h-auto" />
+                    <div className="flex flex-col">
+                      <span className="font-poppinsRegular text-sm">0813-7313-1988</span>
+                      <span className="text-xs font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+                    </div>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <img src={OVOIcon} alt="OVO" className="w-12 h-auto" />
+                    <div className="flex flex-col">
+                      <span className="font-poppinsRegular text-sm">0813-7313-1988</span>
+                      <span className="text-xs font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+                    </div>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <img src={ShopeePayIcon} alt="ShopeePay" className="w-12 h-auto" />
+                    <div className="flex flex-col">
+                      <span className="font-poppinsRegular text-sm">0821-6266-2302</span>
+                      <span className="text-xs font-poppinsBold">LittleAmoraKarikatur</span>
+                    </div>
+                  </li>
+                </ul>
+                <div className="mt-4 space-y-1">
+                  <p className="text-xs font-poppinsItalic text-[#a23728]">
+                    {currentLang === "id" 
+                      ? "*Silahkan screenshoot bukti bayar dan kirim ke WhatsApp admin kami"
+                      : "*Please give the bank payment receipt to our team via WhatsApp"
+                    }
+                  </p>
+                  <p className="text-xs font-poppinsItalic text-[#a23728]">
+                    {currentLang === "id" 
+                      ? "*Kwitansi ini valid dan dibuat oleh Claresta, pemilik dari Little Amora Karikatur"
+                      : "*This invoice is valid and published by Claresta, owner of Little Amora Karikatur"
+                    }
+                  </p>
+                  <p className="text-xs font-poppinsItalic text-[#a23728]">
+                    {currentLang === "id" 
+                      ? "*Dilarang menyalin dan merubah kwitansi ini dalam bentuk apapun"
+                      : "*Copying or changing in any form is prohibited"
+                    }
+                  </p>
+                </div>
+              </div>
+
+              {/* Invoice Section - Mobile */}
+              <div className="bg-white rounded-2xl border border-black p-4 text-xs">
+                <h2 className="font-poppinsSemiBold text-sm mb-3 bg-[#dcbec1] px-3 py-1 rounded-full inline-block">
+                  {currentLang === "id" ? "Isi Kwitansi" : "Get Invoice"}
+                </h2>
+                <p className="mb-3 font-poppinsRegular text-sm">
+                  {currentLang === "id" 
+                    ? "Silahkan isi data berikut untuk mendapatkan kwitansi"
+                    : "Please fill the data to get the order invoice:"
+                  }
+                </p>
+                <form onSubmit={handleSubmitInvoice} className="space-y-2 font-poppinsRegular">
+                  <div className="flex flex-col gap-1">
+                    <label className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Nama perusahaan" : "Company name"}
+                    </label>
+                    <input
+                      type="text"
+                      name="companyName"
+                      value={invoiceData.companyName}
+                      onChange={handleInvoiceChange}
+                      className="border border-black rounded-full px-3 py-2 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center text-sm"
+                      placeholder={currentLang === "id" ? "Nama perusahaan" : "Company name"}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Nama dan Nomor Kontak" : "Name & Contact Person"}
+                    </label>
+                    <input
+                      type="text"
+                      name="contactPerson"
+                      value={invoiceData.contactPerson}
+                      onChange={handleInvoiceChange}
+                      className="border border-black rounded-full px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Order melalui" : "Order via"}
+                    </label>
+                    <input
+                      type="text"
+                      name="orderVia"
+                      value={invoiceData.orderVia}
+                      onChange={handleInvoiceChange}
+                      className="border border-black rounded-full px-3 py-2 text-sm"
+                    />
+                  </div>
+                  {/*kalender*/}
+                  <div className="flex flex-col gap-1">
+                    <label className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Tanggal bayar" : "Payment date"}
+                    </label>
+                    <DateInput
+                      name="paymentDate"
+                      value={invoiceData.paymentDate}
+                      onChange={handleInvoiceChange}
+                      placeholder={currentLang === "id" ? "BCA / Gopay / ..." : "BCA / Gopay / ..."}
+                      className="border border-black rounded-full px-3 py-2 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center text-sm"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Estimasi barang sampai" : "Estimated Product Arrival"}
+                    </label>
+                    <DateInput
+                      name="estimatedArrival"
+                      value={invoiceData.estimatedArrival}
+                      onChange={handleInvoiceChange}
+                      placeholder={currentLang === "id" ? "Pilih tanggal estimasi sampai" : "Select estimated arrival date"}
+                      className="border border-black rounded-full px-3 py-2 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center text-sm"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Bayar melalui" : "Payment transfer via Bank"}
+                    </label>
+                    <input
+                      type="text"
+                      name="paymentMethod"
+                      value={invoiceData.paymentMethod}
+                      onChange={handleInvoiceChange}
+                      className="border border-black rounded-full px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    className="mt-4 w-full text-sm font-poppinsSemiBold px-6 py-3 bg-[#dcbec1] rounded-full"
+                    onClick={() => generateInvoice(cart, invoiceData)} 
+                  >
+                    {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* DESKTOP LAYOUT - hanya tampil di desktop */}
+      <div className="hidden md:block">
+        <main className="flex-1 px-6 md:px-16 py-10 space-y-10">
+          
+          {/* Box Cart */}
+          <div className="rounded-[30px] border border-black p-6 bg-white shadow-sm">
+          {cart.length === 0 ? (
+              <p className="text-center text-gray-500">
+                {currentLang === "id" ? "Keranjang kosong" : "Cart is empty"}
+              </p>
+            ) : (
+              <>
+                {/* Select All Atas */}
+                <div className="flex items-center mb-4">
+                  <input
+                    type="checkbox"
+                    className="mr-2"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
                   />
                   <span className="font-poppinsSemiBold">
                     {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
                   </span>
-                </label>
-                <div className="text-right">
-                  <p className="font-poppinsSemiBold">
-                    {currentLang === "id" ? "Total" : "Total"} ({selectedItems.length} {currentLang === "id" ? "item" : "items"}):{" "}
-                    <span className="font-poppinsBold text-red-500">
-                      Rp {totalPrice.toLocaleString("id-ID")}
-                    </span>
-                  </p>
                 </div>
-              </div>
-            </>
-          )}
-        </div>
+                {Object.values(groupedItems).map((group: any[], idx) => (
+                  <div key={idx} className="mb-6 pb-6 last:pb-0">
+                    {group.map((item) => (
+                      <div
+                        key={item.cartId}
+                        className="flex items-center justify-between py-3"
+                      >
+                        <input
+                          type="checkbox"
+                          className="mr-3"
+                          checked={selectedItems.includes(item.cartId)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedItems([...selectedItems, item.cartId]);
+                            } else {
+                              setSelectedItems(
+                                selectedItems.filter((id) => id !== item.cartId)
+                              );
+                            }
+                          }}
+                        />
+                        <div className="flex items-center gap-3 flex-1">
+                          <ProductImage src={item.imageUrl} alt={item.name} />
+                          <ProductName name={item.name} />
+                          {item.attributes?.isFace ? (
+                            <FaceVariantDropdown
+                              item={item}
+                              updateItemVariant={updateItemVariant}
+                            />
+                          ) : item.attributes?.isBackground ? (
+                            <BackgroundVariantDropdown
+                              item={item}
+                              updateItemVariant={updateItemVariant}
+                            />
+                          ) : (
+                            <FrameVariantDropdown
+                              item={item}
+                              updateItemVariant={updateItemVariant}
+                            />
+                          )}
+                          <div className="flex-shrink-0 -translate-x-7">
+                            <ProductPrice price={item.price} />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 mt-2">
+                          <div className="flex items-center rounded-[30px] border border-black overflow-hidden">
+                            <button
+                              className="px-3 py-[0.1rem] border-r border-black"
+                              onClick={() => updateQuantity(item.cartId, -1)}
+                            >
+                              -
+                            </button>
+                            <span className="px-4 py-[0.1rem]">
+                              {item.quantity}
+                            </span>
+                            <button
+                              className="px-3 py-[0.1rem] border-l border-black"
+                              onClick={() => updateQuantity(item.cartId, 1)}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <p className="w-28 text-right font-bold text-red-600">
+                            Rp{(item.price * item.quantity).toLocaleString("id-ID")}
+                          </p>
+                          <button
+                            className="font-poppinsRegular"
+                            onClick={() => deleteItem(item.cartId)}
+                          >
+                            {currentLang === "id" ? "Hapus" : "Delete"}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                <div className="flex items-center justify-between pt-4 mt-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4"
+                    />
+                    <span className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
+                    </span>
+                  </label>
+                  <div className="text-right">
+                    <p className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Total" : "Total"} ({selectedItems.length} {currentLang === "id" ? "item" : "items"}):{" "}
+                      <span className="font-poppinsBold text-red-500">
+                        Rp {totalPrice.toLocaleString("id-ID")}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
 
-        {/* Section Payment & Invoice */}
-        {/* Checkout Section */}
-{!showCheckout ? (
-  <div className="flex justify-end mt-6">
-    <button
-      onClick={() => setShowCheckout(true)}
-      className="bg-[#dcbec1] text-black font-poppinsSemiBold text-[15px] px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition"
-    >
-      {currentLang === "id" ? "Checkout" : "Checkout"}
-    </button>
-  </div>
-) : (
-  <div ref={checkoutRef} className="grid md:grid-cols-2 gap-8 mt-8">
-    {/* Payment Section */}
-    <div>
-      <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
-        {currentLang === "id" ? "Pembayaran" : "Payment"}
-      </h2>
-      <p className="mb-4 font-poppinsRegular">
-        {currentLang === "id" ? "Mohon melakukan pembayaran ke:" : "Please make a payment to:"}
-      </p>
-      <ul className="space-y-2">
-        <li className="flex items-center gap-3">
-          <img src={BCAIcon} alt="BCA" className="w-[65px] h-auto" />
-          <div className="flex flex-col">
-            <span className="font-poppinsRegular">7370-2351-33</span>
-            <span className="text-[12px] font-poppinsBold">Claresta</span>
-          </div>
-        </li>
-        <li className="flex items-center gap-3">
-          <img src={TMRWIcon} alt="TMRW" className="w-[65px] h-auto" />
-          <div className="flex flex-col">
-            <span className="font-poppinsRegular">7293-8666-12</span>
-            <span className="text-[12px] font-poppinsBold">Claresta</span>
-          </div>
-        </li>
-        <li className="flex items-center gap-3">
-          <img src={AladinIcon} alt="Aladin" className="w-[65px] h-auto" />
-          <div className="flex flex-col">
-            <span className="font-poppinsRegular">2022-7324-139</span>
-            <span className="text-[12px] font-poppinsBold">Claresta</span>
-          </div>
-        </li>
-        <li className="flex items-center gap-3">
-          <img src={DANAIcon} alt="DANA" className="w-[65px] h-auto" />
-          <div className="flex flex-col">
-            <span className="font-poppinsRegular">0813-7313-1988</span>
-            <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
-          </div>
-        </li>
-        <li className="flex items-center gap-3">
-          <img src={GopayIcon} alt="Gopay" className="w-[65px] h-auto" />
-          <div className="flex flex-col">
-            <span className="font-poppinsRegular">0813-7313-1988</span>
-            <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
-          </div>
-        </li>
-        <li className="flex items-center gap-3">
-          <img src={OVOIcon} alt="OVO" className="w-[65px] h-auto" />
-          <div className="flex flex-col">
-            <span className="font-poppinsRegular">0813-7313-1988</span>
-            <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
-          </div>
-        </li>
-        <li className="flex items-center gap-3">
-          <img src={ShopeePayIcon} alt="ShopeePay" className="w-[65px] h-auto" />
-          <div className="flex flex-col">
-            <span className="font-poppinsRegular">0821-6266-2302</span>
-            <span className="text-[12px] font-poppinsBold">LittleAmoraKarikatur</span>
-          </div>
-        </li>
-      </ul>
-      <div className="mt-6 -space-y-1">
-        <p className="text-[12px] font-poppinsItalic text-[#a23728]">
+          {/* Section Payment & Invoice */}
+          {/* Checkout Section */}
+  {!showCheckout ? (
+    <div className="flex justify-end mt-6">
+      <button
+        onClick={() => setShowCheckout(true)}
+        className="bg-[#dcbec1] text-black font-poppinsSemiBold text-[15px] px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition"
+      >
+        {currentLang === "id" ? "Checkout" : "Checkout"}
+      </button>
+    </div>
+  ) : (
+    <div ref={checkoutRef} className="grid md:grid-cols-2 gap-8 mt-8">
+      {/* Payment Section */}
+      <div>
+        <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
+          {currentLang === "id" ? "Pembayaran" : "Payment"}
+        </h2>
+        <p className="mb-4 font-poppinsRegular">
+          {currentLang === "id" ? "Mohon melakukan pembayaran ke:" : "Please make a payment to:"}
+        </p>
+        <ul className="space-y-2">
+          <li className="flex items-center gap-3">
+            <img src={BCAIcon} alt="BCA" className="w-[65px] h-auto" />
+            <div className="flex flex-col">
+              <span className="font-poppinsRegular">7370-2351-33</span>
+              <span className="text-[12px] font-poppinsBold">Claresta</span>
+            </div>
+          </li>
+          <li className="flex items-center gap-3">
+            <img src={TMRWIcon} alt="TMRW" className="w-[65px] h-auto" />
+            <div className="flex flex-col">
+              <span className="font-poppinsRegular">7293-8666-12</span>
+              <span className="text-[12px] font-poppinsBold">Claresta</span>
+            </div>
+          </li>
+          <li className="flex items-center gap-3">
+            <img src={AladinIcon} alt="Aladin" className="w-[65px] h-auto" />
+            <div className="flex flex-col">
+              <span className="font-poppinsRegular">2022-7324-139</span>
+              <span className="text-[12px] font-poppinsBold">Claresta</span>
+            </div>
+          </li>
+          <li className="flex items-center gap-3">
+            <img src={DANAIcon} alt="DANA" className="w-[65px] h-auto" />
+            <div className="flex flex-col">
+              <span className="font-poppinsRegular">0813-7313-1988</span>
+              <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+            </div>
+          </li>
+          <li className="flex items-center gap-3">
+            <img src={GopayIcon} alt="Gopay" className="w-[65px] h-auto" />
+            <div className="flex flex-col">
+              <span className="font-poppinsRegular">0813-7313-1988</span>
+              <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+            </div>
+          </li>
+          <li className="flex items-center gap-3">
+            <img src={OVOIcon} alt="OVO" className="w-[65px] h-auto" />
+            <div className="flex flex-col">
+              <span className="font-poppinsRegular">0813-7313-1988</span>
+              <span className="text-[12px] font-poppinsBold">Claresta/LittleAmoraKarikatur</span>
+            </div>
+          </li>
+          <li className="flex items-center gap-3">
+            <img src={ShopeePayIcon} alt="ShopeePay" className="w-[65px] h-auto" />
+            <div className="flex flex-col">
+              <span className="font-poppinsRegular">0821-6266-2302</span>
+              <span className="text-[12px] font-poppinsBold">LittleAmoraKarikatur</span>
+            </div>
+          </li>
+        </ul>
+        <div className="mt-6 -space-y-1">
+          <p className="text-[12px] font-poppinsItalic text-[#a23728]">
+            {currentLang === "id" 
+              ? "*Silahkan screenshoot bukti bayar dan kirim ke WhatsApp admin kami"
+              : "*Please give the bank payment receipt to our team via WhatsApp"
+            }
+          </p>
+          <p className="text-[12px] font-poppinsItalic text-[#a23728]">
+            {currentLang === "id" 
+              ? "*Kwitansi ini valid dan dibuat oleh Claresta, pemilik dari Little Amora Karikatur"
+              : "*This invoice is valid and published by Claresta, owner of Little Amora Karikatur"
+            }
+          </p>
+          <p className="text-[12px] font-poppinsItalic text-[#a23728]">
+            {currentLang === "id" 
+              ? "*Dilarang menyalin dan merubah kwitansi ini dalam bentuk apapun"
+              : "*Copying or changing in any form is prohibited"
+            }
+          </p>
+        </div>
+      </div>
+
+      {/* Invoice Section */}
+      <div className="text-[13px]">
+        <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
+          {currentLang === "id" ? "Isi Kwitansi" : "Get Invoice"}
+        </h2>
+        <p className="mb-4 font-poppinsRegular">
           {currentLang === "id" 
-            ? "*Silahkan screenshoot bukti bayar dan kirim ke WhatsApp admin kami"
-            : "*Please give the bank payment receipt to our team via WhatsApp"
+            ? "Silahkan isi data berikut untuk mendapatkan kwitansi"
+            : "Please fill the data to get the order invoice:"
           }
         </p>
-        <p className="text-[12px] font-poppinsItalic text-[#a23728]">
-          {currentLang === "id" 
-            ? "*Kwitansi ini valid dan dibuat oleh Claresta, pemilik dari Little Amora Karikatur"
-            : "*This invoice is valid and published by Claresta, owner of Little Amora Karikatur"
-          }
-        </p>
-        <p className="text-[12px] font-poppinsItalic text-[#a23728]">
-          {currentLang === "id" 
-            ? "*Dilarang menyalin dan merubah kwitansi ini dalam bentuk apapun"
-            : "*Copying or changing in any form is prohibited"
-          }
-        </p>
+        <form onSubmit={handleSubmitInvoice} className="space-y-1 font-poppinsRegular">
+          <div className="flex items-center gap-2">
+            <label className="w-48">
+              {currentLang === "id" ? "Nama perusahaan" : "Company name"}
+            </label>
+            <span>:</span>
+            <input
+              type="text"
+              name="companyName"
+              value={invoiceData.companyName}
+              onChange={handleInvoiceChange}
+              className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
+              placeholder={currentLang === "id" ? "Nama perusahaan" : "Company name"}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="w-48">
+              {currentLang === "id" ? "Nama dan Nomor Kontak" : "Name & Contact Person"}
+            </label>
+            <span>:</span>
+            <input
+              type="text"
+              name="contactPerson"
+              value={invoiceData.contactPerson}
+              onChange={handleInvoiceChange}
+              className="border border-black rounded-full px-4 py-1 flex-1"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="w-48">
+              {currentLang === "id" ? "Order melalui" : "Order via"}
+            </label>
+            <span>:</span>
+            <input
+              type="text"
+              name="orderVia"
+              value={invoiceData.orderVia}
+              onChange={handleInvoiceChange}
+              className="border border-black rounded-full px-4 py-1 flex-1"
+            />
+          </div>
+          {/*kalender*/}
+          <div className="flex items-center gap-2">
+            <label className="w-48">
+              {currentLang === "id" ? "Tanggal bayar" : "Payment date"}
+            </label>
+            <span>:</span>
+            <DateInput
+              name="paymentDate"
+              value={invoiceData.paymentDate}
+              onChange={handleInvoiceChange}
+              placeholder={currentLang === "id" ? "BCA / Gopay / ..." : "BCA / Gopay / ..."}
+              className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="w-48">
+              {currentLang === "id" ? "Estimasi barang sampai" : "Estimated Product Arrival"}
+            </label>
+            <span>:</span>
+            <DateInput
+              name="estimatedArrival"
+              value={invoiceData.estimatedArrival}
+              onChange={handleInvoiceChange}
+              placeholder={currentLang === "id" ? "Pilih tanggal estimasi sampai" : "Select estimated arrival date"}
+              className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="w-48">
+              {currentLang === "id" ? "Bayar melalui" : "Payment transfer via Bank"}
+            </label>
+            <span>:</span>
+            <input
+              type="text"
+              name="paymentMethod"
+              value={invoiceData.paymentMethod}
+              onChange={handleInvoiceChange}
+              className="border border-black rounded-full px-4 py-1 flex-1"
+            />
+          </div>
+
+          <button
+            type="button"
+            className="mt-4 translate-x-[-26px] text-[15px] font-poppinsSemiBold px-6 py-2 bg-[#dcbec1] rounded-full"
+            onClick={() => generateInvoice(cart, invoiceData)} 
+          >
+            {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
+          </button>
+        </form>
       </div>
     </div>
+  )}
+        </main>
+      </div>
 
-    {/* Invoice Section */}
-    <div className="text-[13px]">
-      <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
-        {currentLang === "id" ? "Isi Kwitansi" : "Get Invoice"}
-      </h2>
-      <p className="mb-4 font-poppinsRegular">
-        {currentLang === "id" 
-          ? "Silahkan isi data berikut untuk mendapatkan kwitansi"
-          : "Please fill the data to get the order invoice:"
-        }
-      </p>
-      <form onSubmit={handleSubmitInvoice} className="space-y-1 font-poppinsRegular">
-        <div className="flex items-center gap-2">
-          <label className="w-48">
-            {currentLang === "id" ? "Nama perusahaan" : "Company name"}
-          </label>
-          <span>:</span>
-          <input
-            type="text"
-            name="companyName"
-            value={invoiceData.companyName}
-            onChange={handleInvoiceChange}
-            className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-            placeholder={currentLang === "id" ? "Nama perusahaan" : "Company name"}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="w-48">
-            {currentLang === "id" ? "Nama dan Nomor Kontak" : "Name & Contact Person"}
-          </label>
-          <span>:</span>
-          <input
-            type="text"
-            name="contactPerson"
-            value={invoiceData.contactPerson}
-            onChange={handleInvoiceChange}
-            className="border border-black rounded-full px-4 py-1 flex-1"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="w-48">
-            {currentLang === "id" ? "Order melalui" : "Order via"}
-          </label>
-          <span>:</span>
-          <input
-            type="text"
-            name="orderVia"
-            value={invoiceData.orderVia}
-            onChange={handleInvoiceChange}
-            className="border border-black rounded-full px-4 py-1 flex-1"
-          />
-        </div>
-        {/*kalender*/}
-        <div className="flex items-center gap-2">
-          <label className="w-48">
-            {currentLang === "id" ? "Tanggal bayar" : "Payment date"}
-          </label>
-          <span>:</span>
-          <DateInput
-            name="paymentDate"
-            value={invoiceData.paymentDate}
-            onChange={handleInvoiceChange}
-            placeholder={currentLang === "id" ? "BCA / Gopay / ..." : "BCA / Gopay / ..."}
-            className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="w-48">
-            {currentLang === "id" ? "Estimasi barang sampai" : "Estimated Product Arrival"}
-          </label>
-          <span>:</span>
-          <DateInput
-            name="estimatedArrival"
-            value={invoiceData.estimatedArrival}
-            onChange={handleInvoiceChange}
-            placeholder={currentLang === "id" ? "Pilih tanggal estimasi sampai" : "Select estimated arrival date"}
-            className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="w-48">
-            {currentLang === "id" ? "Bayar melalui" : "Payment transfer via Bank"}
-          </label>
-          <span>:</span>
-          <input
-            type="text"
-            name="paymentMethod"
-            value={invoiceData.paymentMethod}
-            onChange={handleInvoiceChange}
-            className="border border-black rounded-full px-4 py-1 flex-1"
-          />
-        </div>
-
-        <button
-          type="button"
-          className="mt-4 translate-x-[-26px] text-[15px] font-poppinsSemiBold px-6 py-2 bg-[#dcbec1] rounded-full"
-          onClick={() => generateInvoice(cart, invoiceData)} 
-        >
-          {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
-        </button>
-      </form>
-    </div>
-  </div>
-)}
-      </main>
       <Footer />
     </div>
   );
