@@ -9,6 +9,15 @@ import whatsappIcon from "../../assets/Icons/whatsapp.png";
 import useScrollFloat from "../../utils/scrollFloat";
 import { useTranslation } from "react-i18next";
 
+
+const formatDate = (iso: string) => {
+  if (!iso) return "";
+  const parts = iso.split("-");
+  if (parts.length !== 3) return iso;
+  const [y, m, d] = parts;
+  return `${d}/${m}/${y}`;
+};
+
 const DateInput = ({
   name,
   value,
@@ -32,6 +41,8 @@ const DateInput = ({
         WebkitAppearance: "none",
         MozAppearance: "none",
         textAlignLast: "center",
+        color: "transparent",
+        caretColor: "black",
       }}
     />
     {!value && (
@@ -39,11 +50,17 @@ const DateInput = ({
         {placeholder}
       </span>
     )}
+    {value && (
+      <span className="absolute inset-0 flex items-center justify-center text-black text-sm font-poppinsSemiBold pointer-events-none">
+        {formatDate(value)}
+      </span>
+    )}
   </div>
 );
 
 const OrderSteps = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language;
   const [isMobile, setIsMobile] = useState(false);
   const [form, setForm] = useState({
     faces: "",
@@ -171,9 +188,31 @@ Deadline date & month = ${form.deadline}
         </div>
       )}
 
-      {form[step.key as keyof typeof form] && step.number !== 5 && step.number !== 6 && (
-        <p className="text-lg mt-2 text-black italic">✓ {form[step.key as keyof typeof form]}</p>
-      )}
+{step.number !== 6 && step.number !== 5 && (
+  <div className="w-full mt-3 flex justify-center">
+    <div className="relative inline-block w-56">
+      <div
+        className="text-center rounded-full border border-gray-300 px-6 py-2 bg-white w-full"
+      >
+        <span
+          className={`text-sm font-poppinsSemiBoldItalic ${
+            form[step.key] ? "text-black" : "text-gray-400"
+          }`}
+        >
+      {form[step.key] && form[step.key].trim() !== ""
+        ? form[step.key]
+        : step.key === "size"
+            ? currentLang === "id"
+              ? "Pilih ukuran bingkai"
+              : "Choose frame size"
+            : currentLang === "id"
+              ? "Ketik jawabanmu di sini"
+              : "Type your answer here"}
+        </span>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 

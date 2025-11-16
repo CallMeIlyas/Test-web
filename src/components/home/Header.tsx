@@ -410,7 +410,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
       style={{
         filter: location.pathname === '/shoppingcart' 
           ? 'brightness(0) saturate(100%) invert(81%) sepia(12%) saturate(692%) hue-rotate(304deg) brightness(93%) contrast(88%) drop-shadow(0 0 0.5px black)'
-          : 'brightness(0) saturate(100%) invert(47%) sepia(0%) saturate(0%) hue-rotate(180deg) brightness(95%) contrast(88%) drop-shadow(0 0 0.5px black)'
+          : 'brightness(0) saturate(100%) invert(47%) sepia(8%) saturate(420%) hue-rotate(182deg) brightness(90%) contrast(88%)'
       }}
     />
     {cartCount > 0 && (
@@ -419,7 +419,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
       </span>
     )}
   </div>
-  <span className="text-[10px] sm:text-xs font-poppinsBold translate-y-0.5">
+  <span className="text-[10px] sm:text-xs font-poppinsBold -translate-y-[3px]">
     {t("header.cart")}
   </span>
 </a>

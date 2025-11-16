@@ -49,3 +49,10 @@ html, body, #root {
   animation: shimmer 1.5s infinite;
 }
 
+.date-input {
+  color: transparent;
+  caret-color: transparent;
+}
+.date-input:focus {
+  color: transparent;
+}
