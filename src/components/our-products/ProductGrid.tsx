@@ -20,7 +20,6 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
 }) => {
   const PRODUCTS_PER_PAGE = 16;
 
-  // Gunakan produk yang sudah diurutkan sesuai custom order
   const filteredProducts = useProductFilter(orderedProducts, filters, searchQuery);
   const { sortedProducts, sortOption, setSortOption } = useSort(filteredProducts);
   const {
@@ -36,34 +35,43 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
 
   return (
     <div className="pb-10 bg-white">
-      <div className="flex justify-start w-full px-5 max-w-7xl mx-auto mb-5">
-        <div className="w-full">
-          <SortControls sortOption={sortOption} onSortChange={setSortOption} />
-        </div>
+
+      {/* Sort Controls selalu full width */}
+      <div className="w-full px-4 md:px-5 max-w-7xl mx-auto mb-4 md:mb-5">
+        <SortControls sortOption={sortOption} onSortChange={setSortOption} />
       </div>
 
-<div className="grid grid-cols-4 gap-5 px-10 max-w-[1230px] mx-auto">
-  {currentProducts.length > 0 ? (
-    currentProducts.map((product) => {
-      // Cari urutan asli di orderedProducts
-      // const originalIndex = orderedProducts.findIndex(p => p.id === product.id) + 1;
+      {/* === GRID PRODUK === */}
 
-      return (
-        <div key={product.id} className="relative">
-          <ProductCard product={product as import("../../data/productDataLoader").Product} />
-        
-        </div>
-      );
-    })
+<div
+  className="
+    grid 
+    grid-cols-2 
+    md:grid-cols-4 
+    gap-5 
+    px-4 md:px-10 
+    max-w-[1230px] 
+    mx-auto 
+    place-items-center
+  "
+>
+  {currentProducts.length > 0 ? (
+    currentProducts.map((product) => (
+      <div key={product.id} className="w-full flex justify-center">
+        <ProductCard product={product} />
+      </div>
+    ))
   ) : (
-    <div className="col-span-4 text-center py-10 text-gray-500">
-      {orderedProducts.length === 0
-        ? "No images found. Open browser console (F12) to see debug info."
-        : "No products match your current filters"}
-    </div>
+          <div className="col-span-full text-center py-10 text-gray-500">
+            {orderedProducts.length === 0
+              ? "No images found."
+              : "No products match your current filters"}
+          </div>
   )}
 </div>
 
+
+      {/* Pagination */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

@@ -22,19 +22,19 @@ export default function FAQItem({ question, answer, isCustom = false }: FAQItemP
     <div className={containerClasses}>
       <button 
         onClick={toggleActive}
-        className="font-poppinsBold bg-transparent border-none w-full text-left font-extrabold text-base px-5 py-3.5 cursor-pointer outline-none flex justify-between items-center"
+        className="font-poppinsBold bg-transparent border-none w-full text-left font-extrabold text-sm md:text-base px-4 md:px-5 py-3 md:py-3.5 cursor-pointer outline-none flex justify-between items-center"
       >
-        {question}
+        <span className="text-left flex-1 pr-2">{question}</span>
         <FaChevronDown 
-          size={20}
+          size={18}
           className={`shrink-0 transition-transform duration-300 ${isActive ? 'rotate-180' : ''}`}
         />
       </button>
       <div 
-        className={`block overflow-hidden transition-all duration-300 ${isActive ? 'max-h-[500px] py-2.5 px-5' : 'max-h-0 py-0 px-5'}`}
+        className={`block overflow-hidden transition-all duration-300 ${isActive ? 'max-h-[500px] py-2.5 px-4 md:px-5' : 'max-h-0 py-0 px-4 md:px-5'}`}
       >
         {/* ✅ wrapper font style untuk semua answer */}
-        <div className="text-[13px] text-black leading-relaxed">
+        <div className="text-xs md:text-[13px] text-black leading-relaxed">
           {answer}
         </div>
       </div>

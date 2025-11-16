@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { FC } from "react";
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagination";
@@ -51,12 +51,12 @@ const allProducts: Product[] = Object.keys(allImages).map((path, i) => {
 
 interface ProductGridWithPaginationProps {
   filters: FilterOptions;
-  searchQuery?: string; // ✅ Terima sebagai props, bukan dari context
+  searchQuery?: string;
 }
 
 const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ 
   filters, 
-  searchQuery = "" // ✅ Default value
+  searchQuery = ""
 }) => {
   const PRODUCTS_PER_PAGE = 16;
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,7 +82,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
     if (sortOption === "name-asc") return a.name.localeCompare(b.name);
     if (sortOption === "name-desc") return b.name.localeCompare(a.name);
     if (sortOption === "size-asc") return a.size.localeCompare(b.size);
-    if (sortOption === "size-desc") return b.size.localeCompare(a.size);
+    if (sortOption === "size-desc") return b.size.localeCompare(b.size);
     return 0;
   });
 
@@ -92,24 +92,46 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
     currentPage * PRODUCTS_PER_PAGE
   );
 
+  // Reset to page 1 when filters or search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, searchQuery, sortOption]);
+
   return (
-    <div className="pb-10">
-      {/* SortControl */}
-      <div className="flex justify-start w-full px-5 max-w-7xl mx-auto mb-5">
-        <div className="w-full">
-          <SortControl sortOption={sortOption} onSortChange={setSortOption} />
-        </div>
+    <div className="pb-10 bg-white">
+
+      {/* SortControl - full width responsive */}
+      <div className="w-full px-4 md:px-5 max-w-7xl mx-auto mb-4 md:mb-5">
+        <SortControl sortOption={sortOption} onSortChange={setSortOption} />
       </div>
 
-      {/* Produk Grid */}
-      <div className="grid grid-cols-4 gap-5 px-10 max-w-[1230px] mx-auto">
-        {currentProducts.map((product, index) => (
-          <ProductCard
-            key={`${product.name}-${index}`}
-            imageUrl={product.imageUrl}
-            name={product.name}
-          />
-        ))}
+      {/* Product Grid - responsive */}
+      <div className="
+        grid 
+        grid-cols-2 
+        md:grid-cols-4 
+        gap-4 md:gap-5 
+        px-4 md:px-10 
+        max-w-[1230px] 
+        mx-auto 
+        place-items-center
+      ">
+        {currentProducts.length > 0 ? (
+          currentProducts.map((product, index) => (
+            <div key={`${product.name}-${index}`} className="w-full flex justify-center">
+              <ProductCard
+                imageUrl={product.imageUrl}
+                name={product.name}
+              />
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full text-center py-10 text-gray-500">
+            {allProducts.length === 0
+              ? "No images found."
+              : "No products match your current filters"}
+          </div>
+        )}
       </div>
 
       {/* Pagination */}

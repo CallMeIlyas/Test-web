@@ -43,12 +43,12 @@ const SizeGuide: React.FC = () => {
   }, []);
 
   const SectionTitle = ({ title }: { title: string }) => (
-    <div className="relative my-8 mb-10 text-center w-screen left-1/2 -translate-x-1/2">
-      <h1 className="inline-block px-5 text-4xl md:text-5xl font-nataliecaydence relative z-10">
+    <div className="relative my-6 mb-8 md:my-8 md:mb-10 text-center w-screen left-1/2 -translate-x-1/2">
+      <h1 className="inline-block px-4 text-2xl md:text-4xl lg:text-5xl font-nataliecaydence relative z-10">
         {title}
       </h1>
-      <div className="absolute top-1/2 left-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
-      <div className="absolute top-1/2 right-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
+      <div className="absolute top-1/2 left-0 w-[15%] md:w-[20%] border-t-2 md:border-t-4 border-black transform -translate-y-1/2"></div>
+      <div className="absolute top-1/2 right-0 w-[15%] md:w-[20%] border-t-2 md:border-t-4 border-black transform -translate-y-1/2"></div>
     </div>
   );
 
@@ -73,7 +73,7 @@ const SizeGuide: React.FC = () => {
         {/* ========== FRAME SIZE ========== */}
         <section
           ref={(el) => (sectionsRef.current[0] = el)}
-          className="transition-all duration-700 opacity-0 translate-y-5 max-w-7xl mx-auto px-5 md:px-10"
+          className="transition-all duration-700 opacity-0 translate-y-5 max-w-7xl mx-auto px-4 md:px-10"
         >
           <SectionTitle title={t("size.frameSize")} />
           <div className="relative flex justify-center items-center">
@@ -93,7 +93,7 @@ const SizeGuide: React.FC = () => {
         {/* ========== SIZE COMPARISON ========== */}
         <section
           ref={(el) => (sectionsRef.current[1] = el)}
-          className="transition-all duration-700 opacity-0 translate-y-5 max-w-7xl mx-auto px-5 md:px-10 mt-20"
+          className="transition-all duration-700 opacity-0 translate-y-5 max-w-7xl mx-auto px-4 md:px-10 mt-12 md:mt-20"
         >
           <SectionTitle title={t("size.sizeComparison")} />
           <div className="flex justify-center">
@@ -108,12 +108,12 @@ const SizeGuide: React.FC = () => {
         {/* ========== SIZE ON HAND (Carousel) ========== */}
         <section
           ref={(el) => (sectionsRef.current[2] = el)}
-          className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-20 mb-24 relative"
+          className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-12 md:mt-20 mb-16 md:mb-24 relative"
         >
           <SectionTitle title={t("size.sizeOnHand")} />
 
-          <div className="relative flex justify-center items-center overflow-visible px-10">
-            <div className="flex items-center justify-center w-full relative min-h-[400px] mt-10">
+          <div className="relative flex justify-center items-center overflow-visible px-4 md:px-10">
+            <div className="flex items-center justify-center w-full relative min-h-[300px] md:min-h-[400px] mt-6 md:mt-10">
               {images.map((img, index) => {
                 const isActive = index === currentIndex;
                 const isNext = index === (currentIndex + 1) % images.length;
@@ -126,9 +126,9 @@ const SizeGuide: React.FC = () => {
                 const position = isActive
                   ? "scale-100 opacity-100 z-20"
                   : isNext
-                  ? "translate-x-[15%] scale-90 opacity-70 z-10"
+                  ? "translate-x-[20%] md:translate-x-[15%] scale-90 opacity-70 z-10"
                   : isPrev
-                  ? "-translate-x-[15%] scale-90 opacity-70 z-10"
+                  ? "-translate-x-[20%] md:-translate-x-[15%] scale-90 opacity-70 z-10"
                   : "opacity-0 pointer-events-none";
 
                 return (
@@ -136,7 +136,7 @@ const SizeGuide: React.FC = () => {
                     key={index}
                     src={img}
                     alt={`On Hand ${index + 1}`}
-                    className={`absolute transition-all duration-700 ease-in-out rounded-xl shadow-xl cursor-pointer w-[85vw] md:w-[55vw] lg:w-[40vw] object-cover ${position}`}
+                    className={`absolute transition-all duration-700 ease-in-out rounded-lg md:rounded-xl shadow-lg md:shadow-xl cursor-pointer w-[90vw] md:w-[55vw] lg:w-[40vw] object-cover ${position}`}
                     onClick={() => setSelectedImage(img)}
                   />
                 );
@@ -146,15 +146,15 @@ const SizeGuide: React.FC = () => {
             {/* Tombol navigasi */}
             <button
               onClick={prevImage}
-              className="absolute left-4 md:left-10 bg-white/70 hover:bg-white text-black p-2 rounded-full shadow-md z-30"
+              className="absolute left-2 md:left-10 bg-white/70 hover:bg-white text-black p-1 md:p-2 rounded-full shadow-md z-30"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-8 h-8 md:w-6 md:h-6" />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-4 md:right-10 bg-white/70 hover:bg-white text-black p-2 rounded-full shadow-md z-30"
+              className="absolute right-2 md:right-10 bg-white/70 hover:bg-white text-black p-1 md:p-2 rounded-full shadow-md z-30"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-8 h-8 md:w-6 md:h-6" />
             </button>
           </div>
         </section>
@@ -163,40 +163,40 @@ const SizeGuide: React.FC = () => {
       <Footer />
 
       {/* ✅ Fullscreen Preview */}
-{selectedImage &&
-  ReactDOM.createPortal(
-    <div
-      className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center animate-fadeIn"
-      onClick={() => setSelectedImage(null)}
-    >
-      {/* Tombol close */}
-      <button
-        className="absolute top-6 right-6 bg-black/60 hover:bg-black/80 text-white text-3xl font-bold w-10 h-10 rounded-full flex items-center justify-center z-[1000]"
-        onClick={() => setSelectedImage(null)}
-      >
-        ✕
-      </button>
+      {selectedImage &&
+        ReactDOM.createPortal(
+          <div
+            className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center animate-fadeIn"
+            onClick={() => setSelectedImage(null)}
+          >
+            {/* Tombol close */}
+            <button
+              className="absolute top-4 right-4 md:top-6 md:right-6 bg-black/60 hover:bg-black/80 text-white text-xl md:text-3xl font-bold w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center z-[1000]"
+              onClick={() => setSelectedImage(null)}
+            >
+              ✕
+            </button>
 
-      {/* Gambar tengah */}
-      <div
-        className="relative flex items-center justify-center"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <img
-          src={selectedImage}
-          alt="Full view"
-          className="
-            object-contain rounded-xl shadow-2xl
-            max-w-[80vw] max-h-[80vh]
-            md:max-w-[70vw] md:max-h-[80vh]
-            transition-transform duration-300 ease-out
-            scale-100 hover:scale-[1.03]
-          "
-        />
-      </div>
-    </div>,
-    document.body
-  )}
+            {/* Gambar tengah */}
+            <div
+              className="relative flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={selectedImage}
+                alt="Full view"
+                className="
+                  object-contain rounded-lg md:rounded-xl shadow-xl md:shadow-2xl
+                  max-w-[90vw] max-h-[80vh]
+                  md:max-w-[70vw] md:max-h-[80vh]
+                  transition-transform duration-300 ease-out
+                  scale-100 hover:scale-[1.02] md:hover:scale-[1.03]
+                "
+              />
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

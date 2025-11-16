@@ -113,6 +113,7 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
 
   return (
     <>
+    <div className = "font-poppinsSemiBold">
       {/* Border */}
       <div className="relative my-10 text-center h-[1px]">
         <div className="absolute top-0 left-0 w-1/4 border-t-[5px] border-black"></div>
@@ -343,6 +344,7 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
           </button>
         </div>
       )}
+      </div>
     </>
   );
 };

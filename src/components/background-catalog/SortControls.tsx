@@ -1,10 +1,10 @@
 import type { FC } from "react";
 import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 interface SortControlsProps {
-  sortOption?: string; // default "all"
+  sortOption?: string;
   onSortChange: (option: string) => void;
 }
 
@@ -23,70 +23,68 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
     setOpen(false);
   };
 
-  // const handleFrequentlyUsed = () => {
-  //   onSortChange("all");
-  // };
-
   const getCurrentLabel = () => {
     const current = options.find(opt => opt.value === sortOption);
-    return current ? current.label : "All";
+    return current ? current.label : t("sortBg.all");
   };
 
   return (
-    <div className="bg-[#f0f0f0] px-4 py-2 rounded-[var(--radius)] mb-2">
-      <div className="flex font-poppinsBold items-center gap-7">
-        <span className="text-base text-sm text-black">{t("sortBg.sortby")}</span>
+    <div className="bg-[#f0f0f0] px-4 py-3 rounded-xl mb-3">
 
-          <div className="flex gap-7 font-poppinsBold">
-            {/* Frequently Used */}
-            <button
-              onClick={() =>
-                onSortChange(sortOption === "frequently-used" ? "all" : "frequently-used")
-              }
-              className={`px-4 py-2 rounded-full text-sm border transition-all duration-200 ${
-                sortOption === "frequently-used"
-                  ? "bg-black text-white border-black shadow-sm"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
-              }`}
-            >
-              {t("sortBg.frequentlyused")}
-            </button>
-          
-            {/* Rarely Used */}
-            <button
-              onClick={() =>
-                onSortChange(sortOption === "rarely-used" ? "all" : "rarely-used")
-              }
-              className={`px-4 py-2 rounded-full text-sm border transition-all duration-200 ${
-                sortOption === "rarely-used"
-                  ? "bg-black text-white border-black shadow-sm"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
-              }`}
-            >
-              {t("sortBg.rarelyused")}
-            </button>
-          </div>
+      {/* DESKTOP: layout horizontal */}
+      <div className="hidden md:flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8 text-sm font-poppinsBold text-black">
 
+        <span className="whitespace-nowrap">{t("sortBg.sortby")}</span>
+
+        {/* Frequently Used */}
+        <button
+          onClick={() =>
+            onSortChange(sortOption === "frequently-used" ? "all" : "frequently-used")
+          }
+          className={`px-4 py-2 rounded-full text-sm border transition ${
+            sortOption === "frequently-used"
+              ? "bg-black text-white border-black shadow-sm"
+              : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
+          }`}
+        >
+          {t("sortBg.frequentlyused")}
+        </button>
+      
+        {/* Rarely Used */}
+        <button
+          onClick={() =>
+            onSortChange(sortOption === "rarely-used" ? "all" : "rarely-used")
+          }
+          className={`px-4 py-2 rounded-full text-sm border transition ${
+            sortOption === "rarely-used"
+              ? "bg-black text-white border-black shadow-sm"
+              : "bg-white text-gray-700 border-gray-300 hover:border-black hover:text-black"
+          }`}
+        >
+          {t("sortBg.rarelyused")}
+        </button>
+
+        {/* Dropdown Sort */}
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
-            className="font-poppinsBold relative flex items-center justify-between px-4 py-2 w-40 text-base font-bold text-black bg-white rounded-full hover:bg-gray-50 transition-colors"
+            className="font-poppinsBold flex items-center justify-between px-4 py-2 w-40 text-sm bg-white rounded-full border border-gray-300 hover:border-black"
           >
             <span>{getCurrentLabel()}</span>
-            <FaChevronDown 
-              size={14} 
-              className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            <FaChevronDown
+              size={14}
+              className={`ml-2 transition-transform ${open ? "rotate-180" : ""}`}
             />
           </button>
 
           {open && (
-            <div className="absolute mt-1 w-40 bg-white text-[var(--muted-foreground)] rounded-md shadow-lg overflow-hidden border border-[var(--border)] z-50">
+            <div className="absolute mt-1 w-40 bg-white rounded-md shadow-lg border z-50 overflow-hidden">
               {options.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => handleSelect(option.value)}
-                  className={`block w-full px-4 py-2 text-left hover:bg-[var(--secondary)] transition-colors ${
-                    sortOption === option.value ? "bg-[var(--secondary)] font-bold" : ""
+                  className={`block w-full px-4 py-2 text-left hover:bg-gray-200 ${
+                    sortOption === option.value ? "bg-gray-200 font-semibold" : ""
                   }`}
                 >
                   {option.label}
@@ -95,7 +93,74 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
             </div>
           )}
         </div>
+
       </div>
+
+      {/* MOBILE: layout vertikal */}
+      <div className="flex flex-col md:hidden gap-3 text-sm font-poppinsBold text-black">
+
+        <span className="">{t("sortBg.sortby")}</span>
+
+        {/* Frequently Used */}
+        <button
+          onClick={() =>
+            onSortChange(sortOption === "frequently-used" ? "all" : "frequently-used")
+          }
+          className={`w-full px-4 py-2 rounded-full text-sm border transition ${
+            sortOption === "frequently-used"
+              ? "bg-black text-white border-black shadow-sm"
+              : "bg-white text-gray-700 border-gray-300"
+          }`}
+        >
+          {t("sortBg.frequentlyused")}
+        </button>
+
+        {/* Rarely Used */}
+        <button
+          onClick={() =>
+            onSortChange(sortOption === "rarely-used" ? "all" : "rarely-used")
+          }
+          className={`w-full px-4 py-2 rounded-full text-sm border transition ${
+            sortOption === "rarely-used"
+              ? "bg-black text-white border-black shadow-sm"
+              : "bg-white text-gray-700 border-gray-300"
+          }`}
+        >
+          {t("sortBg.rarelyused")}
+        </button>
+
+        {/* Dropdown Sort */}
+        <div className="relative w-full">
+          <button
+            onClick={() => setOpen(!open)}
+            className="font-poppinsBold flex items-center justify-between px-4 py-2 w-full text-sm bg-white rounded-full border border-gray-300"
+          >
+            <span>{getCurrentLabel()}</span>
+            <FaChevronDown
+              size={14}
+              className={`ml-2 transition-transform ${open ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {open && (
+            <div className="absolute mt-1 w-full bg-white rounded-md shadow-lg border z-50 overflow-hidden">
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleSelect(option.value)}
+                  className={`block w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                    sortOption === option.value ? "bg-gray-200 font-semibold" : ""
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+      </div>
+
     </div>
   );
 };

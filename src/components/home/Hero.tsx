@@ -131,7 +131,7 @@ const Hero = () => {
         ref={logoRef}
         src={caricatureLogo}
         alt="Little Amora - Caricature 3D Frame"
-        className="w-full max-w-[250px] mb-4"
+        className="w-full max-w-[270px] mb-4 -translate-y-5"
       />
       <p
         ref={textRef}
@@ -143,7 +143,7 @@ const Hero = () => {
         ref={imageRef}
         src={pakAndre}
         alt="Caricature Frame"
-        className="w-full max-w-[500px] rounded-[10px]"
+        className="w-full max-w-[500px] rounded-[10px] mt-16"
       />
     </section>
   );

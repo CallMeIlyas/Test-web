@@ -43,40 +43,77 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
   ];
 
   return (
-    <aside className="w-64 p-6 bg-white rounded-xl">
+    <aside className="w-full md:w-64 p-4 md:p-6 bg-white rounded-xl">
       {/* Category */}
       <SplitBorder />
-      <div className="mb-8">
-        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">{t("sideBg.category")}</h3>
-        {categories.map((item) => (
-          <div key={item} className="font-poppinsRegular flex items-start gap-2 mb-3 ml-6">
-            <input
-              type="checkbox"
-              id={item.toLowerCase().replace(/\s+/g, "-")}
-              onChange={(e) =>
-                handleCheckboxChange("categories", item, e.target.checked)
-              }
-              className="
-                shrink-0 w-4 h-4 border border-black rounded-sm
-                appearance-none cursor-pointer
-                checked:bg-white checked:border-black
-                relative transition-all duration-200
-                after:hidden checked:after:block
-                after:w-[6px] after:h-[10px]
-                after:border-r-[2px] after:border-b-[2px]
-                after:border-black after:absolute
-                after:top-[0px] after:left-[5px]
-                after:rotate-45
-              "
-            />
-            <label
-              htmlFor={item.toLowerCase().replace(/\s+/g, "-")}
-              className="text-sm cursor-pointer hover:text-primary flex-1 leading-tight"
-            >
-              {item}
-            </label>
-          </div>
-        ))}
+      <div className="mb-6 md:mb-8">
+        <h3 className="font-nataliecaydence text-lg md:text-xl font-light mb-3 md:mb-4 md:ml-4">{t("sideBg.category")}</h3>
+        
+        {/* MOBILE: Grid layout */}
+        <div className="md:hidden grid grid-cols-1 gap-2">
+          {categories.map((item) => (
+            <div key={item} className="font-poppinsRegular flex items-start gap-2">
+              <input
+                type="checkbox"
+                id={item.toLowerCase().replace(/\s+/g, "-")}
+                onChange={(e) =>
+                  handleCheckboxChange("categories", item, e.target.checked)
+                }
+                className="
+                  shrink-0 w-4 h-4 border border-black rounded-sm
+                  appearance-none cursor-pointer
+                  checked:bg-white checked:border-black
+                  relative transition-all duration-200
+                  after:hidden checked:after:block
+                  after:w-[6px] after:h-[10px]
+                  after:border-r-[2px] after:border-b-[2px]
+                  after:border-black after:absolute
+                  after:top-[0px] after:left-[5px]
+                  after:rotate-45
+                "
+              />
+              <label
+                htmlFor={item.toLowerCase().replace(/\s+/g, "-")}
+                className="text-sm cursor-pointer hover:text-primary flex-1 leading-tight"
+              >
+                {item}
+              </label>
+            </div>
+          ))}
+        </div>
+
+        {/* DESKTOP: Original layout */}
+        <div className="hidden md:block">
+          {categories.map((item) => (
+            <div key={item} className="font-poppinsRegular flex items-start gap-2 mb-3 ml-6">
+              <input
+                type="checkbox"
+                id={item.toLowerCase().replace(/\s+/g, "-")}
+                onChange={(e) =>
+                  handleCheckboxChange("categories", item, e.target.checked)
+                }
+                className="
+                  shrink-0 w-4 h-4 border border-black rounded-sm
+                  appearance-none cursor-pointer
+                  checked:bg-white checked:border-black
+                  relative transition-all duration-200
+                  after:hidden checked:after:block
+                  after:w-[6px] after:h-[10px]
+                  after:border-r-[2px] after:border-b-[2px]
+                  after:border-black after:absolute
+                  after:top-[0px] after:left-[5px]
+                  after:rotate-45
+                "
+              />
+              <label
+                htmlFor={item.toLowerCase().replace(/\s+/g, "-")}
+                className="text-sm cursor-pointer hover:text-primary flex-1 leading-tight"
+              >
+                {item}
+              </label>
+            </div>
+          ))}
+        </div>
       </div>
     </aside>
   );
