@@ -395,34 +395,34 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
             </span>
           </a>
 
-          {/* Cart - dengan badge */}
-          <a 
-            href="/shoppingcart" 
-            className={`flex flex-col items-center ml-4 gap-1 flex-1 relative ${
-              location.pathname === '/shoppingcart' ? 'text-[#dcbec1]' : 'text-gray-600'
-            }`}
-          >
-            <div className="relative">
-              <img 
-                src={cartIcon} 
-                alt="Cart" 
-                className="w-[24px] h-auto" 
-                style={{
-                  filter: location.pathname === '/shoppingcart' 
-                    ? 'brightness(0) saturate(100%) invert(81%) sepia(12%) saturate(692%) hue-rotate(304deg) brightness(93%) contrast(88%)'
-                    : 'brightness(0) saturate(100%) invert(47%) sepia(0%) saturate(0%) hue-rotate(180deg) brightness(95%) contrast(88%)'
-                }}
-              />
-              {cartCount > 0 && (
-                <span className="font-poppinsBold absolute -top-1 right-0.5 text-black rounded-full px-[6px] py-[2px] text-[10px]">
-                  {cartCount}
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] sm:text-xs font-poppinsBold translate-y-0.5">
-              {t("header.cart")}
-            </span>
-          </a>
+{/* Cart - dengan badge */}
+<a 
+  href="/shoppingcart" 
+  className={`flex flex-col items-center ml-4 gap-1 flex-1 relative ${
+    location.pathname === '/shoppingcart' ? 'text-[#dcbec1]' : 'text-gray-600'
+  }`}
+>
+  <div className="relative">
+    <img 
+      src={cartIcon} 
+      alt="Cart" 
+      className="w-[35px] h-auto" 
+      style={{
+        filter: location.pathname === '/shoppingcart' 
+          ? 'brightness(0) saturate(100%) invert(81%) sepia(12%) saturate(692%) hue-rotate(304deg) brightness(93%) contrast(88%) drop-shadow(0 0 0.5px black)'
+          : 'brightness(0) saturate(100%) invert(47%) sepia(0%) saturate(0%) hue-rotate(180deg) brightness(95%) contrast(88%) drop-shadow(0 0 0.5px black)'
+      }}
+    />
+    {cartCount > 0 && (
+      <span className="font-poppinsBold absolute top-0 right-1.5 text-black rounded-full px-[6px] py-[2px] text-[13px]">
+        {cartCount}
+      </span>
+    )}
+  </div>
+  <span className="text-[10px] sm:text-xs font-poppinsBold translate-y-0.5">
+    {t("header.cart")}
+  </span>
+</a>
 
           {/* Location */}
           <a 
