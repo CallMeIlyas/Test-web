@@ -217,13 +217,5 @@ const usedIds = new Set(orderedProducts.map((p) => p.id));
 const remainingProducts = allProducts.filter((p) => !usedIds.has(p.id));
 orderedProducts = [...orderedProducts, ...remainingProducts];
 
-console.log(
-  "🧾 Semua Produk Additional:",
-  allProducts.filter(p => p.category === "Additional").map(p => ({
-    name: p.name,
-    price: p.price
-  }))
-);
-
 // === EXPORT FINAL TANPA DUPLIKAT ===
 export { orderedProducts };

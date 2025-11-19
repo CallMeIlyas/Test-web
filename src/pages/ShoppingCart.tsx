@@ -382,7 +382,7 @@ useEffect(() => {
                         />
                         <div className="flex-1">
                           <div className="flex items-start gap-3">
-                            <ProductImage src={item.imageUrl} alt={item.name} />
+                            <ProductImage src={item.imageUrl || item.image} alt={item.name} />
                             <div className="flex-1 min-w-0">
                               <ProductName name={item.name} />
                               <div className="mt-1">
