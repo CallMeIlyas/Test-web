@@ -4,5 +4,6 @@
   "allProducts": "All Products",
   "price": "Price",
   "lowToHigh": "Low to High",
-  "highToLow": "High to Low"
+  "highToLow": "High to Low",
+  "filter": "Filter"
 }

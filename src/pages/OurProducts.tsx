@@ -4,8 +4,8 @@ import Footer from "../components/home/Footer";
 import SidebarFilters from "../components/our-products/SidebarFilters";
 import ProductGridWithPagination from "../components/our-products/ProductGrid";
 import MobileFilterSheet from "../components/our-products/MobileFilterSheet";
+import SortControls from "../components/our-products/SortControls"; 
 import type { FilterOptions } from "../types/types";
-import { FaFilter } from "react-icons/fa";
 
 type LayoutContext = {
   searchQuery: string;
@@ -21,6 +21,7 @@ const OurProducts = () => {
     shippedTo: [],
   });
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sortOption, setSortOption] = useState(""); // State untuk sort
 
   // Apply URL filter
   useEffect(() => {
@@ -36,26 +37,26 @@ const OurProducts = () => {
   
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Tombol filter mobile - static positioning */}
-      <div className="md:hidden w-full px-4 py-3 bg-white shadow-sm sticky z-40">
-        <button
-          onClick={() => setSheetOpen(true)}
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full text-sm"
-        >
-          <FaFilter size={14} />
-          Filter
-        </button>
-      </div>
-
       {/* Konten utama */}
       <div className="flex flex-1">
         <div className="hidden md:block">
           <SidebarFilters onFilterChange={setFilters} />
         </div>
+        
         <div className="flex-1">
+          {/* Tambahkan SortControls di sini */}
+          <div className="p-4">
+            <SortControls 
+              sortOption={sortOption}
+              onSortChange={setSortOption}
+              onOpenFilters={() => setSheetOpen(true)}
+            />
+          </div>
+          
           <ProductGridWithPagination
             filters={filters}
             searchQuery={searchQuery}
+            sortOption={sortOption} 
           />
         </div>
       </div>

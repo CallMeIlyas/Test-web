@@ -12,7 +12,7 @@ const TermsOfService: React.FC = () => {
       {/* MOBILE LAYOUT - hanya tampil di mobile */}
       <div className="block md:hidden">
         {/* Mobile Split Border Title */}
-        <div className="relative my-6 mb-8 text-center">
+        <div className="relative my-6 -mb-2 text-center">
           <h1 className="inline-block px-4 text-xl font-nataliecaydence relative z-10">
             {currentLang === "id" ? "Mengenai Pembayaran" : "Terms Of Service"}
           </h1>
@@ -21,11 +21,11 @@ const TermsOfService: React.FC = () => {
         </div>
 
         {/* Mobile Main Content */}
-        <main className="container mx-auto px-4 py-6 flex-grow">
+        <main className="container mx-auto px-4 flex-grow">
           <section className="flex flex-col gap-0">
             
             {/* Payment Section - Mobile */}
-            <section className="mb-8 last:mb-0">
+            <section className="-mb-2">
               <div className="relative h-px my-6">
                 <div className="absolute top-2 left-4 h-full w-[20%] border-t-2 border-black translate-y-4"></div>
               </div>
@@ -75,7 +75,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* Design Revision Section - Mobile */}
-            <section className="mb-8 last:mb-0">
+            <section className="-mb-2">
               <div className="relative h-px my-6">
                 <div className="absolute top-2 left-4 h-full w-[20%] border-t-2 border-black translate-y-4"></div>
               </div>
@@ -110,7 +110,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* Caricature Section - Mobile */}
-            <section className="mb-8 last:mb-0">
+            <section className="-mb-2">
               <div className="relative h-px my-6">
                 <div className="absolute top-2 left-4 h-full w-[20%] border-t-2 border-black translate-y-4"></div>
               </div>
@@ -145,7 +145,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* Shipping & Delivery Section - Mobile */}
-            <section className="mb-8 last:mb-0">
+            <section className="-mb-2">
               <div className="relative h-px my-6">
                 <div className="absolute top-2 left-4 h-full w-[20%] border-t-2 border-black translate-y-4"></div>
               </div>
@@ -180,7 +180,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* Defect Product Section - Mobile */}
-            <section className="mb-8 last:mb-0">
+            <section className="-mb-2">
               <div className="relative h-px my-6">
                 <div className="absolute top-2 left-4 h-full w-[20%] border-t-2 border-black translate-y-4"></div>
               </div>

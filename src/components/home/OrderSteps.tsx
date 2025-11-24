@@ -154,67 +154,75 @@ Deadline date & month = ${form.deadline}
   const sizes3D = ["4R", "15cm", "6R", "20cm", "8R", "10R", "12R", "A2 40X55cm", "A1 55x80cm", "A0 80x110cm"];
 
   const renderStepCard = (step: any) => (
+  <div
+    key={step.number}
+    onClick={() => handleStepClick(step)}
+    className="float-item bg-white rounded-xl p-5 relative flex flex-col items-center justify-between h-full cursor-pointer transition-transform hover:-translate-y-1 shadow-none group hover:shadow-hover hover:scale-110 transition-all duration-300"
+  >
     <div
-      key={step.number}
-      onClick={() => handleStepClick(step)}
-      className="float-item bg-white rounded-xl p-5 relative flex flex-col items-center justify-between h-full cursor-pointer transition-transform hover:-translate-y-1 shadow-none group hover:shadow-hover hover:scale-110 transition-all duration-300"
+      className={`absolute -top-3 left-5 text-sm rounded-full w-7 h-7 flex items-center justify-center font-bold ${
+        step.special ? "bg-red-500" : "bg-black"
+      } text-white`}
     >
-      <div
-        className={`absolute -top-3 left-5 text-sm rounded-full w-7 h-7 flex items-center justify-center font-bold ${
-          step.special ? "bg-red-500" : "bg-black"
-        } text-white`}
-      >
-        {step.number}
-      </div>
+      {step.number}
+    </div>
 
-      <img
-        src={step.icon}
-        alt={`Step ${step.number}`}
-        className="!w-[170px] !h-[170px] object-contain group-hover:scale-110 transition-transform duration-500"
-      />
+    <img
+      src={step.icon}
+      alt={`Step ${step.number}`}
+      className="!w-[170px] !h-[170px] object-contain group-hover:scale-110 transition-transform duration-500"
+    />
 
+    {step.special ? (
+      // Tombol untuk step 6
+      <button className="bg-[#dcbec1] text-black font-poppinsSemiBold text-sm rounded-full px-8 py-3 hover:bg-[#c7a9ac] transition-colors duration-300 min-h-[36px] flex items-center justify-center">
+        {step.text}
+      </button>
+    ) : (
+      // Teks biasa untuk step lainnya
       <p className="font-poppinsRegular text-sm text-gray-600 text-center min-h-[36px] flex items-center justify-center">
         {step.text}
       </p>
+    )}
 
-      {step.number === 5 && (
-        <div className="flex items-center gap-2 mt-3 w-full justify-center">
-          <DateInput
-            name="deadline"
-            value={form.deadline}
-            onChange={handleDateChange}
-            placeholder={t("orderSteps.modal.selectDate")}
-          />
-        </div>
-      )}
-
-{step.number !== 6 && step.number !== 5 && (
-  <div className="w-full mt-3 flex justify-center">
-    <div className="relative inline-block w-56">
-      <div
-        className="text-center rounded-full border border-gray-300 px-6 py-2 bg-white w-full"
-      >
-        <span
-          className={`text-sm font-poppinsSemiBoldItalic ${
-            form[step.key] ? "text-black" : "text-gray-400"
-          }`}
-        >
-      {form[step.key] && form[step.key].trim() !== ""
-        ? form[step.key]
-        : step.key === "size"
-            ? currentLang === "id"
-              ? "Pilih ukuran bingkai"
-              : "Choose frame size"
-            : currentLang === "id"
-              ? "Ketik jawabanmu di sini"
-              : "Type your answer here"}
-        </span>
+    {step.number === 5 && (
+      <div className="flex items-center gap-2 mt-3 w-full justify-center">
+        <DateInput
+          name="deadline"
+          value={form.deadline}
+          onChange={handleDateChange}
+          placeholder={t("orderSteps.modal.selectDate")}
+        />
       </div>
-    </div>
+    )}
+
+    {step.number !== 6 && step.number !== 5 && (
+      <div className="w-full mt-3 flex justify-center">
+        <div className="relative inline-block w-56">
+          <div
+            className="text-center rounded-full border border-gray-300 px-6 py-2 bg-white w-full"
+          >
+            <span
+              className={`text-sm font-poppinsSemiBoldItalic ${
+                form[step.key] ? "text-black" : "text-gray-400"
+              }`}
+            >
+              {form[step.key] && form[step.key].trim() !== ""
+                ? form[step.key]
+                : step.key === "size"
+                    ? currentLang === "id"
+                      ? "Pilih ukuran bingkai"
+                      : "Choose frame size"
+                    : currentLang === "id"
+                      ? "Ketik jawabanmu di sini"
+                      : "Type your answer here"}
+            </span>
+          </div>
+        </div>
+      </div>
+    )}
   </div>
-)}
-    </div>
-  );
+);
 
   return (
     <>
@@ -243,7 +251,6 @@ Deadline date & month = ${form.deadline}
         )}
       </section>
 
-      {/* 🪟 Modal Prompt */}
       {isPromptOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-lg text-center animate-fadeIn">

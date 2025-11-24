@@ -14,9 +14,23 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { productOptions } from "../data/productOptions";
+import { allProducts } from "../data/productDataLoader";
 import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import productOptions from "../data/productOptions";
+
+const getFullSizeLabel = (category, shortName) => {
+  const categoryData = productOptions[category];
+  if (!categoryData || !categoryData.sizes) return shortName;
+
+  const found = categoryData.sizes.find(size => {
+    // Size value = "12R_30x40cm"
+    // Folder name = "12R"
+    return size.value.startsWith(shortName);
+  });
+
+  return found ? found.label : shortName;
+};
 
 type LayoutContext = {
   searchQuery: string;
@@ -112,7 +126,8 @@ const ProductDetail = () => {
 
   // 🧩 State utama
   const [includePacking, setIncludePacking] = useState(false);
-  const [selectedAdditionalFaceOption, setSelectedAdditionalFaceOption] = useState<"1-9" | "10+" | null>(null);
+  const [selectedAdditionalFaceOption, setSelectedAdditionalFaceOption] = useState<"1-9" | "10+" | null>("1-9");
+  const [selectedKarikaturOption, setSelectedKarikaturOption] = useState<string>("");
   const additionalSectionRef = useRef<HTMLDivElement | null>(null);
   const [selectedVariation, setSelectedVariation] = useState(
     MOCK_PRODUCT_DATA.variations[0]
@@ -213,21 +228,30 @@ const product = {
   ...MOCK_PRODUCT_DATA,
 };
 
-  const categoryOptions = productOptions[product.category as keyof typeof productOptions];
+const categoryOptions = productOptions[product.category as keyof typeof productOptions];
 
-  const defaultSize =
-    categoryOptions?.sizes?.find((s) => s.label.toUpperCase().startsWith(product.name.toUpperCase()))
-      ?.label || product.size || "Custom";
+// Untuk Additional dan Softcopy Design, tidak perlu size
+const isAdditionalOrSoftcopy = ["Additional", "Softcopy Design"].includes(product.category);
 
-  const normalizedSizeKey = Object.keys(categoryOptions?.specialCases || {}).find((key) =>
-    key.toLowerCase().includes(product.name.toLowerCase())
-  );
+// 🆕 TAMBAHKAN LOGIC UNTUK ACRYLIC STAND
+const isAcrylicStand = product.category === "Acrylic Stand" || 
+                      product.name?.toLowerCase().includes("acrylic stand");
 
-  const specialVariations =
-    product.category === "3D Frame" && normalizedSizeKey
-      ? categoryOptions?.specialCases?.[normalizedSizeKey] || []
-      : [];
+const defaultSize = isAdditionalOrSoftcopy || isAcrylicStand
+  ? "" 
+  : (categoryOptions?.sizes?.find((s) => s.label.toUpperCase().startsWith(product.name.toUpperCase()))
+      ?.label || product.size || "Custom");
 
+// 🆕 DEFINE normalizedSizeKey SEBELUM DIGUNAKAN
+const normalizedSizeKey = product.size?.toLowerCase().replace(/\s+/g, "") || "";
+
+const specialVariations =
+  product.category === "3D Frame" && normalizedSizeKey
+    ? categoryOptions?.specialCases?.[normalizedSizeKey] || []
+    : [];
+
+
+  // semua useEffect
   useEffect(() => {
     if (specialVariations.length > 0 && !selectedProductVariation) {
       setSelectedProductVariation(specialVariations[0].value);
@@ -311,23 +335,23 @@ const product = {
     }
   }, [selectedFaceOptionCustom, product]);
   
-useEffect(() => {
-  const isExpressProduct = product.name
-    ?.toLowerCase()
-    .includes("biaya ekspress general");
-
-  if (!isExpressProduct) return;
-
-  if (selectedExpressOption === "Option 1") {
-    setDisplayedPrice(priceList.Additional["Biaya Ekspress General"] || product.price);
-  } else if (selectedExpressOption === "Option 2") {
-    setDisplayedPrice(priceList.Additional["Biaya Ekspress General 2"] || product.price);
-  } else if (selectedExpressOption === "Option 3") {
-    setDisplayedPrice(priceList.Additional["Biaya Ekspress General 3"] || product.price);
-  } else {
-    setDisplayedPrice(product.price);
-  }
-}, [selectedExpressOption, product]);
+  useEffect(() => {
+    const isExpressProduct = product.name
+      ?.toLowerCase()
+      .includes("biaya ekspress general");
+  
+    if (!isExpressProduct) return;
+  
+    if (selectedExpressOption === "Option 1") {
+      setDisplayedPrice(priceList.Additional["Biaya Ekspress General"] || product.price);
+    } else if (selectedExpressOption === "Option 2") {
+      setDisplayedPrice(priceList.Additional["Biaya Ekspress General 2"] || product.price);
+    } else if (selectedExpressOption === "Option 3") {
+      setDisplayedPrice(priceList.Additional["Biaya Ekspress General 3"] || product.price);
+    } else {
+      setDisplayedPrice(product.price);
+    }
+  }, [selectedExpressOption, product]);
   
   useEffect(() => {
     const is2DFrame = product.category?.toLowerCase().includes("2d");
@@ -389,61 +413,105 @@ useEffect(() => {
     }
   }, [product, selectedShading]);
   
-useEffect(() => {
-  const name = product.name?.toLowerCase() || "";
-  const category = product.category?.toLowerCase() || "";
+  useEffect(() => {
+    const name = product.name?.toLowerCase() || "";
+    const category = product.category?.toLowerCase() || "";
+  
+    const isAcrylic3mm =
+      category.includes("acrylic") && name.includes("3mm");
+  
+    if (!isAcrylic3mm) return;
+  
+    const acrylicPriceList = priceList["Acrylic Stand"] || {};
+  
+    let newPrice = product.price;
+  
+    if (selectedAcrylicOption === "15x15cm 1 sisi") {
+      newPrice =
+        acrylicPriceList["Acrylic Stand 3mm size 15x15cm 1 sisi"] ||
+        product.price;
+    } else if (selectedAcrylicOption === "A4 2 sisi") {
+      newPrice =
+        acrylicPriceList["Acrylic Stand 3mm size A4 2 sisi"] ||
+        product.price;
+    } else if (selectedAcrylicOption === "A3 2 sisi") {
+      newPrice =
+        acrylicPriceList["Acrylic Stand 3mm size A3 2 sisi"] ||
+        product.price;
+    }
+  
+    setDisplayedPrice(newPrice);
+  }, [selectedAcrylicOption, product]);
+  
+  useEffect(() => {
+  const isKarikaturProduct = product.name
+    ?.toLowerCase()
+    .includes("biaya tambahan wajah karikatur");
 
-  const isAcrylic3mm =
-    category.includes("acrylic") && name.includes("3mm");
+  if (!isKarikaturProduct) return;
 
-  if (!isAcrylic3mm) return;
-
-  const acrylicPriceList = priceList["Acrylic Stand"] || {};
-
-  let newPrice = product.price;
-
-  if (selectedAcrylicOption === "15x15cm 1 sisi") {
-    newPrice =
-      acrylicPriceList["Acrylic Stand 3mm size 15x15cm 1 sisi"] ||
-      product.price;
-  } else if (selectedAcrylicOption === "A4 2 sisi") {
-    newPrice =
-      acrylicPriceList["Acrylic Stand 3mm size A4 2 sisi"] ||
-      product.price;
-  } else if (selectedAcrylicOption === "A3 2 sisi") {
-    newPrice =
-      acrylicPriceList["Acrylic Stand 3mm size A3 2 sisi"] ||
-      product.price;
+  if (selectedKarikaturOption === "1–9 Wajah") {
+    setDisplayedPrice(
+      priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || product.price
+    );
+  } else if (selectedKarikaturOption === "Di atas 10 Wajah") {
+    setDisplayedPrice(
+      priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"] || product.price
+    );
+  } else {
+    setDisplayedPrice(product.price);
   }
+}, [selectedKarikaturOption, product]);
 
-  setDisplayedPrice(newPrice);
-}, [selectedAcrylicOption, product]);
 
 const handleAddToCart = () => {
   const finalQty = quantity === "" ? 1 : quantity;
+  const faceCountLabel = "1–9 wajah";
 
-  const faceCountLabel =
-    selectedAdditionalFaceOption === "1-9"
-      ? "1–9 wajah"
-      : selectedAdditionalFaceOption === "10+"
-      ? "Di atas 10 wajah"
-      : "";
+  let productName = "";
+
+  // 🆕 TAMBAHKAN PENANGANAN KHUSUS UNTUK ACRYLIC STAND
+  if (isAcrylicStand) {
+    productName = `Acrylic Stand ${product.name}`;
+  } 
+  else if (product.category === "3D Frame" || product.category === "2D Frame" || product.category === "Frame") {
+    const categoryOptions = productOptions[product.category];
+    let fullSizeLabel = product.name;
+
+    if (categoryOptions?.sizes) {
+      const found = categoryOptions.sizes.find(s => s.value.startsWith(product.name));
+      if (found) fullSizeLabel = found.label;
+    }
+    productName = `${product.category} ${fullSizeLabel}`;
+  }
+  else if (product.category === "Softcopy Design") {
+    productName = `Softcopy Design ${product.name}`;
+  }
+  else if (product.category === "Additional") {
+    productName = `Additional ${product.name}`;
+  }
+  else {
+    // Fallback untuk kategori lainnya
+    productName = product.name || "Default Product Name";
+  }
 
   addToCart({
     id: product.id || "p1",
-    name: product.category,
+    name: productName, // ← Sekarang nama tidak akan hilang
     price: displayedPrice,
     quantity: finalQty,
     imageUrl: product.imageUrl,
     variation: selectedVariation,
-    productType: "frame",
+    productType: product.category.toLowerCase(),
     attributes: {
       faceCount: faceCountLabel,
       backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
       includePacking,
       frameSize: selectedSizeFrame,
       shadingStyle: selectedShading,
-    },
+      // 🆕 Tambahkan attribute khusus untuk acrylic stand
+      isAcrylicStand: isAcrylicStand
+    }
   });
 };
 
@@ -482,599 +550,626 @@ const previewRef = useRef<HTMLDivElement | null>(null);
 
         {/* Layout - Mobile: Stack vertically, Desktop: Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
-{/* === Gallery Utama - Mobile optimized === */}
-<div className="w-full">
-  {selectedImage.endsWith(".mp4") || selectedImage.endsWith(".webm") ? (
-    <video
-      src={selectedImage}
-      controls
-      className="w-full h-auto rounded-lg border border-gray-200 mb-3 md:mb-4"
-    />
-  ) : (
-    <img
-      src={selectedImage}
-      alt={product.name}
-      className="w-full h-auto object-cover rounded-lg border border-gray-200 mb-3 md:mb-4"
-    />
-  )}
-
-  {/* Thumbnail utama - Mobile: 3 items, Desktop: 4-5 items */}
-  {product.allImages.length > 1 && (
-    <div className="relative mt-3 md:mt-4">
-      <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-1.5 md:p-2">
-        <FaChevronLeft size={14} className="md:w-[18px] md:h-[18px]" />
-      </button>
-
-      <Swiper
-        modules={[Navigation]}
-        navigation={{
-          prevEl: ".swiper-button-prev-custom",
-          nextEl: ".swiper-button-next-custom",
-        }}
-        slidesPerView={3}
-        spaceBetween={8}
-        grabCursor={true}
-        className="!px-6 md:!px-8"
-        breakpoints={{
-          0: { slidesPerView: 3, spaceBetween: 8 },
-          640: { slidesPerView: 4, spaceBetween: 10 },
-          1024: { slidesPerView: 5, spaceBetween: 10 },
-        }}
-      >
-        {product.allImages.map((media: string, idx: number) => {
-          const isVideo =
-            media.endsWith(".mp4") ||
-            media.endsWith(".webm") ||
-            media.endsWith(".mov");
-
-          return (
-            <SwiperSlide key={idx}>
-              {isVideo ? (
-                <video
-                  src={media}
-                  muted
-                  playsInline
-                  onClick={() => setSelectedImage(media)}
-                  className={`w-full h-16 md:h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
-                    selectedImage === media
-                      ? "border-pink-500 scale-105"
-                      : "border-gray-200 hover:border-gray-400"
-                  }`}
-                />
-              ) : (
-                <img
-                  src={media}
-                  alt={`${product.name} ${idx + 1}`}
-                  onClick={() => setSelectedImage(media)}
-                  className={`w-full h-16 md:h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
-                    selectedImage === media
-                      ? "border-pink-500 scale-105"
-                      : "border-gray-200 hover:border-gray-400"
-                  }`}
-                />
-              )}
-            </SwiperSlide>
-          );
-        })}
-      </Swiper>
-
-      <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-1.5 md:p-2">
-        <FaChevronRight size={14} className="md:w-[18px] md:h-[18px]" />
-      </button>
-    </div>
-  )}
-
-{/* 🆕 PREVIEW FRAME SIZE - Mobile optimized */}
-{variationImages.length > 0 && (
-  <div
-    ref={previewRef}
-    className="mt-6 md:mt-8"
-    style={{
-      opacity: showPreview ? 1 : 0,
-      transform: showPreview ? "translateY(0)" : "translateY(-10px)",
-      transition: "opacity 0.4s ease-out, transform 0.4s ease-out",
-    }}
-  >
-    <h3 className="text-[16px] md:text-[18px] font-poppinsSemiBold mb-3 md:mb-4">
-        {t("product.preview")} {selectedSizeFrame}
-    </h3>
-
-    {selectedPreviewImage && (
-      <img
-        src={selectedPreviewImage}
-        alt={`Preview ${selectedSizeFrame}`}
-        onClick={() => setIsZoomOpen(true)}
-        className="w-full h-auto object-contain rounded-lg border border-gray-300 mb-3 md:mb-4 transition-all duration-300 cursor-zoom-in hover:scale-[1.02]"
-      />
-    )}
-
-    {/* Grid thumbnail - Mobile: 2 columns, Desktop: 3-4 columns */}
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
-      {variationImages.map((img, i) => (
-        <img
-          key={i}
-          src={img}
-          alt={`${selectedSizeFrame} ${i + 1}`}
-          onClick={() => setSelectedPreviewImage(img)}
-          className={`w-full aspect-square object-cover rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-            selectedPreviewImage === img
-              ? "border-blue-500 scale-105"
-              : "border-gray-200 hover:border-blue-400 hover:shadow-lg"
-          }`}
-        />
-      ))}
-    </div>
-  </div>
-)}
-</div>
-
-{/* 🖼️ Fullscreen Zoom Modal - Mobile optimized */}
-{isZoomOpen && selectedPreviewImage && (
-  <div
-    className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] animate-fadeIn p-4"
-    onClick={() => setIsZoomOpen(false)}
-  >
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        setIsZoomOpen(false);
-      }}
-      className="absolute top-4 md:top-6 right-4 md:right-6 text-white text-2xl md:text-3xl font-bold hover:text-gray-300 transition"
-    >
-      ✕
-    </button>
-
-    <img
-      src={selectedPreviewImage}
-      alt="Zoomed preview"
-      className="max-w-[95%] md:max-w-[90%] max-h-[90%] object-contain rounded-lg shadow-lg border border-gray-400 cursor-zoom-out transition-transform duration-300"
-      onClick={(e) => e.stopPropagation()}
-    />
-  </div>
-)}
-
-{/* Right: Info - Mobile optimized */}
-<div className="flex flex-col">
-  <h1 className="text-[18px] md:text-[25px] font-poppinsMedium leading-tight">
-    {[product.category, defaultSize, product.type, product.name]
-      .filter(Boolean)
-      .join(" ")}
-  </h1>
-
-  {/* ⭐ Best Selling label - Mobile optimized */}
-  {(() => {
-    const category = product.category?.toLowerCase() || "";
-    const name = product.name?.toLowerCase() || "";
-
-    if (category.includes("3d") && /\b12r\b/.test(name)) {
-      return (
-        <div className="flex items-center space-x-2 text-yellow-600 px-2 md:px-3 py-1 rounded-full text-[12px] md:text-[15px] font-poppinsMediumItalic w-fit mt-2">
-          <FaStar className="w-3 h-3 md:w-4 md:h-4" />
-          <span>{t("product.bestSellingSize")}</span>
-        </div>
-      );
-    }
-
-    if (category.includes("2d")) {
-      return (
-        <div className="flex items-center space-x-2 text-yellow-600 px-2 md:px-3 py-1 rounded-full text-[12px] md:text-[15px] font-poppinsMediumItalic w-fit mt-2">
-          <FaStar className="w-3 h-3 md:w-4 md:h-4" />
-          <span>{t("product.bestSellingGift")}</span>
-        </div>
-      );
-    }
-
-    return null;
-  })()}
-
-<p className="text-[24px] md:text-[30px] font-poppinsMedium text-red-600 mt-2">
-  Rp {displayedPrice.toLocaleString("id-ID")}
-</p>
-
-            {/* SPECIAL VARIATIONS - Packaging Options - Mobile optimized */}
-            {specialVariations.length > 0 && (
-  <div className="mt-4 md:mt-6 mb-3 md:mb-4">
-    <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
-        {t("product.packagingOption")}
-    </label>
-    <div className="flex gap-2 md:gap-4 flex-wrap">
-      {specialVariations.map((opt) => (
-        <div
-          key={opt.value}
-          onClick={() => setSelectedProductVariation(opt.value)}
-          className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
-            selectedProductVariation === opt.value
-              ? "border-2 border-blue-500 bg-blue-50"
-              : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-          }`}
-        >
-          <img
-            src={getPackagingImage(
-              opt.value === "dus_kraft_paperbag"
-                ? "PACKING DUS KRAFT.jpg"
-                : "PACKING HARDBOX.jpg"
-            )}
-            alt={opt.label}
-            className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl"
-          />
-          <span className="text-[13px] md:text-base font-medium text-gray-800 text-center">
-            {opt.label}
-          </span>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-          
-{/* 🔹 2D FRAME - Shading & Frame Size Options - Mobile optimized */}
-{product.category === "2D Frame" && (
-  <>
-    {/* Frame Size Options */}
-    {product.sizeFrameOptions.length > 0 && (
-      <div className="mt-4 md:mt-6 mb-3 md:mb-4">
-        <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
-         {t("product.frameSize")}
-        </label>
-        <div className="flex gap-2 md:gap-4 flex-wrap">
-          {product.sizeFrameOptions.map((opt) => (
-            <div
-              key={opt.value}
-              onClick={() => {
-                setSelectedSizeFrame(opt.value);
-                if (opt.allImages?.length > 0) {
-                  setVariationImages(opt.allImages);
-                  setSelectedPreviewImage(opt.allImages[0]);
-                  setShowPreview(false);
-                  setTimeout(() => setShowPreview(true), 50);
-                } else {
-                  setVariationImages([]);
-                  setSelectedPreviewImage(null);
-                  setShowPreview(false);
-                }
-              }}
-              className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
-                selectedSizeFrame === opt.value
-                  ? "border-2 border-blue-500 bg-blue-50"
-                  : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-              }`}
-            >
-              <img
-                src={opt.image}
-                alt={opt.label}
-                className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl"
+          {/* === Gallery Utama - Mobile optimized === */}
+          <div className="w-full">
+            {selectedImage.endsWith(".mp4") || selectedImage.endsWith(".webm") ? (
+              <video
+                src={selectedImage}
+                controls
+                className="w-full h-auto rounded-lg border border-gray-200 mb-3 md:mb-4"
               />
-              <span className="text-[13px] md:text-base font-medium text-gray-800 text-center">
-                {opt.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {/* Shading Options */}
-    {product.shadingOptions.length > 0 && (
-      <div className="mt-4 md:mt-6 mb-3 md:mb-4">
-        <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
-        {t("product.shadingStyle")}
-        </label>
-        <div className="flex gap-2 md:gap-4 flex-wrap">
-          {product.shadingOptions.map((opt) => (
+            ) : (
+              <img
+                src={selectedImage}
+                alt={product.name}
+                className="w-full h-auto object-cover rounded-lg border border-gray-200 mb-3 md:mb-4"
+              />
+            )}
+          
+            {/* Thumbnail utama - Mobile: 3 items, Desktop: 4-5 items */}
+            {product.allImages.length > 1 && (
+              <div className="relative mt-3 md:mt-4">
+                <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-1.5 md:p-2">
+                  <FaChevronLeft size={14} className="md:w-[18px] md:h-[18px]" />
+                </button>
+          
+                <Swiper
+                  modules={[Navigation]}
+                  navigation={{
+                    prevEl: ".swiper-button-prev-custom",
+                    nextEl: ".swiper-button-next-custom",
+                  }}
+                  slidesPerView={3}
+                  spaceBetween={8}
+                  grabCursor={true}
+                  className="!px-6 md:!px-8"
+                  breakpoints={{
+                    0: { slidesPerView: 3, spaceBetween: 8 },
+                    640: { slidesPerView: 4, spaceBetween: 10 },
+                    1024: { slidesPerView: 5, spaceBetween: 10 },
+                  }}
+                >
+                  {product.allImages.map((media: string, idx: number) => {
+                    const isVideo =
+                      media.endsWith(".mp4") ||
+                      media.endsWith(".webm") ||
+                      media.endsWith(".mov");
+          
+                    return (
+                      <SwiperSlide key={idx}>
+                        {isVideo ? (
+                          <video
+                            src={media}
+                            muted
+                            playsInline
+                            onClick={() => setSelectedImage(media)}
+                            className={`w-full h-16 md:h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                              selectedImage === media
+                                ? "border-pink-500 scale-105"
+                                : "border-gray-200 hover:border-gray-400"
+                            }`}
+                          />
+                        ) : (
+                          <img
+                            src={media}
+                            alt={`${product.name} ${idx + 1}`}
+                            onClick={() => setSelectedImage(media)}
+                            className={`w-full h-16 md:h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                              selectedImage === media
+                                ? "border-pink-500 scale-105"
+                                : "border-gray-200 hover:border-gray-400"
+                            }`}
+                          />
+                        )}
+                      </SwiperSlide>
+                    );
+                  })}
+                </Swiper>
+          
+                <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-gray-600 rounded-full shadow p-1.5 md:p-2">
+                  <FaChevronRight size={14} className="md:w-[18px] md:h-[18px]" />
+                </button>
+              </div>
+            )}
+          
+          {/* 🆕 PREVIEW FRAME SIZE - Mobile optimized */}
+          {variationImages.length > 0 && (
             <div
-              key={opt.value}
-              onClick={() => setSelectedShading(opt.value)}
-              className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
-                selectedShading === opt.value
-                  ? "border-2 border-blue-500 bg-blue-50"
-                  : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-              }`}
+              ref={previewRef}
+              className="mt-6 md:mt-8"
+              style={{
+                opacity: showPreview ? 1 : 0,
+                transform: showPreview ? "translateY(0)" : "translateY(-10px)",
+                transition: "opacity 0.4s ease-out, transform 0.4s ease-out",
+              }}
             >
-              {opt.preview && (
+              <h3 className="text-[16px] md:text-[18px] font-poppinsSemiBold mb-3 md:mb-4">
+                  {t("product.preview")} {selectedSizeFrame}
+              </h3>
+          
+              {selectedPreviewImage && (
                 <img
-                  src={opt.preview}
-                  alt={opt.label}
-                  className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl"
+                  src={selectedPreviewImage}
+                  alt={`Preview ${selectedSizeFrame}`}
+                  onClick={() => setIsZoomOpen(true)}
+                  className="w-full h-auto object-contain rounded-lg border border-gray-300 mb-3 md:mb-4 transition-all duration-300 cursor-zoom-in hover:scale-[1.02]"
                 />
               )}
-              <span className="text-[13px] md:text-base font-medium text-gray-800 text-center">
-                {opt.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-  </>
-)}
-
-{/* Variation - Mobile: Stack vertically */}
-{!["Additional", "Softcopy Design"].includes(product.category) && (
-  <div className="flex flex-col md:flex-row md:items-start md:justify-between mt-4 space-y-2 md:space-y-0">
-    <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold md:translate-y-3">
-        {t("product.variation")}
-    </label>
-    <div className="flex flex-row flex-wrap gap-2 md:-translate-x-[25px] md:translate-y-2 font-poppinsRegular">
-      {product.variations.map((variation) => (
-        <button
-          key={variation}
-          onClick={() => setSelectedVariation(variation)}
-          className={`px-4 md:px-6 py-2 border rounded-md text-[13px] md:text-sm transition-colors ${
-            selectedVariation === variation
-              ? "bg-[#dcbec1] border-[#bfa4a6]"
-              : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-          }`}
-        >
-          {variation}
-        </button>
-      ))}
-    </div>
-  </div>
-)}
-            
-{/* 🧩 Additional Custom - Biaya Tambahan Ganti Frame Kaca ke Acrylic - Mobile optimized */}
-{product.name?.toLowerCase().includes("biaya tambahan ganti frame kaca ke acrylic") && (
-  <div className="mt-4 md:mt-6 mb-3 md:mb-4">
-    <p className="text-[13px] md:text-[15px] font-poppinsRegular text-gray-700 mb-2 md:mb-3">
-        {t("product.chooseAcrylicSize")}
-    </p>
-
-    <div className="flex gap-2 md:gap-4 flex-wrap">
-      {["A2", "A1", "A0"].map((size) => {
-        const acrylicPrice =
-          priceList.Additional[`Biaya Tambahan Ganti Frame Kaca ke Acrylic ${size}`] ||
-          priceList.Additional["Biaya Tambahan Ganti Frame Kaca ke Acrylic"] ||
-          0;
-
-        return (
-          <div
-            key={size}
-            onClick={() => {
-              setSelectedSizeFrame((prev) => {
-                const isSame = prev === size;
-                const newPrice = isSame ? product.price : product.price + acrylicPrice;
-                setDisplayedPrice(newPrice);
-                return isSame ? "" : size;
-              });
-            }}
-            className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
-              selectedSizeFrame === size
-                ? "border-2 border-blue-500 bg-blue-50"
-                : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-            }`}
-          >
-            <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
-              <span className="text-3xl md:text-4xl font-bold text-gray-400">{size}</span>
-            </div>
-            <span className="text-[13px] md:text-base font-medium text-gray-800 text-center">{size}</span>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-)}
-
-{/* 🧩 Additional Custom - Biaya Tambahan Wajah Banyak - Mobile optimized */}
-{product.name
-  ?.toLowerCase()
-  .includes("biaya tambahan wajah banyak (design dari customer)") && (
-  <div className="mt-4 md:mt-6 mb-3 md:mb-4">
-    <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
-        {t("product.additionalCustomManyFaces")}
-    </label>
-
-    <p className="text-[13px] md:text-[15px] font-poppinsRegular text-gray-700 mb-2 md:mb-3">
-        {t("product.chooseFaceCount")}
-    </p>
-
-    <div className="flex gap-2 md:gap-4 flex-wrap">
-      {["1–9 Wajah", "Di atas 10 Wajah"].map((option) => (
-        <div
-          key={option}
-          onClick={() =>
-            setSelectedFaceOptionCustom((prev) =>
-              prev === option ? "" : option
-            )
-          }
-          className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
-            selectedFaceOptionCustom === option
-              ? "border-2 border-blue-500 bg-blue-50"
-              : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-          }`}
-        >
-          <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
-            <span className="text-[14px] md:text-lg font-semibold text-gray-800 text-center leading-tight px-2">
-              {option}
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
-{/* 🧩 Additional Custom - Biaya Ekspress General - Mobile optimized */}
-{product.name?.toLowerCase().includes("biaya ekspress general") && (
-  <div className="mt-4 md:mt-6 mb-3 md:mb-4">
-    <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
-        {t("product.additionalCustomExpress")}
-    </label>
-
-    <p className="text-[13px] md:text-[15px] font-poppinsRegular text-gray-700 mb-2 md:mb-3">
-        {t("product.chooseExpress")}
-    </p>
-
-    <div className="flex gap-2 md:gap-4 flex-wrap">
-      {[
-        { label: "Option 1", price: priceList.Additional["Biaya Ekspress General"] },
-        { label: "Option 2", price: priceList.Additional["Biaya Ekspress General 2"] },
-        { label: "Option 3", price: priceList.Additional["Biaya Ekspress General 3"] },
-      ].map((option) => (
-        <div
-          key={option.label}
-          onClick={() =>
-            setSelectedExpressOption((prev) =>
-              prev === option.label ? "" : option.label
-            )
-          }
-          className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
-            selectedExpressOption === option.label
-              ? "border-2 border-blue-500 bg-blue-50"
-              : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-          }`}
-        >
-          <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
-            <span className="text-[13px] md:text-[15px] font-semibold text-gray-800 text-center leading-tight">
-              {option.label}
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
-{/* 🧩 Acrylic Stand 3mm Options - Mobile optimized */}
-{product.name?.toLowerCase().includes("acrylic stand 3mm") && (
-  <div className="mt-4 md:mt-6 mb-3 md:mb-4">
-    <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
-        {t("product.chooseSizeAndSides")}
-    </label>
-
-    <div className="flex gap-2 md:gap-4 flex-wrap">
-      {[
-        { label: "15x15cm 1 sisi", key: "15x15cm 1 sisi" },
-        { label: "A4 2 sisi", key: "A4 2 sisi" },
-        { label: "A3 2 sisi", key: "A3 2 sisi" },
-      ].map((option) => (
-        <div
-          key={option.key}
-          onClick={() =>
-            setSelectedAcrylicOption((prev) =>
-              prev === option.key ? "" : option.key
-            )
-          }
-          className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
-            selectedAcrylicOption === option.key
-              ? "border-2 border-blue-500 bg-blue-50"
-              : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-          }`}
-        >
-          <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
-            <span className="text-[13px] md:text-[15px] font-semibold text-gray-800 text-center leading-tight px-2">
-              {option.label}
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
-            {/* Quantity - Responsive: Mobile (vertical stack) vs Desktop (horizontal) */}
-            {/* Mobile Layout - Stack vertically */}
-            <div className="mt-6 md:hidden">
-              <label className="block text-[16px] font-poppinsSemiBold mb-3">
-                {t("product.quantity")}
-              </label>
-              <div className="flex items-center font-poppinsRegular border border-gray-300 rounded-md w-fit">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuantity((prev) => Math.max(1, Number(prev) - 1))
-                  }
-                  className="px-3 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  min={1}
-                  value={quantity}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setQuantity(val === "" ? "" : Math.max(1, Number(val)));
-                  }}
-                  className="w-14 text-center font-poppinsRegular border-x border-gray-300 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setQuantity((prev) => Number(prev) + 1)}
-                  className="px-3 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
-                >
-                  +
-                </button>
+          
+              {/* Grid thumbnail - Mobile: 2 columns, Desktop: 3-4 columns */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
+                {variationImages.map((img, i) => (
+                  <img
+                    key={i}
+                    src={img}
+                    alt={`${selectedSizeFrame} ${i + 1}`}
+                    onClick={() => setSelectedPreviewImage(img)}
+                    className={`w-full aspect-square object-cover rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                      selectedPreviewImage === img
+                        ? "border-blue-500 scale-105"
+                        : "border-gray-200 hover:border-blue-400 hover:shadow-lg"
+                    }`}
+                  />
+                ))}
               </div>
             </div>
-
-            {/* Desktop Layout - Horizontal with label on left */}
-            <div className="hidden md:flex items-center justify-between mt-10">
-              <label className="text-[18px] font-poppinsSemiBold">
-                {t("product.quantity")}
-              </label>
-              <div className="flex items-center -translate-x-[160px] font-poppinsRegular border border-gray-300 rounded-md w-fit">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuantity((prev) => Math.max(1, Number(prev) - 1))
-                  }
-                  className="px-4 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  min={1}
-                  value={quantity}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setQuantity(val === "" ? "" : Math.max(1, Number(val)));
-                  }}
-                  className="w-16 text-center font-poppinsRegular border-x border-gray-300 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setQuantity((prev) => Number(prev) + 1)}
-                  className="px-4 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* Buttons + Info Price - Mobile optimized */}
-            <div className="flex flex-col pt-4">
-              <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
-                <button
-                  onClick={() => {
-                    const category = product.category?.toLowerCase() || "";
-                
-                    if (category.includes("additional") || category.includes("softcopy")) {
-                      handleAddToCart();
-                      return;
-                    }
-                
-                    additionalSectionRef.current?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }}
-                  className="flex-1 px-4 md:px-6 py-3 border bg-[#dcbec1] font-bold rounded-lg hover:bg-[#c7a9ac] transition-colors text-[14px] md:text-base"
-                >
-                    {t("product.addToCart")}
-                </button>
-                <button
-                  className="flex-1 px-4 md:px-6 py-3 bg-[#E2DAD8] font-bold rounded-lg hover:bg-[#D3C7C4] transition-colors text-[14px] md:text-base"
-                >
-                    {t("product.buyNow")}
-                </button>
-              </div>
-            
-              {/* Info Price */}
-              <p className="mt-6 md:mt-[17%] text-[14px] md:text-[16px] font-poppinsSemiBoldItalic text-black">
-                • {t("product.priceInfo")}
-              </p>
-            </div>
+          )}
           </div>
+          
+          {/* 🖼️ Fullscreen Zoom Modal - Mobile optimized */}
+          {isZoomOpen && selectedPreviewImage && (
+            <div
+              className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] animate-fadeIn p-4"
+              onClick={() => setIsZoomOpen(false)}
+            >
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsZoomOpen(false);
+                }}
+                className="absolute top-4 md:top-6 right-4 md:right-6 text-white text-2xl md:text-3xl font-bold hover:text-gray-300 transition"
+              >
+                ✕
+              </button>
+          
+              <img
+                src={selectedPreviewImage}
+                alt="Zoomed preview"
+                className="max-w-[95%] md:max-w-[90%] max-h-[90%] object-contain rounded-lg shadow-lg border border-gray-400 cursor-zoom-out transition-transform duration-300"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+          
+          {/* Right: Info - Mobile optimized */}
+          <div className="flex flex-col">
+            <h1 className="text-[18px] md:text-[25px] font-poppinsMedium leading-tight">
+              {[product.category, defaultSize, product.type, product.name]
+                .filter(Boolean)
+                .join(" ")}
+            </h1>
+          
+            {/* ⭐ Best Selling label - Mobile optimized */}
+            {(() => {
+              const category = product.category?.toLowerCase() || "";
+              const name = product.name?.toLowerCase() || "";
+          
+              if (category.includes("3d") && /\b12r\b/.test(name)) {
+                return (
+                  <div className="flex items-center space-x-2 text-yellow-600 px-2 md:px-3 py-1 rounded-full text-[12px] md:text-[15px] font-poppinsMediumItalic w-fit mt-2">
+                    <FaStar className="w-3 h-3 md:w-4 md:h-4" />
+                    <span>{t("product.bestSellingSize")}</span>
+                  </div>
+                );
+              }
+          
+              if (category.includes("2d")) {
+                return (
+                  <div className="flex items-center space-x-2 text-yellow-600 px-2 md:px-3 py-1 rounded-full text-[12px] md:text-[15px] font-poppinsMediumItalic w-fit mt-2">
+                    <FaStar className="w-3 h-3 md:w-4 md:h-4" />
+                    <span>{t("product.bestSellingGift")}</span>
+                  </div>
+                );
+              }
+          
+              return null;
+            })()}
+          
+          <p className="text-[24px] md:text-[30px] font-poppinsMedium text-red-600 mt-2">
+            Rp {displayedPrice.toLocaleString("id-ID")}
+          </p>
+          
+                      {/* SPECIAL VARIATIONS - Packaging Options - Mobile optimized */}
+                      {specialVariations.length > 0 && (
+                        <div className="mt-4 md:mt-6 mb-3 md:mb-4 font-poppinsSemiBold">
+                          <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
+                              {t("product.packagingOption")}
+                          </label>
+                          <div className="flex gap-2 md:gap-4 flex-wrap">
+                            {specialVariations.map((opt) => (
+                              <div
+                                key={opt.value}
+                                onClick={() => setSelectedProductVariation(opt.value)}
+                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                  selectedProductVariation === opt.value
+                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                }`}
+                              >
+                                <img
+                                  src={getPackagingImage(
+                                    opt.value === "dus_kraft_paperbag"
+                                      ? "PACKING DUS KRAFT.jpg"
+                                      : "PACKING HARDBOX.jpg"
+                                  )}
+                                  alt={opt.label}
+                                  className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl"
+                                />
+                                <span className="text-[13px] md:text-base font-medium text-gray-800 text-center">
+                                  {opt.label}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    
+                      {/* 🔹 2D FRAME - Shading & Frame Size Options - Mobile optimized */}
+                      {product.category === "2D Frame" && (
+                        <>
+                          {/* Frame Size Options */}
+                          {product.sizeFrameOptions.length > 0 && (
+                            <div className="mt-4 md:mt-6 mb-3 md:mb-4 font-poppinsSemiBold">
+                              <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
+                               {t("product.frameSize")}
+                              </label>
+                              <div className="flex gap-2 md:gap-4 flex-wrap">
+                                {product.sizeFrameOptions.map((opt) => (
+                                  <div
+                                    key={opt.value}
+                                    onClick={() => {
+                                      setSelectedSizeFrame(opt.value);
+                                      if (opt.allImages?.length > 0) {
+                                        setVariationImages(opt.allImages);
+                                        setSelectedPreviewImage(opt.allImages[0]);
+                                        setShowPreview(false);
+                                        setTimeout(() => setShowPreview(true), 50);
+                                      } else {
+                                        setVariationImages([]);
+                                        setSelectedPreviewImage(null);
+                                        setShowPreview(false);
+                                      }
+                                    }}
+                                    className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                      selectedSizeFrame === opt.value
+                                        ? "border-2 border-blue-500 bg-blue-50"
+                                        : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                    }`}
+                                  >
+                                    <img
+                                      src={opt.image}
+                                      alt={opt.label}
+                                      className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl"
+                                    />
+                                    <span className="text-[13px] md:text-base font-medium text-gray-800 text-center">
+                                      {opt.label}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                      
+                          {/* Shading Options */}
+                          {product.shadingOptions.length > 0 && (
+                            <div className="mt-4 md:mt-6 mb-3 md:mb-4 font-poppinsSemiBold">
+                              <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
+                              {t("product.shadingStyle")}
+                              </label>
+                              <div className="flex gap-2 md:gap-4 flex-wrap">
+                                {product.shadingOptions.map((opt) => (
+                                  <div
+                                    key={opt.value}
+                                    onClick={() => setSelectedShading(opt.value)}
+                                    className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                      selectedShading === opt.value
+                                        ? "border-2 border-blue-500 bg-blue-50"
+                                        : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                    }`}
+                                  >
+                                    {opt.preview && (
+                                      <img
+                                        src={opt.preview}
+                                        alt={opt.label}
+                                        className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl"
+                                      />
+                                    )}
+                                    <span className="text-[13px] md:text-base font-medium text-gray-800 text-center">
+                                      {opt.label}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+          
+                      {/* Variation - Mobile: Stack vertically */}
+                      {!["Additional", "Softcopy Design"].includes(product.category) && (
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between mt-4 space-y-2 md:space-y-0">
+                          <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold md:translate-y-3">
+                              {t("product.variation")}
+                          </label>
+                          <div className="flex flex-row flex-wrap gap-2 md:-translate-x-[25px] md:translate-y-2 font-poppinsRegular">
+                            {product.variations.map((variation) => (
+                              <button
+                                key={variation}
+                                onClick={() => setSelectedVariation(variation)}
+                                className={`px-4 md:px-6 py-2 border rounded-md text-[13px] md:text-sm transition-colors ${
+                                  selectedVariation === variation
+                                    ? "bg-[#dcbec1] border-[#bfa4a6]"
+                                    : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                                }`}
+                              >
+                                {variation}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+          
+                      {/* 🧩 Additional Custom - Biaya Tambahan Wajah Karikatur - Mobile optimized */}
+                      {product.name
+                        ?.toLowerCase()
+                        .includes("biaya tambahan wajah karikatur") && (
+                        <div className="mt-4 md:mt-6 mb-3 md:mb-4 font-poppinsSemiBold">
+                          <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
+                            {t("product.additionalCustomKarikaturFaces")}
+                          </label>
+                      
+                          <p className="text-[13px] md:text-[15px] font-poppinsRegular text-gray-700 mb-2 md:mb-3">
+                            {t("product.chooseFaceCount")}
+                          </p>
+                      
+                          <div className="flex gap-2 md:gap-4 flex-wrap">
+                            {["1–9 Wajah", "Di atas 10 Wajah"].map((option) => (
+                              <div
+                                key={option}
+                                onClick={() =>
+                                  setSelectedKarikaturOption((prev) =>
+                                    prev === option ? "" : option
+                                  )
+                                }
+                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                  selectedKarikaturOption === option
+                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                }`}
+                              >
+                                <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+                                  <span className="text-[14px] md:text-lg font-semibold text-gray-800 text-center leading-tight px-2">
+                                    {option}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 🧩 Additional Custom - Biaya Tambahan Ganti Frame Kaca ke Acrylic - Mobile optimized */}
+                      {product.name?.toLowerCase().includes("biaya tambahan ganti frame kaca ke acrylic") && (
+                        <div className="mt-4 md:mt-6 mb-3 md:mb-4 font-poppinsSemiBold">
+                          <p className="text-[13px] md:text-[15px] font-poppinsSemiBold text-gray-700 mb-2 md:mb-3">
+                              {t("product.chooseAcrylicSize")}
+                          </p>
+                      
+                          <div className="flex gap-2 md:gap-4 flex-wrap">
+                            {["A2", "A1", "A0"].map((size) => {
+                              const acrylicPrice =
+                                priceList.Additional[`Biaya Tambahan Ganti Frame Kaca ke Acrylic ${size}`] ||
+                                priceList.Additional["Biaya Tambahan Ganti Frame Kaca ke Acrylic"] ||
+                                0;
+                      
+                              return (
+                                <div
+                                  key={size}
+                                  onClick={() => {
+                                    setSelectedSizeFrame((prev) => {
+                                      const isSame = prev === size;
+                                      const newPrice = isSame ? product.price : product.price + acrylicPrice;
+                                      setDisplayedPrice(newPrice);
+                                      return isSame ? "" : size;
+                                    });
+                                  }}
+                                  className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                    selectedSizeFrame === size
+                                      ? "border-2 border-blue-500 bg-blue-50"
+                                      : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                  }`}
+                                >
+                                  <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+                                    <span className="text-3xl md:text-4xl font-bold text-gray-400">{size}</span>
+                                  </div>
+                                  <span className="text-[13px] md:text-base font-medium text-gray-800 text-center">{size}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+          
+                      {/* 🧩 Additional Custom - Biaya Tambahan Wajah Banyak - Mobile optimized */}
+                      {product.name
+                        ?.toLowerCase()
+                        .includes("biaya tambahan wajah banyak (design dari customer)") && (
+                        <div className="mt-4 md:mt-6 mb-3 md:mb-4 font-poppinsSemiBold">
+                          <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
+                              {t("product.additionalCustomManyFaces")}
+                          </label>
+                      
+                          <p className="text-[13px] md:text-[15px] font-poppinsRegular text-gray-700 mb-2 md:mb-3">
+                              {t("product.chooseFaceCount")}
+                          </p>
+                      
+                          <div className="flex gap-2 md:gap-4 flex-wrap">
+                            {["1–9 Wajah", "Di atas 10 Wajah"].map((option) => (
+                              <div
+                                key={option}
+                                onClick={() =>
+                                  setSelectedFaceOptionCustom((prev) =>
+                                    prev === option ? "" : option
+                                  )
+                                }
+                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                  selectedFaceOptionCustom === option
+                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                }`}
+                              >
+                                <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+                                  <span className="text-[14px] md:text-lg font-semibold text-gray-800 text-center leading-tight px-2">
+                                    {option}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+          
+                      {/* 🧩 Additional Custom - Biaya Ekspress General - Mobile optimized */}
+                      {product.name?.toLowerCase().includes("biaya ekspress general") && (
+                        <div className="mt-4 md:mt-6 mb-3 md:mb-4 font-poppinsSemiBold">
+                          <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
+                              {t("product.additionalCustomExpress")}
+                          </label>
+                      
+                          <p className="text-[13px] md:text-[15px] font-poppinsRegular text-gray-700 mb-2 md:mb-3">
+                              {t("product.chooseExpress")}
+                          </p>
+                      
+                          <div className="flex gap-2 md:gap-4 flex-wrap">
+                            {[
+                              { label: "Option 1", price: priceList.Additional["Biaya Ekspress General"] },
+                              { label: "Option 2", price: priceList.Additional["Biaya Ekspress General 2"] },
+                              { label: "Option 3", price: priceList.Additional["Biaya Ekspress General 3"] },
+                            ].map((option) => (
+                              <div
+                                key={option.label}
+                                onClick={() =>
+                                  setSelectedExpressOption((prev) =>
+                                    prev === option.label ? "" : option.label
+                                  )
+                                }
+                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                  selectedExpressOption === option.label
+                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                }`}
+                              >
+                                <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+                                  <span className="text-[13px] md:text-[15px] font-semibold text-gray-800 text-center leading-tight">
+                                    {option.label}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+          
+                      {/* 🧩 Acrylic Stand 3mm Options - Mobile optimized */}
+                      {product.name?.toLowerCase().includes("3mm") && (
+                        <div className="mt-4 md:mt-6 mb-3 md:mb-4 font-poppinsSemiBold">
+                          <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold mb-2 md:mb-3">
+                              {t("product.chooseSizeAndSides")}
+                          </label>
+                      
+                          <div className="flex gap-2 md:gap-4 flex-wrap">
+                            {[
+                              { label: "15x15cm 1 sisi", key: "15x15cm 1 sisi" },
+                              { label: "A4 2 sisi", key: "A4 2 sisi" },
+                              { label: "A3 2 sisi", key: "A3 2 sisi" },
+                            ].map((option) => (
+                              <div
+                                key={option.key}
+                                onClick={() =>
+                                  setSelectedAcrylicOption((prev) =>
+                                    prev === option.key ? "" : option.key
+                                  )
+                                }
+                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                  selectedAcrylicOption === option.key
+                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                }`}
+                              >
+                                <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-xl">
+                                  <span className="text-[13px] md:text-[15px] font-semibold text-gray-800 text-center leading-tight px-2">
+                                    {option.label}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+          
+                      {/* Quantity - Responsive: Mobile (vertical stack) vs Desktop (horizontal) */}
+                      {/* Mobile Layout - Stack vertically */}
+                      <div className="mt-6 md:hidden">
+                        <label className="block text-[16px] font-poppinsSemiBold mb-3">
+                          {t("product.quantity")}
+                        </label>
+                        <div className="flex items-center font-poppinsRegular border border-gray-300 rounded-md w-fit">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setQuantity((prev) => Math.max(1, Number(prev) - 1))
+                            }
+                            className="px-3 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            min={1}
+                            value={quantity}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setQuantity(val === "" ? "" : Math.max(1, Number(val)));
+                            }}
+                            className="w-14 text-center font-poppinsRegular border-x border-gray-300 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((prev) => Number(prev) + 1)}
+                            className="px-3 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+          
+                      {/* Desktop Layout - Horizontal with label on left */}
+                      <div className="hidden md:flex items-center justify-between mt-10">
+                        <label className="text-[18px] font-poppinsSemiBold">
+                          {t("product.quantity")}
+                        </label>
+                        <div className="flex items-center -translate-x-[160px] font-poppinsRegular border border-gray-300 rounded-md w-fit">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setQuantity((prev) => Math.max(1, Number(prev) - 1))
+                            }
+                            className="px-4 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            min={1}
+                            value={quantity}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setQuantity(val === "" ? "" : Math.max(1, Number(val)));
+                            }}
+                            className="w-16 text-center font-poppinsRegular border-x border-gray-300 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((prev) => Number(prev) + 1)}
+                            className="px-4 py-2 text-lg font-bold text-gray-700 hover:bg-gray-100"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+          
+                      {/* Buttons + Info Price - Mobile optimized */}
+                      <div className="flex flex-col pt-4 font-poppinsSemiBoldi">
+                        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+                          <button
+                            onClick={handleAddToCart}
+                            className="flex-1 px-4 md:px-6 py-3 border bg-[#dcbec1] font-poppinsSemiBold rounded-lg hover:bg-[#c7a9ac] transition-colors text-[14px] md:text-base"
+                          >
+                              {t("product.addToCart")}
+                          </button>
+                          <button
+                            className="flex-1 px-4 md:px-6 py-3 bg-[#E2DAD8] font-poppinsSemiBold rounded-lg hover:bg-[#D3C7C4] transition-colors text-[14px] md:text-base"
+                          >
+                              {t("product.buyNow")}
+                          </button>
+                        </div>
+                      
+                        {/* Info Price */}
+                        <p className="mt-6 md:mt-[17%] text-[14px] md:text-[16px] font-poppinsSemiBoldItalic text-black">
+                          • {t("product.priceInfo")}
+                        </p>
+                      </div>
+                    </div>
         </div>
 
         {/* Product Details - Mobile optimized */}
@@ -1104,228 +1199,117 @@ const previewRef = useRef<HTMLDivElement | null>(null);
         {t("product.additionalProducts")}
     </h2>
 
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-      {product.additionalProducts.map((item) => {
-        const isFaceProduct = item.name.toLowerCase().includes("faces");
-        const isPackingProduct = item.name.toLowerCase().includes("packing");
-        const [selectedFaceOption, setSelectedFaceOption] =
-          useState<"1-9" | "10+" | null>(null);
-        const [showPopup, setShowPopup] = useState(false);
-        const [isSelected, setIsSelected] = useState(false);
+    {(() => {
+      const additionalProductsMap = [
+        { 
+          displayName: "Additional Faces", 
+          match: "BIAYA TAMBAHAN WAJAH KARIKATUR", 
+          targetProduct: "BIAYA TAMBAHAN WAJAH KARIKATUR",
+          imageUrl: new URL(
+            "../assets/list-products/ADDITIONAL/BIAYA TAMBAHAN WAJAH KARIKATUR/TAMBAHAN WAJAH 1.jpg",
+            import.meta.url
+          ).href,
+          price: `Rp ${priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"].toLocaleString("id-ID")} - Rp ${priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"].toLocaleString("id-ID")}`
+        },
+        { 
+          displayName: "Background Custom", 
+          match: "BACKGROUND Custom", 
+          targetProduct: "BACKGROUND Custom",
+          imageUrl: new URL(
+            "../assets/bg-catalog/goverment-police/KA-MAY23-01.jpg",
+            import.meta.url
+          ).href,
+          price: `Rp ${priceList.Additional["Background Custom"].toLocaleString("id-ID")}`
+        },
+        { 
+          displayName: "Additional Packing", 
+          match: "BIAYA TAMBAHAN PACKING", 
+          targetProduct: "BIAYA TAMBAHAN PACKING",
+          imageUrl: new URL(
+            "../assets/list-products/3D/A0-80X110CM/PACKING AIR COLUMN BAGS.jpg",
+            import.meta.url
+          ).href,
+          price: `Rp ${priceList.Additional["Biaya Tambahan Packing untuk Order Banyak via Kargo"].toLocaleString("id-ID")}`
+        },
+      ];
 
-        const baseFacePrice =
-          priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || 0;
-        const activeFacePrice =
-          selectedFaceOption === "10+"
-            ? priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"]
-            : baseFacePrice;
+      // helper: cari produk Additional dengan prefer exact match lalu fallback ke includes
+      const findAdditionalProduct = (nameToMatch) => {
+        if (!nameToMatch) return null;
+        const needle = nameToMatch.trim().toLowerCase();
+        // exact match first
+        const exact = allProducts.find(
+          (p) => p.category === "Additional" && p.name?.trim().toLowerCase() === needle
+        );
+        if (exact) return exact;
+        // fallback: includes
+        return allProducts.find(
+          (p) => p.category === "Additional" && p.name?.trim().toLowerCase().includes(needle)
+        ) || null;
+      };
 
-        return (
-          <div key={item.id} className="relative">
-            {isSelected && (
-              <div className="absolute top-1.5 md:top-2 right-1.5 md:right-2 z-10">
-                <div className="flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-full bg-[#dcbec1] flex-shrink-0">
-                  <Check size={14} className="md:w-4 md:h-4 text-black" strokeWidth={3} />
-                </div>
-              </div>
-            )}
+      // map ke produk yang benar menggunakan findAdditionalProduct
+      const additionalProducts = additionalProductsMap
+        .map((item) => {
+          const found = findAdditionalProduct(item.targetProduct);
+          return found
+            ? { ...found, displayName: item.displayName, targetProduct: item.targetProduct, imageUrl: item.imageUrl, price: item.price }
+            : null;
+        })
+        .filter(Boolean) as (Product & {
+          displayName: string;
+          targetProduct: string;
+          imageUrl: string;
+          price: string;
+        })[];
 
+      const handleCardClick = (product: Product & { targetProduct: string }) => {
+        const targetName = product.targetProduct.trim().toLowerCase();
+        // prefer exact match when navigating
+        const targetProduct =
+          allProducts.find((p) => p.category === "Additional" && p.name?.trim().toLowerCase() === targetName)
+          || allProducts.find((p) => p.category === "Additional" && p.name?.trim().toLowerCase().includes(targetName));
+
+        if (targetProduct) {
+          navigate(`/product/${targetProduct.id}`, {
+            state: {
+              ...targetProduct,
+              specialVariations: targetProduct.specialVariations || [],
+              details: targetProduct.details || {},
+            },
+          });
+        }
+      };
+
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+          {additionalProducts.map((product) => (
             <div
-              onClick={() => {
-                if (isFaceProduct) {
-                  setShowPopup(true);
-                  return;
-                }
-
-                if (item.attributes?.isBackground) {
-                  setBackground((prev) =>
-                    prev === "Custom" ? "Default" : "Custom"
-                  );
-                  setIsSelected((prev) => !prev);
-                  return;
-                }
-
-                if (isPackingProduct) {
-                  setIncludePacking((prev) => !prev);
-                  setIsSelected((prev) => !prev);
-                  return;
-                }
-
-                setIsSelected((prev) => !prev);
-              }}
-              className={`border rounded-xl overflow-hidden text-center hover:shadow-md transition-all bg-white cursor-pointer flex flex-col items-center justify-between ${
-                isSelected ? "ring-2 ring-[#dcbec1]" : ""
-              } w-full h-[300px] md:h-[360px]`}
+              key={product.id}
+              onClick={() => handleCardClick(product)}
+              className="border rounded-xl overflow-hidden text-center hover:shadow-md transition-all bg-white cursor-pointer flex flex-col items-center justify-between w-full h-[300px] md:h-[360px] hover:scale-105 transition-transform duration-200"
             >
               <div className="relative w-full aspect-square overflow-hidden">
                 <img
-                  src={
-                    item.name.toLowerCase().includes("faces")
-                      ? new URL(
-                          "../assets/list-products/ADDITIONAL/BIAYA TAMBAHAN WAJAH KARIKATUR/TAMBAHAN WAJAH 1.jpg",
-                          import.meta.url
-                        ).href
-                      : item.imageUrl
-                  }
-                  alt={item.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                  src={product.imageUrl}
+                  alt={product.displayName}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 hover:scale-110"
                 />
               </div>
 
-              <div className="p-2 md:p-3 flex flex-col flex-grow justify-between">
+              <div className="p-2 md:p-3 flex flex-col flex-grow justify-between w-full">
                 <h3 className="text-[12px] md:text-sm font-semibold text-gray-700 line-clamp-2">
-                  {item.name}
+                  {product.displayName}
                 </h3>
-
-                {isFaceProduct ? (
-                  <>
-                    {selectedFaceOption ? (
-                      <p className="text-[11px] md:text-xs font-poppinsMedium text-pink-600 mt-1">
-                          {t("product.selected")}{" "}
-                        {selectedFaceOption === "1-9"
-                          ? "1–9 wajah"
-                          : "Di atas 10 wajah"}
-                      </p>
-                    ) : (
-                      <p className="text-[11px] md:text-xs font-poppinsRegular text-gray-500 mt-1 italic">
-                          {t("product.clickToChooseFace")}
-                      </p>
-                    )}
-
-                    <p className="text-[12px] md:text-sm font-bold text-pink-600 mt-1">
-                      {selectedFaceOption
-                        ? `Rp ${activeFacePrice.toLocaleString("id-ID")}`
-                        : `Rp ${baseFacePrice.toLocaleString(
-                            "id-ID"
-                          )} - Rp ${priceList.Additional[
-                            "Tambahan Wajah Karikatur diatas 10 wajah"
-                          ].toLocaleString("id-ID")}`}
-                    </p>
-                  </>
-                ) : (
                 <p className="text-[12px] md:text-sm font-bold text-pink-600 mt-1">
-                  {typeof item.price === "string"
-                    ? item.price
-                    : item.price > 0
-                    ? `Rp ${item.price.toLocaleString("id-ID")}`
-                    : t("product.customPrice")}
+                  {product.price}
                 </p>
-                )}
               </div>
             </div>
-
-            {/* Pop-up pilihan wajah - Mobile optimized */}
-            {showPopup && isFaceProduct && (
-              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4">
-                <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 w-[90%] max-w-sm text-center animate-fadeIn">
-                  <h3 className="text-[16px] md:text-lg font-poppinsSemiBold mb-3 md:mb-4">
-                      {t("product.selectFaceCountPopup")}
-                  </h3>
-
-                  <div className="flex flex-col gap-2 md:gap-3">
-                    <button
-                      onClick={() => {
-                        setSelectedFaceOption("1-9");
-                        setSelectedAdditionalFaceOption("1-9");
-                        setIsSelected(true);
-                        setDisplayedPrice(
-                          priceList.Additional[
-                            "Tambahan Wajah Karikatur 1-9 wajah"
-                          ]
-                        );
-                        setShowPopup(false);
-                      }}
-                      className={`py-2 rounded-lg border text-[13px] md:text-sm font-medium transition-all ${
-                        selectedFaceOption === "1-9"
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-300 hover:border-blue-400 text-gray-700"
-                      }`}
-                    >
-                      1–9 Wajah — Rp{" "}
-                      {priceList.Additional[
-                        "Tambahan Wajah Karikatur 1-9 wajah"
-                      ].toLocaleString("id-ID")}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setSelectedFaceOption("10+");
-                        setSelectedAdditionalFaceOption("10+");
-                        setIsSelected(true);
-                        setDisplayedPrice(
-                          priceList.Additional[
-                            "Tambahan Wajah Karikatur diatas 10 wajah"
-                          ]
-                        );
-                        setShowPopup(false);
-                      }}
-                      className={`py-2 rounded-lg border text-[13px] md:text-sm font-medium transition-all ${
-                        selectedFaceOption === "10+"
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-300 hover:border-blue-400 text-gray-700"
-                      }`}
-                    >
-                      Di atas 10 Wajah — Rp{" "}
-                      {priceList.Additional[
-                        "Tambahan Wajah Karikatur diatas 10 wajah"
-                      ].toLocaleString("id-ID")}
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={() => setShowPopup(false)}
-                    className="mt-4 md:mt-5 text-[12px] md:text-sm text-gray-500 hover:text-gray-700 underline"
-                  >
-                      {t("product.close")}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-
-    {/* 🆕 Tombol Add to Cart Baru - Mobile optimized */}
-    <div className="flex justify-center mt-6 md:mt-8">
-      <button
-        onClick={() => {
-          const finalQty = quantity === "" ? 1 : quantity;
-
-          const faceCountLabel =
-            selectedAdditionalFaceOption === "10+"
-              ? "Di atas 10 wajah"
-              : "1–9 wajah";
-
-          const backgroundType =
-            background === "Custom" ? "BG Custom" : "BG Default";
-
-          const packingIncluded = includePacking;
-
-          addToCart({
-            id: product.id || "p1",
-            name: [product.category, product.size, product.type, product.name]
-              .filter(Boolean)
-              .join(" "),
-            price: displayedPrice,
-            quantity: finalQty,
-            imageUrl: product.imageUrl,
-            variation: selectedVariation,
-            productType: "frame",
-            attributes: {
-              faceCount: faceCountLabel,
-              backgroundType: backgroundType,
-              includePacking: packingIncluded,
-              frameSize: selectedSizeFrame,
-              shadingStyle: selectedShading,
-            },
-          });
-        }}
-        className="flex-1 max-w-xs px-4 md:px-6 py-3 border bg-[#dcbec1] font-bold rounded-lg hover:bg-[#c7a9ac] transition-colors text-[14px] md:text-base"
-      >
-          {t("product.addToCart")}
-      </button>
-    </div>
+          ))}
+        </div>
+      );
+    })()}
   </div>
 )}
       </main>

@@ -68,21 +68,22 @@ const logoSizeMap: Record<
   },
 };
 
-const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) => {
+// Mobile Layout Component
+const MobileLayout: React.FC<{ location: LocationSectionProps['location']; isLast: boolean }> = ({ location, isLast }) => {
   const { t } = useTranslation();
 
   return (
-    <div className={`mx-4 md:mx-16 ${!isLast ? "mb-12 md:mb-20 pb-6 md:pb-10" : "mb-6 md:mb-8"}`}>
-      {/* 📍 Location Info */}
-      <div className="flex items-start gap-2 md:gap-3">
+    <div className={`mx-4 ${!isLast ? "mb-12 pb-6" : "mb-6"}`}>
+      {/* 📍 Location Info - Mobile */}
+      <div className="flex items-start gap-2">
         <img
           src={locationIcon}
           alt="Location"
-          className="w-[60px] md:w-[80px] h-auto -mt-3 md:-mt-5 translate-x-2 md:translate-x-4"
+          className="w-[50px] h-auto -mt-2 translate-x-1"
         />
-        <div className="mt-0 md:mt-1">
+        <div className="mt-0 flex-1">
           {/* 🌍 Dynamic Language */}
-          <div className="font-poppinsRegular text-lg md:text-2xl">
+          <div className="font-poppinsRegular text-base">
             {t("location.shippingFrom")}{" "}
             <span className="font-poppinsRegular font-semibold">
               {location.city}
@@ -91,7 +92,128 @@ const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) =
 
           {/* 📝 Descriptions */}
           {location.description.map((line, index) => (
-            <p key={index} className="text-sm md:text-lg my-[1px] leading-snug">
+            <p key={index} className="text-[13px] w-[260px] font-poppinsRegular my-[1px] leading-snug">
+              {line}
+            </p>
+          ))}
+        </div>
+      </div>
+
+      {/* 📞 Contact & Address - Mobile */}
+      <div className="mt-3 w-full">
+        <div className="text-left">
+          {/* WhatsApp Contact */}
+          <div className="font-poppinsRegular flex items-center gap-2 translate-x-1.5 mb-3">
+            <img
+              src={whatsappIcon}
+              alt="WhatsApp"
+              className="w-[43px] h-auto"
+            />
+            <span className="text-[14px]">
+              {location.whatsapp.name} {location.whatsapp.number}
+            </span>
+          </div>
+
+          {/* Address Block */}
+          <div className="flex flex-col items-start gap-2 translate-x-10">
+            <a
+              href={location.gmapsLink || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="self-start"
+            >
+              <img
+                src={gmapsIcon}
+                alt="Google Maps"
+                className="w-28 h-auto cursor-pointer transition-transform duration-200 hover:scale-105"
+              />
+            </a>
+
+            <div className="mt-1 translate-x-5">
+              <span className="font-poppinsSemiBold text-xs">{location.address.name}</span>
+              {location.address.lines.map((line, index) => (
+                <p key={index} className="font-poppinsRegular text-[13px]">
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 🚚 Shipping Methods - Mobile */}
+      <div className="border border-gray-600 rounded-xl p-2 mt-4 mx-auto">
+        {location.shippingMethods.map((method, index) => {
+          const courierName =
+            typeof method === "string"
+              ? method.split(" ")[0].toUpperCase()
+              : method.courier.toUpperCase();
+
+          const logoSrc = logoMap[courierName];
+          const logoSize = {
+            JNE: { width: "w-[70px]", translate: "translate-x-[30px]" },
+            GOJEK: { width: "w-[70px]", translate: "translate-x-[21px]" },
+            GRAB: { width: "w-[70px]", translate: "translate-x-[29px]" },
+            PAXEL: { width: "w-[70px]", translate: "translate-x-[18px]" },
+            RAYSPEED: { width: "w-[100px]", translate: "translate-x-[3px]" }
+          }[courierName] || { width: "w-16", translate: "" };
+
+          return (
+            <div
+              key={index}
+              className="flex items-center gap-1 mb-1 last:mb-0 min-h-[30px]"
+            >
+              <div className="flex items-center justify-center min-w-[80px] h-[30px]">
+                {logoSrc && (
+                  <img
+                    src={logoSrc}
+                    alt={courierName}
+                    className={`${logoSize.width} h-auto ${logoSize.translate}`}
+                  />
+                )}
+              </div>
+              <span
+                className={`font-poppinsRegular text-[11.5px] leading-[1] block flex-1 ${
+                  typeof method === "object" && method.name.includes("Regular, Express")
+                    ? "-translate-x-1"
+                    : "translate-x-4"
+                }`}
+              >
+                {typeof method === "object" ? method.name : method}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Desktop Layout Component (tetap seperti sebelumnya)
+const DesktopLayout: React.FC<{ location: LocationSectionProps['location']; isLast: boolean }> = ({ location, isLast }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className={`mx-16 ${!isLast ? "mb-20 pb-10" : "mb-8"}`}>
+      {/* 📍 Location Info */}
+      <div className="flex items-start gap-3">
+        <img
+          src={locationIcon}
+          alt="Location"
+          className="w-[80px] h-auto -mt-5 translate-x-4"
+        />
+        <div className="mt-1">
+          {/* 🌍 Dynamic Language */}
+          <div className="font-poppinsRegular text-2xl">
+            {t("location.shippingFrom")}{" "}
+            <span className="font-poppinsRegular font-semibold">
+              {location.city}
+            </span>
+          </div>
+
+          {/* 📝 Descriptions */}
+          {location.description.map((line, index) => (
+            <p key={index} className="text-lg my-[1px] leading-snug">
               {line}
             </p>
           ))}
@@ -102,36 +224,36 @@ const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) =
       <div className="mt-3 mx-auto w-full max-w-2xl">
         <div className="text-left">
           {/* WhatsApp Contact */}
-          <div className="font-poppinsRegular flex items-center gap-2 translate-y-4 md:translate-y-6 translate-x-2 md:translate-x-4 mb-4 md:mb-5 ml-0 md:ml-32">
+          <div className="font-poppinsRegular flex items-center gap-2 translate-y-6 translate-x-4 mb-5 ml-32">
             <img
               src={whatsappIcon}
               alt="WhatsApp"
-              className="w-[40px] md:w-[50px] h-auto translate-x-1 md:translate-x-3"
+              className="w-[50px] h-auto translate-x-3"
             />
-            <span className="text-sm md:text-lg">
+            <span className="text-lg">
               {location.whatsapp.name} {location.whatsapp.number}
             </span>
           </div>
 
           {/* Address Block */}
-          <div className="flex flex-col md:flex-row items-start gap-3 md:gap-3">
+          <div className="flex flex-row items-start gap-3">
             <a
               href={location.gmapsLink || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="self-start md:self-auto"
+              className="self-auto"
             >
               <img
                 src={gmapsIcon}
                 alt="Google Maps"
-                className="w-32 md:w-40 h-auto cursor-pointer transition-transform duration-200 hover:scale-105"
+                className="w-40 h-auto cursor-pointer transition-transform duration-200 hover:scale-105"
               />
             </a>
 
-            <div className="mt-2 md:mt-0">
-              <span className="font-poppinsSemiBold text-sm md:text-base">{location.address.name}</span>
+            <div className="mt-0">
+              <span className="font-poppinsSemiBold text-base">{location.address.name}</span>
               {location.address.lines.map((line, index) => (
-                <p key={index} className="font-poppinsRegular text-sm md:text-lg">
+                <p key={index} className="font-poppinsRegular text-lg">
                   {line}
                 </p>
               ))}
@@ -141,7 +263,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) =
       </div>
 
       {/* 🚚 Shipping Methods */}
-      <div className="border border-gray-600 rounded-2xl md:rounded-[30px] p-3 md:p-4 max-w-xl mt-6 md:mt-8 mx-auto">
+      <div className="border border-gray-600 rounded-[30px] p-4 max-w-xl mt-8 mx-auto">
         {location.shippingMethods.map((method, index) => {
           const courierName =
             typeof method === "string"
@@ -158,9 +280,9 @@ const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) =
           return (
             <div
               key={index}
-              className="flex items-center gap-2 md:gap-3 mb-2 md:mb-[6px] last:mb-0 min-h-[35px] md:min-h-[45px]"
+              className="flex items-center gap-3 mb-[6px] last:mb-0 min-h-[45px]"
             >
-              <div className="flex items-center justify-center min-w-[100px] md:min-w-[130px] h-[35px] md:h-[45px]">
+              <div className="flex items-center justify-center min-w-[130px] h-[45px]">
                 {logoSrc && (
                   <img
                     src={logoSrc}
@@ -170,10 +292,10 @@ const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) =
                 )}
               </div>
               <span
-                className={`font-poppinsRegular text-xs md:text-sm leading-[1] block ${
+                className={`font-poppinsRegular text-sm leading-[1] block ${
                   typeof method === "object" && method.name.includes("Regular, Express")
-                    ? "translate-x-2 md:translate-x-5"
-                    : "translate-x-4 md:translate-x-10"
+                    ? "translate-x-5"
+                    : "translate-x-10"
                 }`}
               >
                 {typeof method === "object" ? method.name : method}
@@ -184,6 +306,28 @@ const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) =
       </div>
     </div>
   );
+};
+
+// Main Component
+const LocationSection: React.FC<LocationSectionProps> = ({ location, isLast }) => {
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+    };
+  }, []);
+
+  return isMobile ? 
+    <MobileLayout location={location} isLast={isLast} /> : 
+    <DesktopLayout location={location} isLast={isLast} />;
 };
 
 export default LocationSection;

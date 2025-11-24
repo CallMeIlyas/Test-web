@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import type { FC } from "react";
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagination";
-import SortControl from "./SortControls";
 import type { FilterOptions } from "../../types/types";
 
 interface Product {
@@ -52,15 +51,16 @@ const allProducts: Product[] = Object.keys(allImages).map((path, i) => {
 interface ProductGridWithPaginationProps {
   filters: FilterOptions;
   searchQuery?: string;
+  sortOption?: string; // Tambahkan prop ini
 }
 
 const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ 
   filters, 
-  searchQuery = ""
+  searchQuery = "",
+  sortOption = "all" // Default value
 }) => {
   const PRODUCTS_PER_PAGE = 16;
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOption, setSortOption] = useState("all");
 
   // --- Filter kategori + search ---
   const filteredProducts = allProducts.filter((product) => {
@@ -99,11 +99,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
 
   return (
     <div className="pb-10 bg-white">
-
-      {/* SortControl - full width responsive */}
-      <div className="w-full px-4 md:px-5 max-w-7xl mx-auto mb-4 md:mb-5">
-        <SortControl sortOption={sortOption} onSortChange={setSortOption} />
-      </div>
+      {/* HAPUS SortControl dari sini karena sudah ada di BackgroundCatalog */}
 
       {/* Product Grid - responsive */}
       <div className="

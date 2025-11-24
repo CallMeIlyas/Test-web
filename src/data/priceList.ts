@@ -53,7 +53,7 @@ export const priceList = {
     "Biaya Tambahan Wajah Banyak diatas 10 wajah": 250000,
     
     "Biaya Tambahan Packing untuk Order Banyak via Kargo": 100000,
-    "Biaya Tambahan Packing (Biasa)": 52800,
+    "Biaya Tambahan Packing": 52800,
     
     "Biaya Tambahan Ganti Frame Kaca ke Acrylic": 175800, //harga awal
     

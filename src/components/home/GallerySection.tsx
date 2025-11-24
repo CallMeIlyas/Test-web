@@ -325,25 +325,55 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
         )}
       </section>
 
-      {/* Fullscreen */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
-          onClick={() => setSelectedImage(null)}
-        >
+{/*full sreen*/}
+    {selectedImage && (
+      <div
+        className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+        onClick={() => setSelectedImage(null)}
+      >
+        <div className="relative">
           <img
             src={selectedImage}
             alt="Full view"
             className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
           />
-          <button
-            className="absolute top-5 right-5 text-white text-3xl font-bold"
-            onClick={() => setSelectedImage(null)}
-          >
-            ✕
-          </button>
+          
+          {/* Tombol label di fullscreen */}
+          {(() => {
+            const selectedPhoto = photos.find(photo => photo.image === selectedImage);
+            return selectedPhoto?.label && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLabelClick(selectedPhoto.label, e);
+                }}
+                className="
+                  absolute bottom-4 left-4
+                  flex items-center gap-2
+                  bg-white/20 backdrop-blur-lg
+                  text-white font-semibold text-sm md:text-[15px]
+                  px-4 py-[6px] md:py-2
+                  rounded-full shadow-lg border border-white/30
+                  whitespace-nowrap
+                  transition-all duration-300
+                  hover:scale-105 hover:shadow-xl hover:bg-white/30
+                "
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-sm"></span>
+                {selectedPhoto.label}
+              </button>
+            );
+          })()}
         </div>
-      )}
+        
+        <button
+          className="absolute top-5 right-5 text-white text-3xl font-bold bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70 transition-colors"
+          onClick={() => setSelectedImage(null)}
+        >
+          ✕
+        </button>
+      </div>
+    )}
       </div>
     </>
   );

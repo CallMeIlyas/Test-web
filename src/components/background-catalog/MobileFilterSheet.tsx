@@ -44,15 +44,6 @@ export default function MobileFilterSheet({ isOpen, onClose, onFilterChange }) {
           <SidebarFilters onFilterChange={onFilterChange} />
         </div>
 
-        <div className="p-4 border-t bg-white">
-          <button
-            onClick={onClose}
-            className="w-full bg-black text-white py-3 rounded-full"
-          >
-            {currentLang === "id" ? "Terapkan Filter" : "Apply Filters"}
-          </button>
-        </div>
-
       </div>
     </div>
   );

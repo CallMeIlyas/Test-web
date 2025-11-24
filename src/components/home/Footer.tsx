@@ -30,7 +30,7 @@ const Footer = () => {
         className="h-[70px]"
       />
     
-      <ul className="flex flex-col items-end mt-4 text-right">
+      <ul className="flex flex-col items-end mt-6 text-right">
         <li>
           <a
             href="/terms"
@@ -39,27 +39,18 @@ const Footer = () => {
             {t("footer.terms")}
           </a>
         </li>
-        <li>
-          <a
-            href="/contact"
-            className="no-underline text-black font-poppinsBold whitespace-nowrap text-sm hover:opacity-70 transition-opacity"
-          >
-            {t("footer.contact")}
-          </a>
-        </li>
       </ul>
     
     </div>
       </>
       ) : (
-        //  DESKTOP VIEW
+        // DESKTOP VIEW - TETAP SAMA
         <div className="flex items-center justify-between max-w-6xl mx-auto px-10">
           <img
             src={logoFooter}
             alt="Little Amora Logo"
             className="h-[86px] -translate-x-20"
           />
-          {/* ubah ke flex-row */}
           <ul className="flex flex-row gap-x-8 p-0 m-0 text-right translate-x-20">
             <li>
               <a

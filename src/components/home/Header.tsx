@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";    
 import { useLocation } from "react-router-dom";    
 import { FaSearch, FaChevronDown, FaBars, FaTimes, FaHome, FaShoppingBag, FaMapMarkerAlt, FaUser } from "react-icons/fa";    
-import { IoHomeOutline, IoBagHandleOutline, IoLocationOutline, IoImageOutline } from "react-icons/io5";    
+import { IoHomeOutline, IoBagHandleOutline, IoLocationOutline, IoImageOutline} from "react-icons/io5";    
+import { CiRuler } from "react-icons/ci";
 import logoAmora from "../../assets/logo/logo-amora-footer2.png";    
 import cartIcon from "../../assets/Icons/CART.png";    
 import cartPopup from "../../assets/Icons/cart-popup.png";    
@@ -250,213 +251,222 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
     </header>    
   );    
     
-  // ================= Mobile Layout =================    
-  const MobileLayout = () => (    
-    <>    
-      <header    
-        id="mobile-header"    
-        className="bg-[#dcbec1] shadow-sm sticky top-0 left-0 right-0 z-50"    
-      >    
-        <div className="flex items-center justify-between px-4 py-3">    
-          
-          {/* Hamburger */}    
-          <button    
-            onClick={() => setMenuOpen(!menuOpen)}    
-            className="text-black focus:outline-none p-1 w-10 flex justify-center"    
-            aria-label="Toggle menu"    
-          >    
-            {menuOpen ? (    
-              <FaTimes size={20} strokeWidth={0.5} />    
-            ) : (    
-              <FaBars size={20} strokeWidth={0.5} />    
-            )}    
-          </button>    
-          
-          {/* Logo */}    
-          <img src={logoAmora} alt="Little Amora Logo" className="h-14" />    
-          
-          {/* Language Selector */}    
-          <div className="relative w-14 flex justify-end">    
-            <button    
-              onClick={() => setIsLangOpen(!isLangOpen)}    
-              className="font-poppinsBold text-sm font-semibold text-black px-2 py-1 rounded hover:bg-white/30 transition-colors flex items-center gap-1"    
-            >    
-              {currentLang.toUpperCase()}    
-              <FaChevronDown    
-                size={12}    
-                className={`transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`}    
-              />    
-            </button>    
-          
-            {isLangOpen && (    
-              <ul className="absolute right-0 mt-2 w-24 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">    
-                {[    
-                  { code: "en", label: "EN" },    
-                  { code: "id", label: "ID" }    
-                ].map((lang) => (    
-                  <li key={lang.code}>    
-                    <button    
-                      onClick={() => {    
-                        i18n.changeLanguage(lang.code);    
-                        setIsLangOpen(false);    
-                      }}    
-                      className={`block w-full text-center px-4 py-2 hover:bg-gray-100 text-sm ${    
-                        i18n.language === lang.code ? "bg-gray-100 font-semibold" : ""    
-                      }`}    
-                    >    
-                      {lang.label}    
-                    </button>    
-                  </li>    
-                ))}    
-              </ul>    
-            )}    
-          </div>    
-          
-        </div>    
-      </header>    
-    
-      {/* Hamburger Menu Sidebar - Minimalist Design */}    
-      <div    
-        className={`fixed top-[70px] left-0 h-[calc(100vh-70px)] w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${    
-          menuOpen ? "translate-x-0" : "-translate-x-full"    
-        }`}    
-      >    
-        <nav className="py-6 px-5">    
-          <ul className="space-y-1">    
-            <li>    
-              <a    
-                href="/size-guide"    
-                className="block py-2.5 px-3 text-gray-700 hover:bg-[#dcbec1]/20 rounded-lg font-poppins text-[15px] transition-colors"    
-              >    
-                {t("header.nav.sizeGuide")}    
-              </a>    
-            </li>    
-            <li>    
-              <a    
-                href="/faq"    
-                className="block py-2.5 px-3 text-gray-700 hover:bg-[#dcbec1]/20 rounded-lg font-poppins text-[15px] transition-colors"    
-              >    
-                {t("header.nav.faq")}    
-              </a>    
-            </li>    
-          </ul>    
-    
-          {/* Search Bar in Hamburger */}    
-          <div className="mt-6 pt-6 border-t border-gray-200">    
-            <div className="flex border border-gray-300 rounded-full px-4 py-2 items-center">    
-              <input    
-                ref={mobileSearchInputRef}    
-                type="text"    
-                placeholder={t("header.search") || "Search"}    
-                className="border-none outline-none text-sm w-full bg-transparent"    
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}    
-              />    
-              <button className="ml-2" onClick={handleSearch}>    
-                <FaSearch size={16} className="text-gray-600" />    
-              </button>    
-            </div>    
-          </div>    
-        </nav>    
+// ================= Mobile Layout =================    
+const MobileLayout = () => (    
+  <>    
+    <header    
+      id="mobile-header"    
+      className="bg-[#dcbec1] shadow-sm sticky top-0 left-0 right-0 z-50"    
+    >    
+      <div className="flex items-center justify-between px-4 py-3">    
+        
+        {/* Hamburger */}    
+        <button    
+          onClick={() => setMenuOpen(!menuOpen)}    
+          className="text-black focus:outline-none p-1 w-10 flex justify-center"    
+          aria-label="Toggle menu"    
+        >    
+          {menuOpen ? (    
+            <FaTimes size={20} strokeWidth={0.5} />    
+          ) : (    
+            <FaBars size={20} strokeWidth={0.5} />    
+          )}    
+        </button>    
+        
+        {/* Logo */}    
+        <img src={logoAmora} alt="Little Amora Logo" className="h-14" />    
+        
+        {/* Right Section - Language + Cart */}
+        <div className="flex items-center gap-4">
+          {/* Language Selector */}
+          <div className="relative">
+            <button
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="font-poppinsBold text-sm font-semibold text-black px-2 py-1 rounded hover:bg-white/30 transition-colors flex items-center gap-1"
+            >
+              {currentLang.toUpperCase()}
+              <FaChevronDown
+                size={12}
+                className={`transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+        
+            {isLangOpen && (
+              <ul className="absolute right-0 mt-2 w-24 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                {[
+                  { code: "en", label: "EN" },
+                  { code: "id", label: "ID" }
+                ].map((lang) => (
+                  <li key={lang.code}>
+                    <button
+                      onClick={() => {
+                        i18n.changeLanguage(lang.code);
+                        setIsLangOpen(false);
+                      }}
+                      className={`block w-full text-center px-4 py-2 hover:bg-gray-100 text-sm ${
+                        i18n.language === lang.code ? "bg-gray-100 font-semibold" : ""
+                      }`}
+                    >
+                      {lang.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        
+          {/* Cart */}
+          <a 
+            href="/shoppingcart" 
+            className="relative"
+          >
+            <div className="relative">
+              <img 
+                src={cartIcon} 
+                alt="Cart" 
+                className="w-[30px] h-auto" 
+                style={{
+                  filter: 'brightness(0) saturate(100%)'
+                }}
+              />
+              {cartCount > 0 && (
+                <span className="font-poppinsBold absolute -top-0.5 right-1 text-black rounded-full px-[6px] py-[2px] text-[13px]">
+                  {cartCount}
+                </span>
+              )}
+            </div>
+          </a>
+        </div>
       </div>    
+    </header>    
     
-      {/* Overlay when menu is open */}    
-      {menuOpen && (    
-        <div    
-          className="fixed inset-0 bg-black/30 z-30 top-[70px]"    
-          onClick={() => setMenuOpen(false)}    
-        ></div>    
-      )}    
+{/* Hamburger Menu Sidebar - Minimalist Design */}    
+<div    
+  className={`fixed top-[70px] left-0 h-[calc(100vh-70px)] w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${    
+    menuOpen ? "translate-x-0" : "-translate-x-full"    
+  }`}    
+>    
+  <nav className="py-6 px-5">    
+    <ul className="space-y-1">    
+      <li>    
+        <a    
+          href="/faq"    
+          className="block py-2.5 px-3 text-gray-700 hover:bg-[#dcbec1]/20 rounded-lg font-poppinsBold text-[15px] transition-colors"    
+        >    
+          {t("header.nav.faq")}    
+        </a>    
+      </li>    
+      {/* TAMBAHKAN MENU CONTACT DI SINI */}
+      <li>    
+        <a    
+          href="/contact"    
+          className="block py-2.5 px-3 text-gray-700 hover:bg-[#dcbec1]/20 rounded-lg font-poppinsBold text-[15px] transition-colors"    
+        >    
+          {t("footer.contact")}    
+        </a>    
+      </li>    
+    </ul>    
+
+    {/* Search Bar in Hamburger */}    
+    <div className="mt-6 pt-6 border-t border-gray-200 font-poppinsBold">    
+      <div className="flex border border-gray-300 rounded-full px-4 py-2 items-center">    
+        <input    
+          ref={mobileSearchInputRef}    
+          type="text"    
+          placeholder={t("header.search") || "Search"}    
+          className="border-none outline-none text-sm w-full bg-transparent"    
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}    
+        />    
+        <button className="ml-2" onClick={handleSearch}>    
+          <FaSearch size={16} className="text-gray-600" />    
+        </button>    
+      </div>    
+    </div>    
+  </nav>    
+</div>       
     
-      {/* Bottom Navigation */}    
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">    
-        <div className="flex justify-around items-center py-2 px-1">    
-          {/* Home */}    
-          <a     
-            href="/"     
-            className={`flex flex-col items-center gap-1 flex-1 ${    
-              location.pathname === '/' ? 'text-[#dcbec1]' : 'text-gray-600'    
-            }`}    
-          >    
-            <IoHomeOutline size={24} strokeWidth={1} />    
-            <span className="text-[10px] sm:text-xs font-poppinsBold">    
-              {t("header.nav.home")}    
-            </span>    
-          </a>    
+    {/* Overlay when menu is open */}    
+    {menuOpen && (    
+      <div    
+        className="fixed inset-0 bg-black/30 z-30 top-[70px]"    
+        onClick={() => setMenuOpen(false)}    
+      ></div>    
+    )}    
     
-          {/* Products */}    
-          <a     
-            href="/products"     
-            className={`flex flex-col items-center gap-1 flex-1 ${    
-              location.pathname === '/products' ? 'text-[#dcbec1]' : 'text-gray-600'    
-            }`}    
-          >    
-            <IoBagHandleOutline size={24} strokeWidth={1} />    
-            <span className="text-[10px] sm:text-xs font-poppinsBold">    
-              {t("header.nav.products")}    
-            </span>    
-          </a>    
+    {/* Bottom Navigation */}    
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">    
+      <div className="flex justify-around items-center py-2 px-1">    
+        {/* Home */}    
+        <a     
+          href="/"     
+          className={`flex flex-col items-center gap-1 flex-1 ${    
+            location.pathname === '/' ? 'text-[#dcbec1]' : 'text-gray-600'    
+          }`}    
+        >    
+          <IoHomeOutline size={24} strokeWidth={1} />    
+          <span className="text-[8px] sm:text-xs font-poppinsBold">    
+            {t("header.nav.home")}    
+          </span>    
+        </a>    
     
-          {/* Cart - dengan badge */}    
-          <a     
-            href="/shoppingcart"     
-            className={`flex flex-col items-center ml-4 gap-1 flex-1 relative ${    
-              location.pathname === '/shoppingcart' ? 'text-[#dcbec1]' : 'text-gray-600'    
-            }`}    
-          >    
-            <div className="relative">    
-              <img     
-                src={cartIcon}     
-                alt="Cart"     
-                className="w-[35px] h-auto"     
-                style={{    
-                  filter: location.pathname === '/shoppingcart'     
-                    ? 'brightness(0) saturate(100%) invert(81%) sepia(12%) saturate(692%) hue-rotate(304deg) brightness(93%) contrast(88%) drop-shadow(0 0 0.5px black)'    
-                    : 'brightness(0) saturate(100%) invert(47%) sepia(8%) saturate(420%) hue-rotate(182deg) brightness(90%) contrast(88%)'    
-                }}    
-              />    
-              {cartCount > 0 && (    
-                <span className="font-poppinsBold absolute top-0 right-1.5 text-black rounded-full px-[6px] py-[2px] text-[13px]">    
-                  {cartCount}    
-                </span>    
-              )}    
-            </div>    
-            <span className="text-[10px] sm:text-xs font-poppinsBold -translate-y-[3px]">    
-              {t("header.cart")}    
-            </span>    
-          </a>    
+        {/* Products */}    
+        <a     
+          href="/products"     
+          className={`flex flex-col items-center gap-1 flex-1 ${    
+            location.pathname === '/products' ? 'text-[#dcbec1]' : 'text-gray-600'    
+          }`}    
+        >    
+          <IoBagHandleOutline size={24} strokeWidth={1} />    
+          <span className="text-[8px] sm:text-xs font-poppinsBold">    
+            {t("header.nav.products")}    
+          </span>    
+        </a>    
     
-          {/* Location */}    
-          <a     
-            href="/location"     
-            className={`flex flex-col items-center gap-1 flex-1 ${    
-              location.pathname === '/location' ? 'text-[#dcbec1]' : 'text-gray-600'    
-            }`}    
-          >    
-            <IoLocationOutline size={24} strokeWidth={1} />    
-            <span className="text-[10px] sm:text-xs font-poppinsBold">    
-              {t("header.nav.location")}    
-            </span>    
-          </a>    
+        {/* Size Guide */}    
+        <a     
+          href="/size-guide"
+          className={`flex flex-col items-center gap-1 flex-1 translate-x-1.5 ${    
+            location.pathname === '/size-guide' ? 'text-[#dcbec1]' : 'text-gray-600'    
+          }`}    
+        >    
+          <CiRuler size={24} strokeWidth={0.5} />    
+          <span className="text-[8px] font-poppinsBold">    
+            {t("header.nav.sizeGuide")}    
+          </span>    
+        </a>    
     
-          {/* Background Catalog */}    
-          <a     
-            href="/background-catalog"    
-            className={`flex flex-col items-center gap-1 flex-1 ${    
-              location.pathname === '/background-catalog' ? 'text-[#dcbec1]' : 'text-gray-600'    
-            }`}    
-          >    
-            <IoImageOutline size={24} strokeWidth={1} />    
-            <span className="text-[10px] sm:text-xs font-poppinsBold">    
-              {currentLang === "id" ? "Background" : "Background"}    
-            </span>    
-          </a>    
-        </div>    
-      </nav>    
-          
-      {/* WhatsApp Floating Button - RENDER KOMPONEN TERPISAH */}
-      <WhatsAppFloatingButton />
-    </>    
-  );    
+        {/* Location */}    
+        <a     
+          href="/location"     
+          className={`flex flex-col items-center gap-1 flex-1 ${    
+            location.pathname === '/location' ? 'text-[#dcbec1]' : 'text-gray-600'    
+          }`}    
+        >    
+          <IoLocationOutline size={24} strokeWidth={1} />    
+          <span className="text-[8px] sm:text-xs font-poppinsBold">    
+            {t("header.nav.location")}    
+          </span>    
+        </a>    
+    
+        {/* Background Catalog */}    
+        <a     
+          href="/background-catalog"    
+          className={`flex flex-col items-center gap-1 flex-1 ${    
+            location.pathname === '/background-catalog' ? 'text-[#dcbec1]' : 'text-gray-600'    
+          }`}    
+        >    
+          <IoImageOutline size={24} strokeWidth={1} />    
+          <span className="text-[8px] sm:text-xs font-poppinsBold">    
+            {currentLang === "id" ? "Background" : "Background"}    
+          </span>    
+        </a>    
+      </div>    
+    </nav>    
+        
+    {/* WhatsApp Floating Button */}
+    <WhatsAppFloatingButton />
+  </>    
+);    
     
   return isMobile ? <MobileLayout /> : <DesktopLayout />;    
 };    

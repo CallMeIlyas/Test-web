@@ -1,14 +1,19 @@
 import type { FC } from "react";
 import { useState } from "react";
-import { FaChevronDown } from "react-icons/fa";
+import { FaChevronDown, FaFilter } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
 interface SortControlsProps {
   sortOption?: string;
   onSortChange: (option: string) => void;
+  onOpenFilters?: () => void; // Tambahkan prop ini
 }
 
-const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange }) => {
+const SortControls: FC<SortControlsProps> = ({ 
+  sortOption = "all", 
+  onSortChange,
+  onOpenFilters 
+}) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
@@ -96,59 +101,50 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
 
       </div>
 
-      {/* MOBILE: layout vertikal */}
+      {/* MOBILE: layout vertikal dengan tombol filter */}
       <div className="flex flex-col md:hidden gap-3 text-sm font-poppinsBold text-black">
 
+        {/* Baris pertama: "Sort by" */}
         <span className="">{t("sortBg.sortby")}</span>
 
-        {/* Frequently Used */}
-        <button
-          onClick={() =>
-            onSortChange(sortOption === "frequently-used" ? "all" : "frequently-used")
-          }
-          className={`w-full px-4 py-2 rounded-full text-sm border transition ${
-            sortOption === "frequently-used"
-              ? "bg-black text-white border-black shadow-sm"
-              : "bg-white text-gray-700 border-gray-300"
-          }`}
-        >
-          {t("sortBg.frequentlyused")}
-        </button>
-
-        {/* Rarely Used */}
-        <button
-          onClick={() =>
-            onSortChange(sortOption === "rarely-used" ? "all" : "rarely-used")
-          }
-          className={`w-full px-4 py-2 rounded-full text-sm border transition ${
-            sortOption === "rarely-used"
-              ? "bg-black text-white border-black shadow-sm"
-              : "bg-white text-gray-700 border-gray-300"
-          }`}
-        >
-          {t("sortBg.rarelyused")}
-        </button>
-
+        {/* Tombol Filter - full width */}
+        {onOpenFilters && (
+          <div className="relative w-full">
+            <button
+              onClick={onOpenFilters}
+              className="font-poppinsBold flex items-center justify-center px-4 py-2 w-full text-sm bg-white rounded-full border border-gray-300"
+            >
+              <span className="text-center text-[15px] translate-x-2.5 flex-1">Filter</span>
+              <FaFilter
+                size={12}
+                className="ml-2"
+              />
+            </button>
+          </div>
+        )}
+        
         {/* Dropdown Sort */}
         <div className="relative w-full">
           <button
             onClick={() => setOpen(!open)}
-            className="font-poppinsBold flex items-center justify-between px-4 py-2 w-full text-sm bg-white rounded-full border border-gray-300"
+            className="font-poppinsBold flex items-center justify-center px-4 py-2 w-full text-sm bg-white rounded-full border border-gray-300 relative"
           >
-            <span>{getCurrentLabel()}</span>
+            <span className="text-center absolute left-0 right-0 mx-auto">
+              {getCurrentLabel()}
+            </span>
             <FaChevronDown
               size={14}
-              className={`ml-2 transition-transform ${open ? "rotate-180" : ""}`}
+              className={`ml-auto transition-transform ${open ? "rotate-180" : ""}`}
             />
           </button>
-
+        
           {open && (
             <div className="absolute mt-1 w-full bg-white rounded-md shadow-lg border z-50 overflow-hidden">
               {options.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => handleSelect(option.value)}
-                  className={`block w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                  className={`block w-full px-4 py-2 text-center hover:bg-gray-100 ${
                     sortOption === option.value ? "bg-gray-200 font-semibold" : ""
                   }`}
                 >
@@ -158,9 +154,7 @@ const SortControls: FC<SortControlsProps> = ({ sortOption = "all", onSortChange 
             </div>
           )}
         </div>
-
       </div>
-
     </div>
   );
 };

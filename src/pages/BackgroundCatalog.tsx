@@ -3,9 +3,9 @@ import Footer from '../components/home/Footer';
 import Sidebar from '../components/background-catalog/SidebarFilters';
 import ProductGrid from '../components/background-catalog/ProductGrid';
 import MobileFilterSheet from '../components/background-catalog/MobileFilterSheet';
+import SortControls from '../components/background-catalog/SortControls'; // Import SortControls
 import type { FilterOptions } from '../types/types';
 import NoteIcon from "../assets/Icons/NOTES.png";
-import { FaFilter } from "react-icons/fa";
 
 interface BackgroundCatalogProps {
   searchQuery?: string; 
@@ -18,19 +18,11 @@ const BackgroundCatalog: React.FC<BackgroundCatalogProps> = ({ searchQuery = "" 
     shippedTo: []
   });
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sortOption, setSortOption] = useState("all"); // State untuk sort
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Tombol filter mobile - static positioning */}
-      <div className="md:hidden w-full px-4 py-3 bg-white shadow-sm sticky top-0 z-40">
-        <button
-          onClick={() => setSheetOpen(true)}
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full text-sm"
-        >
-          <FaFilter size={14} />
-          Filter
-        </button>
-      </div>
+      {/* HAPUS tombol filter mobile statis dari sini */}
 
       {/* Main Content */}
       <div className="flex flex-1">
@@ -41,7 +33,20 @@ const BackgroundCatalog: React.FC<BackgroundCatalogProps> = ({ searchQuery = "" 
 
         {/* Product Grid */}
         <div className="flex-1">
-          <ProductGrid filters={filters} searchQuery={searchQuery} />
+          {/* Tambahkan SortControls di sini */}
+          <div className="p-4">
+            <SortControls 
+              sortOption={sortOption}
+              onSortChange={setSortOption}
+              onOpenFilters={() => setSheetOpen(true)} // Tambahkan prop ini
+            />
+          </div>
+          
+          <ProductGrid 
+            filters={filters} 
+            searchQuery={searchQuery} 
+            sortOption={sortOption} // Teruskan sortOption ke ProductGrid
+          />
         </div>
       </div>
 

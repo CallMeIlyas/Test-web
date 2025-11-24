@@ -135,7 +135,7 @@ const Hero = () => {
       />
       <p
         ref={textRef}
-        className="font-poppinsRegular text-[14px] leading-[1.6] text-[#444] text-justify"
+        className="font-poppinsRegular text-[14px] leading-[1.6] text-[#444] text-justify -mt-10"
       >
         {t("hero.description")}
       </p>
@@ -143,7 +143,7 @@ const Hero = () => {
         ref={imageRef}
         src={pakAndre}
         alt="Caricature Frame"
-        className="w-full max-w-[500px] rounded-[10px] mt-16"
+        className="w-full max-w-[500px] rounded-[10px] mt-10"
       />
     </section>
   );

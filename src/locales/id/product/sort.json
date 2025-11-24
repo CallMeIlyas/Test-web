@@ -4,5 +4,6 @@
   "allProducts": "Semua Produk",
   "price": "Harga",
   "lowToHigh": "Rendah ke Tinggi",
-  "highToLow": "Tinggi ke Rendah"
+  "highToLow": "Tinggi ke Rendah",
+  "filter": "Filter"
 }

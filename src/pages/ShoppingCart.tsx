@@ -336,8 +336,8 @@ useEffect(() => {
   return (
     <div className="flex flex-col min-h-screen">
       {/* MOBILE LAYOUT - hanya tampil di mobile */}
-      <div className="block md:hidden">
-        <main className="flex-1 px-4 py-6 space-y-6">
+      <div className="block md:hidden flex-1">
+        <main className="px-4 py-6 space-y-6">
           
           {/* Box Cart - Mobile */}
           <div className="rounded-2xl border border-black p-4 bg-white shadow-sm">
@@ -663,8 +663,8 @@ useEffect(() => {
       </div>
 
       {/* DESKTOP LAYOUT - hanya tampil di desktop */}
-      <div className="hidden md:block">
-        <main className="flex-1 px-6 md:px-16 py-10 space-y-10">
+      <div className="hidden md:block flex-1">
+        <main className="px-6 md:px-16 py-10 space-y-10">
           
           {/* Box Cart */}
           <div className="rounded-[30px] border border-black p-6 bg-white shadow-sm">
@@ -752,7 +752,7 @@ useEffect(() => {
                             Rp{(item.price * item.quantity).toLocaleString("id-ID")}
                           </p>
                           <button
-                            className="font-poppinsRegular"
+                            className="font-poppinsRegular text-red-500"
                             onClick={() => deleteItem(item.cartId)}
                           >
                             {currentLang === "id" ? "Hapus" : "Delete"}

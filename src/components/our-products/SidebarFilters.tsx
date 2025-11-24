@@ -149,8 +149,9 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  return (
-    <aside className="w-64 p-6 bg-white rounded-xl">
+  // Layout Desktop
+  const DesktopLayout = () => (
+    <aside className="hidden md:block w-64 p-6 bg-white rounded-xl">
       {/* Category */}
       <SplitBorder />
       <div className="mb-8">
@@ -168,7 +169,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
               <div className="font-poppinsRegular flex items-center gap-2 mb-2 ml-6">
                 <input
                   type="checkbox"
-                  id={mainCategory.toLowerCase().replace(/\s+/g, "-")}
+                  id={`desktop-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
                   checked={selectedMainCategories.has(mainCategory)}
                   onChange={(e) =>
                     handleMainCategoryChange(mainCategory, e.target.checked)
@@ -183,7 +184,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                              after:rotate-45"
                 />
                 <label
-                  htmlFor={mainCategory.toLowerCase().replace(/\s+/g, "-")}
+                  htmlFor={`desktop-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
                   className="text-sm cursor-pointer hover:text-primary flex-1"
                   onClick={() => !is2D && toggleCategory(mainCategory)}
                 >
@@ -224,7 +225,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                       <div key={fullKey} className="font-poppinsRegular flex items-center gap-2">
                         <input
                           type="checkbox"
-                          id={fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}
+                          id={`desktop-${fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
                           checked={isChecked}
                           onChange={(e) =>
                             handleSubcategoryChange(mainCategory, subcat, e.target.checked)
@@ -238,7 +239,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                                      after:border-black after:top-[1px] after:left-[4px] after:rotate-45"
                         />
                         <label
-                          htmlFor={fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}
+                          htmlFor={`desktop-${fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
                           className="text-sm cursor-pointer hover:text-primary"
                         >
                           {subcat}
@@ -266,14 +267,14 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
           >
             <input
               type="checkbox"
-              id={item.toLowerCase()}
+              id={`desktop-${item.toLowerCase()}`}
               className="w-4 h-4 border rounded"
               onChange={(e) =>
                 handleCheckboxChange("shippedFrom", item, e.target.checked)
               }
             />
             <label
-              htmlFor={item.toLowerCase()}
+              htmlFor={`desktop-${item.toLowerCase()}`}
               className="text-sm cursor-pointer hover:text-primary"
             >
               {item}
@@ -295,14 +296,14 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
           >
             <input
               type="checkbox"
-              id={dest.toLowerCase()}
+              id={`desktop-${dest.toLowerCase()}`}
               className="w-4 h-4 border rounded"
               onChange={(e) =>
                 handleCheckboxChange("shippedTo", dest, e.target.checked)
               }
             />
             <label
-              htmlFor={dest.toLowerCase()}
+              htmlFor={`desktop-${dest.toLowerCase()}`}
               className="text-sm cursor-pointer hover:text-primary"
             >
               {t(`side.to.${dest.toLowerCase()}`)}
@@ -311,6 +312,94 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
         ))}
       </div>
     </aside>
+  );
+
+  // Layout Mobile
+  const MobileLayout = () => (
+    <aside className="block md:hidden w-full p-4 bg-white rounded-xl">
+      {/* Category - Mobile */}
+      <SplitBorder />
+      <div className="mb-6">
+        <h3 className="font-nataliecaydence text-lg font-light mb-4 ml-2">
+          {t("side.category")}
+        </h3>
+
+        {Object.entries(customCategories).map(([mainCategory, subcategories]) => {
+          const is2D = mainCategory === t("side.categories.2d");
+          
+          return (
+            <div key={mainCategory} className="mb-2">
+              {/* Kategori utama - Mobile: tanpa panah dan subkategori */}
+              <div className="font-poppinsRegular flex items-center gap-2 mb-2 ml-4">
+                <input
+                  type="checkbox"
+                  id={`mobile-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
+                  checked={selectedMainCategories.has(mainCategory)}
+                  onChange={(e) =>
+                    handleMainCategoryChange(mainCategory, e.target.checked)
+                  }
+                  className="appearance-none w-4 h-4 border border-black rounded-sm
+                             cursor-pointer transition-all duration-200 relative
+                             checked:bg-white checked:border-black
+                             after:content-[''] after:absolute after:hidden checked:after:block
+                             after:w-[6px] after:h-[10px]
+                             after:border-r-[2px] after:border-b-[2px]
+                             after:border-black after:top-[0px] after:left-[5px]
+                             after:rotate-45"
+                />
+                <label
+                  htmlFor={`mobile-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="text-sm cursor-pointer hover:text-primary flex-1"
+                >
+                  {mainCategory}
+                </label>
+                {/* Panah dihilangkan untuk mobile */}
+              </div>
+
+              {/* Subkategori dihilangkan untuk mobile */}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Shipped From dihilangkan untuk mobile */}
+
+      {/* Shipped To - Mobile */}
+      <SplitBorder />
+      <div className="mb-6">
+        <h3 className="font-nataliecaydence text-lg font-light mb-4 ml-2">
+          {t("side.shippedTo")}
+        </h3>
+        {["worldwide"].map((dest) => (
+          <div
+            key={dest}
+            className="font-poppinsRegular flex items-center gap-2 mb-3 ml-4"
+          >
+            <input
+              type="checkbox"
+              id={`mobile-${dest.toLowerCase()}`}
+              className="w-4 h-4 border rounded"
+              onChange={(e) =>
+                handleCheckboxChange("shippedTo", dest, e.target.checked)
+              }
+            />
+            <label
+              htmlFor={`mobile-${dest.toLowerCase()}`}
+              className="text-sm cursor-pointer hover:text-primary"
+            >
+              {t(`side.to.${dest.toLowerCase()}`)}
+            </label>
+          </div>
+        ))}
+      </div>
+    </aside>
+  );
+
+  return (
+    <>
+      <DesktopLayout />
+      <MobileLayout />
+    </>
   );
 };
 

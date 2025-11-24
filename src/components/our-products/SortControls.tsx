@@ -1,14 +1,19 @@
 import type { FC } from "react";
 import { useState } from "react";
-import { FaChevronDown } from "react-icons/fa";
+import { FaChevronDown, FaFilter } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
 interface SortControlsProps {
   sortOption: string;
   onSortChange: (option: string) => void;
+  onOpenFilters?: () => void;
 }
 
-const SortControls: FC<SortControlsProps> = ({ sortOption, onSortChange }) => {
+const SortControls: FC<SortControlsProps> = ({ 
+  sortOption, 
+  onSortChange, 
+  onOpenFilters 
+}) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
@@ -29,9 +34,9 @@ const SortControls: FC<SortControlsProps> = ({ sortOption, onSortChange }) => {
   };
 
   return (
-    <div className="bg-[#f0f0f0] px-4 py-3 rounded-xl mb-3">
+    <div className="bg-[#f0f0f0] px-4 py-3 rounded-xl">
 
-      {/* DESKTOP: tetap sama */}
+      {/* DESKTOP: layout asli */}
       <div className="hidden md:flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8 text-sm font-poppinsBold text-black">
 
         <span className="whitespace-nowrap">{t("sort.sortBy")}</span>
@@ -91,66 +96,59 @@ const SortControls: FC<SortControlsProps> = ({ sortOption, onSortChange }) => {
 
       </div>
 
-      {/* MOBILE: layout khusus */}
-      <div className="flex flex-col md:hidden gap-3 text-sm font-poppinsBold text-black">
+<div className="flex flex-col md:hidden gap-3 text-sm font-poppinsBold text-black">
 
-        <span className="">{t("sort.sortBy")}</span>
+  {/* Baris pertama: "Sort by" dan tombol Filter */}
+  <div className="flex items-center justify-between">
+    <span className="text-sm">{t("sort.sortBy")}</span>
+  </div>
 
-        <button
-          onClick={() =>
-            onSortChange(sortOption === "best-selling" ? "" : "best-selling")
-          }
-          className={`w-full px-4 py-2 rounded-full border text-sm transition ${
-            sortOption === "best-selling"
-              ? "bg-black text-white border-black shadow-sm"
-              : "bg-white text-gray-700 border-gray-300"
-          }`}
-        >
-          {t("sort.bestSelling")}
-        </button>
+  {/* Tombol Filter - full width seperti dropdown */}
+  {onOpenFilters && (
+    <div className="relative w-full">
+      <button
+        onClick={onOpenFilters}
+        className="font-poppinsBold flex items-center justify-center px-4 py-2 w-full text-sm bg-white rounded-full border border-gray-300"
+      >
+        <span className="text-center text-[15px] translate-x-2.5 flex-1">{t("sort.filter") || "Filter"}</span>
+        <FaFilter
+          size={12}
+          className="ml-2"
+        />
+      </button>
+    </div>
+  )}
 
-        <button
-          onClick={() => onSortChange("")}
-          className={`w-full px-4 py-2 rounded-full border text-sm transition ${
-            sortOption === ""
-              ? "bg-black text-white border-black shadow-sm"
-              : "bg-white text-gray-700 border-gray-300"
-          }`}
-        >
-          {t("sort.allProducts")}
-        </button>
-
-        <div className="relative w-full">
+  {/* Dropdown harga */}
+  <div className="relative w-full">
+    <button
+      onClick={() => setOpen(!open)}
+      className="font-poppinsBold flex items-center justify-center px-4 py-2 w-full text-sm bg-white rounded-full border border-gray-300"
+    >
+      <span className="text-center translate-x-3 flex-1">{getCurrentLabel()}</span>
+      <FaChevronDown
+        size={14}
+        className={`ml-2 transition-transform ${open ? "rotate-180" : ""}`}
+      />
+    </button>
+  
+    {open && (
+      <div className="absolute mt-1 w-full bg-white rounded-md shadow-lg border z-50 overflow-hidden">
+        {options.map((option) => (
           <button
-            onClick={() => setOpen(!open)}
-            className="font-poppinsBold flex items-center justify-between px-4 py-2 w-full text-sm bg-white rounded-full border border-gray-300"
+            key={option.value}
+            onClick={() => handleSelect(option.value)}
+            className={`block w-full px-4 py-2 text-center hover:bg-gray-100 ${
+              sortOption === option.value ? "bg-gray-200 font-semibold" : ""
+            }`}
           >
-            <span>{getCurrentLabel()}</span>
-            <FaChevronDown
-              size={14}
-              className={`ml-2 transition-transform ${open ? "rotate-180" : ""}`}
-            />
+            {option.label}
           </button>
-
-          {open && (
-            <div className="absolute mt-1 w-full bg-white rounded-md shadow-lg border z-50 overflow-hidden">
-              {options.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleSelect(option.value)}
-                  className={`block w-full px-4 py-2 text-left hover:bg-gray-100 ${
-                    sortOption === option.value ? "bg-gray-200 font-semibold" : ""
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
+        ))}
       </div>
-
+    )}
+  </div>
+</div>
     </div>
   );
 };

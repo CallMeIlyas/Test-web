@@ -185,8 +185,8 @@ const baris2 = [
 
 // BARIS 3 (Acrylic & Softcopy)
 const baris3 = [
-  { category: "Acrylic Stand", name: "ACRYLIC STAND 2CM" },
-  { category: "Acrylic Stand", name: "ACRYLIC STAND 3MM" },
+  { category: "Acrylic Stand", name: "2CM" },
+  { category: "Acrylic Stand", name: "3MM" },
   { category: "Softcopy Design", name: "WITH BACKGROUND CUSTOM" },
   { category: "Additional", name: "BACKGROUND CUSTOM" },
 ];
