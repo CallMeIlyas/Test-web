@@ -528,7 +528,7 @@ Deadline date & month = ${form.deadline}
             type="number"
             value={promptValue}
             onChange={(e) => setPromptValue(e.target.value)}
-            placeholder={t("orderSteps.modal.placeholderNumber")}
+            placeholder={t("orderSteps.modal.placeholder")}
             className="w-full border border-gray-300 rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
             min="1"
           />
