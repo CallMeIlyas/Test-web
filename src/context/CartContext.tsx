@@ -12,12 +12,13 @@ export interface CartItem {
   quantity: number;
   imageUrl: string;
   image: string;
-  productType: "frame" | "face" | "background" | "packing" | "additional";
+  productType: "frame" | "face" | "background" | "packing" | "additional" | "shipping";
   parentCartId?: string;
   attributes?: {
     isFace?: boolean;
     isBackground?: boolean;
     isPacking?: boolean;
+    isShipping?: boolean;
     backgroundType?: string;
   };
 }
@@ -34,6 +35,8 @@ interface CartContextType {
         shadingStyle?: string;
         isAcrylicStand?: boolean;
         selectedAcrylicOption?: string;
+        isShipping?: boolean;
+        shippingCost?: number;
       };
     }
   ) => void;
@@ -42,6 +45,7 @@ interface CartContextType {
   clearCart: () => void;
   getProductGroup: (productId: string) => CartItem[];
   updateItemVariant: (cartId: string, newVariation: string) => void;
+  updateShippingCost: (cartId: string, cost: number) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -73,24 +77,43 @@ const addToCart = (
       frameSize?: string;
       shadingStyle?: string;
       isAcrylicStand?: boolean;
-      selectedAcrylicOption?: string; // 🆕 Tambahkan ini
+      selectedAcrylicOption?: string;
+      isShipping?: boolean;
+      shippingCost?: number;
     };
   }
 ) => {
   const { attributes, ...rest } = item;
+  
+  // 🚚 Handle shipping cost item
+  if (attributes?.isShipping) {
+    const shippingItem: CartItem = {
+      ...rest,
+      cartId: uuidv4(),
+      name: "Shipping Cost",
+      productType: "shipping",
+      price: attributes.shippingCost || 0,
+      quantity: 1,
+      variation: "Shipping",
+      attributes: { isShipping: true }
+    };
+    
+    setCart((prev) => [...prev, shippingItem]);
+    return;
+  }
+
   const faceCountLabel = attributes?.faceCount || "";
   const bgSelected = attributes?.backgroundType || "BG Default";
   const includePacking = attributes?.includePacking || false;
   const isAcrylicStand = attributes?.isAcrylicStand || false;
-  const selectedAcrylicOption = attributes?.selectedAcrylicOption || ""; // 🆕
+  const selectedAcrylicOption = attributes?.selectedAcrylicOption || "";
 
   // === Deteksi kategori produk ===
   const isAdditionalOrSoftcopy =
     rest.name?.toLowerCase().includes("additional") ||
     rest.name?.toLowerCase().includes("softcopy");
 
-  // 🆕 ACRYLIC STAND DIPISAH - dia dapat additional items seperti 2D/3D Frame
-  const isStandaloneProduct = isAdditionalOrSoftcopy; // Acrylic tidak termasuk di sini
+  const isStandaloneProduct = isAdditionalOrSoftcopy;
 
   // === AUTO DETECT VARIANT untuk produk Additional tertentu ===
   let detectedVariants: string[] = [];
@@ -118,49 +141,37 @@ const addToCart = (
     }
   }
   
-  // 🆕 DETECT VARIANT UNTUK ACRYLIC STAND
+  // DETECT VARIANT UNTUK ACRYLIC STAND
   else if (isAcrylicStand) {
     detectedVariants = ["15x15cm 1 sisi", "A4 2 sisi", "A3 2 sisi"];
   }
 
-  // 🧹 Bersihkan nama produk agar tidak ada kata "Custom" tapi tetap utuh
+  // Bersihkan nama produk
   const rawName = (rest.name || "").toString().trim();
-
-  // Hilangkan kata "Custom" di mana pun (case-insensitive)
   const cleanProductName = rawName
-    .replace(/\s{2,}/g, " ")       // rapikan spasi ganda
-    .replace(/\s\/\s/g, " / ")     // pastikan jarak di tanda "/"
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s\/\s/g, " / ")
     .trim();
 
   // === Produk utama (otomatis untuk 2D Frame) ===
-
-  // deteksi apakah produk 2D Frame
   const is2DFrame = rest.name?.toLowerCase().includes("2d");
-
-  // ambil atribut frame size & shading style (dikirim dari ProductDetail)
   const frameSize = attributes?.frameSize?.toLowerCase() || "";
   const shadingStyle = attributes?.shadingStyle?.toLowerCase() || "";
 
-  // siapkan daftar harga 2D frame
   const twoDPrices = Object.fromEntries(
     Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
   );
 
-  // tentukan kombinasi key (contoh: "8r bold shading")
   let priceKey = `${frameSize} ${shadingStyle}`.trim();
-
-  // fallback kalau shading kosong → simple shading
   if (!twoDPrices[priceKey] && frameSize) {
     priceKey = `${frameSize} simple shading`;
   }
 
-  // 🆕 TENTUKAN HARGA UNTUK ACRYLIC STAND
   let finalPrice = rest.price;
   
   if (is2DFrame) {
     finalPrice = twoDPrices[priceKey] || rest.price || 0;
   } 
-  // 🆕 LOGIC HARGA ACRYLIC STAND
   else if (isAcrylicStand && selectedAcrylicOption) {
     const acrylicPriceMap: Record<string, number> = {
       "15x15cm 1 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size 15x15cm 1 sisi"] || 324800,
@@ -171,15 +182,13 @@ const addToCart = (
     finalPrice = acrylicPriceMap[selectedAcrylicOption] || rest.price;
   }
 
-  // 🆕 Tentukan product type yang benar
   let productType: CartItem["productType"] = "frame";
   if (isStandaloneProduct) {
     productType = "additional";
   } else if (isAcrylicStand) {
-    productType = "frame"; // atau "acrylic" jika mau buat type baru
+    productType = "frame";
   }
 
-  // 🆕 Buat nama produk yang tepat
   let finalProductName = cleanProductName;
   
   if (is2DFrame) {
@@ -189,19 +198,16 @@ const addToCart = (
       .replace("Ai", "AI")
       .trim()}`;
   }
-  // 🆕 JANGAN UBAH NAMA ACRYLIC STAND - biarkan nama aslinya
   else if (isAcrylicStand) {
     finalProductName = rest.name || "Acrylic Stand";
   }
 
-  // 🆕 TENTUKAN VARIATION DEFAULT UNTUK ACRYLIC STAND
   let defaultVariation = "Frame Kaca";
   if (isStandaloneProduct && detectedVariants.length > 0) {
     defaultVariation = detectedVariants[0];
   } else if (isStandaloneProduct) {
     defaultVariation = "Default";
   } else if (isAcrylicStand && detectedVariants.length > 0) {
-    // 🆕 Default variation untuk Acrylic Stand
     defaultVariation = selectedAcrylicOption || detectedVariants[0];
   }
 
@@ -211,7 +217,7 @@ const addToCart = (
     name: finalProductName,
     cartId: uuidv4(),
     quantity: rest.quantity || 1,
-    price: finalPrice, // 🆕 Gunakan finalPrice yang sudah dihitung
+    price: finalPrice,
     productType: productType,
     variationOptions:
       (isStandaloneProduct || isAcrylicStand) && detectedVariants.length > 0
@@ -219,23 +225,19 @@ const addToCart = (
         : isStandaloneProduct
         ? ["Default"]
         : ["Frame Kaca", "Frame Acrylic"],
-    variation: defaultVariation, // 🆕 Gunakan defaultVariation
+    variation: defaultVariation,
     image: rest.imageUrl,
   };
 
-  // 🧩 🆕 PERBAIKAN DI SINI: 
-  // HANYA Additional dan Softcopy yang standalone (tanpa additional items)
-  // Acrylic Stand, 2D Frame, 3D Frame SEMUA dapat additional items
   if (isStandaloneProduct) {
     setCart((prev) => [...prev, mainCartItem]);
     return;
   }
 
   // === UNTUK SEMUA PRODUK YANG BUKAN ADDITIONAL/SOFTCOPY ===
-  // Termasuk: 2D Frame, 3D Frame, DAN Acrylic Stand
   const newItems: CartItem[] = [mainCartItem];
 
-  // 👤 Additional Face - UNTUK SEMUA (2D/3D Frame DAN Acrylic Stand)
+  // 👤 Additional Face
   if (faceCountLabel) {
     const isAbove10 = faceCountLabel.includes("10");
     newItems.push({
@@ -254,7 +256,7 @@ const addToCart = (
     });
   }
 
-  // 🎨 Background - UNTUK SEMUA (2D/3D Frame DAN Acrylic Stand)
+  // 🎨 Background
   const bgName =
     bgSelected === "BG Custom" ? "Background Custom" : "Background Default";
 
@@ -278,7 +280,7 @@ const addToCart = (
     variationOptions: ["BG Default", "BG Custom"],
   });
 
-  // 📦 Packing (opsional) - UNTUK SEMUA (2D/3D Frame DAN Acrylic Stand)
+  // 📦 Packing (opsional)
   if (includePacking) {
     newItems.push({
       cartId: uuidv4(),
@@ -296,6 +298,22 @@ const addToCart = (
       variationOptions: ["Additional Packing"],
     });
   }
+
+  // 🚚 Shipping Cost - tambahkan otomatis untuk setiap produk utama
+  newItems.push({
+    cartId: uuidv4(),
+    parentCartId: mainCartItem.cartId,
+    id: `${rest.id}-shipping`,
+    name: "Shipping Cost",
+    price: 0, // Default 0, bisa diubah manual
+    quantity: 1,
+    imageUrl: rest.imageUrl,
+    image: rest.imageUrl,
+    productType: "shipping",
+    attributes: { isShipping: true },
+    variation: "Shipping",
+    variationOptions: ["Shipping"],
+  });
 
   setCart((prev) => [...prev, ...newItems]);
 };
@@ -323,7 +341,18 @@ const addToCart = (
   const getProductGroup = (productId: string) =>
     cart.filter((item) => item.id === productId);
 
-// 🧠 Update harga otomatis saat variant diubah
+  // 🚚 Fungsi untuk update shipping cost
+  const updateShippingCost = (cartId: string, cost: number) => {
+    setCart((prev) =>
+      prev.map((p) =>
+        p.cartId === cartId && p.attributes?.isShipping
+          ? { ...p, price: cost }
+          : p
+      )
+    );
+  };
+
+// Update harga otomatis saat variant diubah
 const updateItemVariant = (cartId: string, newVariation: string) => {
   setCart((prev) =>
     prev.map((p) => {
@@ -336,7 +365,6 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
               ? "Background Default"
               : "Background Custom";
         
-          // 🧠 Update harga otomatis saat ubah variant
           updated.price =
             newVariation === "BG Default"
               ? priceList.Additional["Background Default"] || 52800
@@ -349,7 +377,7 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
             : priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || 52800;
         }
         
-        // === Additional Wajah Karikatur (produk tambahan berdiri sendiri) ===
+        // Additional Wajah Karikatur
         if (p.name.toLowerCase().includes("wajah karikatur")) {
           const key = newVariation.includes("10")
             ? "Tambahan Wajah Karikatur diatas 10 wajah"
@@ -358,13 +386,13 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
           updated.price = priceList.Additional[key] || updated.price;
         }
 
-        // === Additional Acrylic ===
+        // Additional Acrylic
         if (p.name.toLowerCase().includes("ganti frame kaca ke acrylic")) {
           const key = `Biaya Tambahan Ganti Frame Kaca ke Acrylic ${newVariation}`;
           updated.price = priceList.Additional[key] || p.price;
         }
 
-        // === Additional Ekspress ===
+        // Additional Ekspress
         if (p.name.toLowerCase().includes("ekspress general")) {
           const key =
             newVariation === "Option 1"
@@ -375,7 +403,7 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
           updated.price = priceList.Additional[key] || p.price;
         }
 
-        // === Additional Wajah Banyak ===
+        // Additional Wajah Banyak
         if (p.name.toLowerCase().includes("wajah banyak")) {
           const key =
             newVariation.includes("10")
@@ -384,7 +412,7 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
           updated.price = priceList.Additional[key] || p.price;
         }
 
-        // 🆕 ACRYLIC STAND 3MM VARIATION PRICE UPDATE
+        // ACRYLIC STAND 3MM VARIATION PRICE UPDATE
         if (p.name.toLowerCase().includes("acrylic stand")) {
           const acrylicPriceMap: Record<string, number> = {
             "15x15cm 1 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size 15x15cm 1 sisi"] || 324800,
@@ -412,6 +440,7 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
         clearCart,
         getProductGroup,
         updateItemVariant,
+        updateShippingCost, // 🆕 Tambahkan fungsi updateShippingCost
       }}
     >
       {children}
