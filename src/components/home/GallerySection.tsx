@@ -2,8 +2,12 @@ import { useState, useEffect, type FC } from "react";
 import type { VideoItem } from "../../types/types";
 import useScrollFloat from "../../utils/scrollFloat"; 
 import { useNavigate } from "react-router-dom";
+import { priceList } from "../../data/priceList";
+import { getPrice } from "../../utils/getPrice";
+import productOptions from "../../data/productOptions";
 import { allProducts } from "../../data/productDataLoader";
 import { useTranslation } from "react-i18next";
+import { useOutletContext } from "react-router-dom";
 
 import IGIcon from "../../assets/Icons/IG.png";
 import TikTokIcon from "../../assets/Icons/TIKTOD2.png";
@@ -18,64 +22,169 @@ import foto3 from "../../assets/karya/foto/foto3.jpeg";
 import foto4 from "../../assets/karya/foto/foto4.jpeg";
 import foto5 from "../../assets/karya/foto/foto5.jpeg";
 
+type LayoutContext = {
+  searchQuery: string;
+  addToCart: (item: any) => void;
+};
+
 const GallerySection: FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { addToCart } = useOutletContext<LayoutContext>();
 
-const handleLabelClick = (label: string, e: React.MouseEvent) => {
-  e.stopPropagation();
+  // Fungsi untuk mendapatkan nama produk lengkap seperti di ProductDetail
+  const getFullProductName = (label: string) => {
+    const cleanLabel = label.split(/[\/\s(]/)[0].trim().toLowerCase();
 
-  // Ambil bagian ukuran utama (misal "12R / A3 30x40cm" -> "12R")
-  const cleanLabel = label.split(/[\/\s(]/)[0].trim().toLowerCase();
-
-  // Ambil semua produk 3D Frame
-  const frameProducts = allProducts.filter(
-    (p) => p.category?.toLowerCase() === "3d frame"
-  );
-
-  // Cari produk 3D Frame yang cocok banget dengan ukuran
-  const strictMatch = frameProducts.find((p) => {
-    const name = p.name.trim().toLowerCase();
-    // nama mengandung ukuran, tapi tidak ada kata "ai"
-    return (
-      name.includes(cleanLabel) &&
-      !name.includes("ai") &&
-      !name.includes("artificial") &&
-      !name.includes("preview")
+    const frameProducts = allProducts.filter(
+      (p) => p.category?.toLowerCase() === "3d frame"
     );
-  });
 
-  if (strictMatch) {
-    navigate(`/product/${strictMatch.id}`, {
-      state: {
-        ...strictMatch,
-        specialVariations: strictMatch.specialVariations || [],
-        details: strictMatch.details || {},
-      },
+    const strictMatch = frameProducts.find((p) => {
+      const name = p.name.trim().toLowerCase();
+      return (
+        name.includes(cleanLabel) &&
+        !name.includes("ai") &&
+        !name.includes("artificial") &&
+        !name.includes("preview")
+      );
     });
-    return;
-  }
 
-  // fallback ke versi biasa kalau gak ketemu
-  const fallback = frameProducts.find((p) =>
-    p.name.trim().toLowerCase().includes(cleanLabel)
-  );
+    if (strictMatch) {
+      const categoryOptions = productOptions["3D Frame"];
+      let fullSizeLabel = strictMatch.name;
 
-  if (fallback) {
-    navigate(`/product/${fallback.id}`, {
-      state: {
-        ...fallback,
-        specialVariations: fallback.specialVariations || [],
-        details: fallback.details || {},
-      },
+      if (categoryOptions?.sizes) {
+        const found = categoryOptions.sizes.find(s => 
+          s.value.startsWith(cleanLabel.toUpperCase())
+        );
+        if (found) fullSizeLabel = found.label;
+      }
+      
+      return `3D Frame ${fullSizeLabel}`;
+    }
+
+    const fallback = frameProducts.find((p) =>
+      p.name.trim().toLowerCase().includes(cleanLabel)
+    );
+
+    if (fallback) {
+      const categoryOptions = productOptions["3D Frame"];
+      let fullSizeLabel = fallback.name;
+
+      if (categoryOptions?.sizes) {
+        const found = categoryOptions.sizes.find(s => 
+          s.value.startsWith(cleanLabel.toUpperCase())
+        );
+        if (found) fullSizeLabel = found.label;
+      }
+      
+      return `3D Frame ${fullSizeLabel}`;
+    }
+
+    return `3D Frame ${label}`;
+  };
+
+  const findMatchingProduct = (label: string) => {
+    const cleanLabel = label.split(/[\/\s(]/)[0].trim().toLowerCase();
+
+    const frameProducts = allProducts.filter(
+      (p) => p.category?.toLowerCase() === "3d frame"
+    );
+
+    const strictMatch = frameProducts.find((p) => {
+      const name = p.name.trim().toLowerCase();
+      return (
+        name.includes(cleanLabel) &&
+        !name.includes("ai") &&
+        !name.includes("artificial") &&
+        !name.includes("preview")
+      );
     });
-  } else {
-    console.warn("❌ Produk tidak ditemukan untuk label:", cleanLabel);
-  }
-};
+
+    if (strictMatch) return strictMatch;
+
+    const fallback = frameProducts.find((p) =>
+      p.name.trim().toLowerCase().includes(cleanLabel)
+    );
+
+    return fallback || null;
+  };
+
+  // Fungsi untuk mendapatkan gambar produk seperti di ProductDetail
+  const getProductImage = (matchingProduct: any) => {
+    // Gunakan imageUrl dari produk jika ada
+    if (matchingProduct?.imageUrl) {
+      return matchingProduct.imageUrl;
+    }
+    
+    // Gunakan allImages pertama jika ada
+    if (matchingProduct?.allImages && matchingProduct.allImages.length > 0) {
+      return matchingProduct.allImages[0];
+    }
+    
+    // Fallback ke gambar default dari ProductDetail
+    return "https://i.ibb.co/z5pYtWj/1000273753.jpg";
+  };
+
+  // Fungsi addToCart yang sama seperti di ProductDetail
+  const handleAddToCart = (selectedPhoto: any) => {
+    const matchingProduct = findMatchingProduct(selectedPhoto.label);
+    const fullProductName = getFullProductName(selectedPhoto.label);
+
+
+    // Default values seperti di ProductDetail
+    const faceCountLabel = "1–9 wajah";
+    const backgroundType = "BG Default";
+    const includePacking = false;
+    const variation = "Frame Kaca";
+
+    // Gunakan gambar produk seperti di ProductDetail, bukan gambar gallery
+    const productImage = getProductImage(matchingProduct);
+
+    const cartItem = {
+      id: matchingProduct.id || `gallery-${selectedPhoto.id}`,
+      name: fullProductName,
+      price: matchingProduct.price || getPrice(selectedPhoto.label.split(/[\/\s(]/)[0].trim().toLowerCase()) || 0,
+      quantity: 1, // Default quantity 1
+      imageUrl: productImage, // Gunakan gambar produk, bukan gambar gallery
+      image: productImage, // Juga set image untuk konsistensi
+      variation: variation,
+      productType: "frame",
+      attributes: {
+        faceCount: faceCountLabel,
+        backgroundType: backgroundType,
+        includePacking: includePacking,
+        frameSize: selectedPhoto.label.split(/[\/\s(]/)[0].trim(),
+        category: "3D Frame"
+      }
+    };
+
+    addToCart(cartItem);
+    
+    
+    // Tutup modal setelah add to cart
+    setSelectedImage(null);
+  };
+
+  const handleLabelClick = (label: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const matchingProduct = findMatchingProduct(label);
+    
+    if (matchingProduct) {
+      navigate(`/product/${matchingProduct.id}`, {
+        state: {
+          ...matchingProduct,
+          specialVariations: matchingProduct.specialVariations || [],
+          details: matchingProduct.details || {},
+        },
+      });
+    }
+  };
 
   useScrollFloat(".scroll-float", {
     yIn: 50,
@@ -105,9 +214,9 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
 
   const photos = [
     { id: 1, image: foto1, label: "A2 (40×55CM)" },
-    { id: 2, image: foto2, label: "10R / A4 25x30cm" },
-    { id: 3, image: foto3, label: "12R / A3 30x40cm" },
-    { id: 4, image: foto4, label: "12R / A3 30x40cm" },
+    { id: 2, image: foto2, label: "10R / 25x30cm" },
+    { id: 3, image: foto3, label: "12R / 30x40cm" },
+    { id: 4, image: foto4, label: "12R / 30x40cm" },
     { id: 5, image: foto5, label: "A0 (80×110 cm)" },
   ];
 
@@ -325,55 +434,106 @@ const handleLabelClick = (label: string, e: React.MouseEvent) => {
         )}
       </section>
 
-{/*full sreen*/}
-    {selectedImage && (
-      <div
-        className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
-        onClick={() => setSelectedImage(null)}
-      >
-        <div className="relative">
-          <img
-            src={selectedImage}
-            alt="Full view"
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
-          />
-          
-          {/* Tombol label di fullscreen */}
-          {(() => {
-            const selectedPhoto = photos.find(photo => photo.image === selectedImage);
-            return selectedPhoto?.label && (
+{/* Fullscreen Modal dengan Tombol Add to Cart Sederhana */}
+{selectedImage && (
+  <div
+    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+    onClick={() => setSelectedImage(null)}
+  >
+    <div className="relative max-w-4xl w-full">
+      <img
+        src={selectedImage}
+        alt="Full view"
+        className="max-h-[80vh] w-full object-contain rounded-lg shadow-2xl"
+      />
+      
+      {/* Tombol info produk di fullscreen */}
+      {(() => {
+        const selectedPhoto = photos.find(photo => photo.image === selectedImage)
+        if (!selectedPhoto?.label) return null
+
+        const matchingProduct = findMatchingProduct(selectedPhoto.label)
+        const fullProductName = getFullProductName(selectedPhoto.label)
+
+        return (
+          <div
+            className="
+              absolute top-4 right-4
+              bg-white
+              rounded-2xl
+              shadow-2xl
+              px-6 py-4
+              flex flex-col gap-3
+              max-w-xs
+            "
+          >
+            <div className="flex flex-col">
+              <span className="text-[16px] font-semibold text-black leading-tight">
+                {fullProductName}
+              </span>
+
+              <span className="text-[20px] font-bold text-[#e45d5d] leading-tight mt-2">
+                {matchingProduct && matchingProduct.price 
+                  ? `Rp ${matchingProduct.price.toLocaleString("id-ID")}`
+                  : (() => {
+                      const cleanLabel = selectedPhoto.label
+                        .split(/[\/\s(]/)[0]
+                        .trim()
+                        .toLowerCase()
+
+                      const price = getPrice(cleanLabel)
+                      return price
+                        ? `Rp ${price.toLocaleString("id-ID")}`
+                        : "Harga tidak tersedia"
+                    })()
+                }
+              </span>
+            </div>
+
+            <div className="flex gap-2 mt-2 justify-start">
               <button
                 onClick={(e) => {
-                  e.stopPropagation();
-                  handleLabelClick(selectedPhoto.label, e);
+                  e.stopPropagation()
+                  handleLabelClick(selectedPhoto.label, e)
                 }}
                 className="
-                  absolute bottom-4 left-4
-                  flex items-center gap-2
-                  bg-white/20 backdrop-blur-lg
-                  text-white font-semibold text-sm md:text-[15px]
-                  px-4 py-[6px] md:py-2
-                  rounded-full shadow-lg border border-white/30
-                  whitespace-nowrap
-                  transition-all duration-300
-                  hover:scale-105 hover:shadow-xl hover:bg-white/30
+                  bg-gray-200 text-black font-semibold
+                  rounded-lg py-2 px-4 text-[14px] text-center
+                  whitespace-nowrap hover:bg-gray-300 transition-colors
+                  flex-1
                 "
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-sm"></span>
-                {selectedPhoto.label}
+                Lihat Detail
               </button>
-            );
-          })()}
-        </div>
-        
-        <button
-          className="absolute top-5 right-5 text-white text-3xl font-bold bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70 transition-colors"
-          onClick={() => setSelectedImage(null)}
-        >
-          ✕
-        </button>
-      </div>
-    )}
+            
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleAddToCart(selectedPhoto)
+                }}
+                className="
+                  bg-[#dcbec1] text-black font-semibold
+                  rounded-lg py-2 px-4 text-[14px] text-center
+                  whitespace-nowrap hover:bg-[#d4b0b4] transition-colors
+                  flex-1
+                "
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        )
+      })()}
+    </div>
+    
+    <button
+      className="absolute top-5 right-5 text-white text-3xl font-bold bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70 transition-colors"
+      onClick={() => setSelectedImage(null)}
+    >
+      ✕
+    </button>
+  </div>
+)}
       </div>
     </>
   );
