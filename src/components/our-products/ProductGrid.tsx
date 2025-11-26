@@ -11,31 +11,56 @@ import { useEffect } from "react";
 export interface ProductGridWithPaginationProps {
   filters: FilterOptions;
   searchQuery: string;
-  sortOption: string; // Tambahkan prop ini
+  sortOption: string;
 }
 
 const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
   filters,
   searchQuery,
-  sortOption, // Terima sortOption dari parent
+  sortOption,
 }) => {
   const PRODUCTS_PER_PAGE = 16;
 
+  // ✅ Step 1: Filter products
   const filteredProducts = useProductFilter(orderedProducts, filters, searchQuery);
   
-  // Hapus useSort karena sekarang sortOption dikontrol dari parent
-  // Gunakan fungsi sorting sederhana di sini
-  const sortedProducts = (() => {
+  // ✅ Step 2: Sort products menggunakan useSort yang sudah diperbaiki
+  const { sortedProducts } = useSort(filteredProducts);
+  
+  // ✅ Step 3: Apply sort option dari parent (untuk override jika perlu)
+  const finalProducts = (() => {
     switch (sortOption) {
-      case "price-asc":
-        return [...filteredProducts].sort((a, b) => a.price - b.price);
-      case "price-desc":
-        return [...filteredProducts].sort((a, b) => b.price - a.price);
       case "best-selling":
-        // Implementasi best-selling logic sesuai kebutuhan
-        return filteredProducts;
+        // Filter best selling products
+        return sortedProducts.filter((p) => {
+          if (!p.displayName || !p.category) return false;
+          const name = p.displayName.toLowerCase().trim();
+          const category = p.category.toLowerCase().trim();
+
+          if (
+            category.includes("3d") &&
+            (/\b12r\b/.test(name) || /\b10r\b/.test(name)) &&
+            !name.includes("by ai")
+          ) {
+            return true;
+          }
+
+          if (category.includes("2d") && /\b8r\b/.test(name)) {
+            return true;
+          }
+
+          if (name.includes("acrylic stand") && name.includes("2cm")) {
+            return true;
+          }
+
+          return false;
+        });
+      case "price-asc":
+        return [...sortedProducts].sort((a, b) => a.price - b.price);
+      case "price-desc":
+        return [...sortedProducts].sort((a, b) => b.price - a.price);
       default:
-        return filteredProducts;
+        return sortedProducts;
     }
   })();
 
@@ -44,7 +69,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
     setCurrentPage,
     totalPages,
     currentProducts,
-  } = usePagination(sortedProducts, PRODUCTS_PER_PAGE);
+  } = usePagination(finalProducts, PRODUCTS_PER_PAGE);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -52,8 +77,6 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
 
   return (
     <div className="pb-10 bg-white">
-      {/* HAPUS SortControls dari sini karena sudah ada di OurProducts */}
-
       {/* === GRID PRODUK === */}
       <div
         className="

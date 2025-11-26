@@ -243,7 +243,9 @@ const defaultSize = isAdditionalOrSoftcopy || isAcrylicStand
       ?.label || product.size || "Custom");
 
 // 🆕 DEFINE normalizedSizeKey SEBELUM DIGUNAKAN
-const normalizedSizeKey = product.size?.toLowerCase().replace(/\s+/g, "") || "";
+const normalizedSizeKey = Object.keys(categoryOptions?.specialCases || {}).find((key) =>
+  key.toLowerCase().includes(product.name.toLowerCase())
+);
 
 const specialVariations =
   product.category === "3D Frame" && normalizedSizeKey
@@ -469,6 +471,24 @@ const handleAddToCart = () => {
   const faceCountLabel = "1–9 wajah";
 
   let productName = "";
+  
+  // 🆕 DETEKSI PRODUK 8R DAN SET PACKAGING OPTIONS
+  const is8RProduct = product.name?.toLowerCase().includes("8r") || 
+                     selectedSizeFrame?.toLowerCase().includes("8r");
+  
+  let packagingPriceMap: Record<string, number> = {};
+  let packagingVariations: string[] = [];
+  let selectedPackagingVariation = "";
+
+  if (is8RProduct) {
+    // 🆕 SET HARGA UNTUK SETIAP PACKAGING OPTION
+    packagingPriceMap = {
+      "Dus Kraft + Paperbag": priceList["3D frame"]?.["8R duskraft"] || 0,
+      "Black Hardbox + Paperbag": priceList["3D frame"]?.["8R hardbox"] || 0,
+    };
+    packagingVariations = Object.keys(packagingPriceMap);
+    selectedPackagingVariation = "Dus Kraft + Paperbag"; // default value
+  }
 
   // 🆕 TAMBAHKAN PENANGANAN KHUSUS UNTUK ACRYLIC STAND
   if (isAcrylicStand) {
@@ -495,13 +515,20 @@ const handleAddToCart = () => {
     productName = product.name || "Default Product Name";
   }
 
+  // 🆕 TENTUKAN VARIATION DEFAULT
+  let defaultVariation = selectedVariation;
+  if (is8RProduct) {
+    // Untuk produk 8R, gunakan packaging variation sebagai default
+    defaultVariation = selectedPackagingVariation;
+  }
+
   addToCart({
     id: product.id || "p1",
-    name: productName, // ← Sekarang nama tidak akan hilang
+    name: productName, // ← NAMA TETAP: "3D Frame 8R / 20x25cm"
     price: displayedPrice,
     quantity: finalQty,
     imageUrl: product.imageUrl,
-    variation: selectedVariation,
+    variation: defaultVariation, // ← VARIATION: "Dus Kraft + Paperbag" atau "Black Hardbox + Paperbag"
     productType: product.category.toLowerCase(),
     attributes: {
       faceCount: faceCountLabel,
@@ -509,8 +536,13 @@ const handleAddToCart = () => {
       includePacking,
       frameSize: selectedSizeFrame,
       shadingStyle: selectedShading,
-      // 🆕 Tambahkan attribute khusus untuk acrylic stand
-      isAcrylicStand: isAcrylicStand
+      isAcrylicStand: isAcrylicStand,
+      // 🆕 TAMBAHKAN PACKAGING ATTRIBUTES UNTUK PRODUK 8R
+      ...(is8RProduct && {
+        packagingPriceMap,
+        packagingVariations,
+        selectedPackagingVariation
+      })
     }
   });
 };
@@ -750,11 +782,11 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                               <div
                                 key={opt.value}
                                 onClick={() => setSelectedProductVariation(opt.value)}
-                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
-                                  selectedProductVariation === opt.value
-                                    ? "border-2 border-blue-500 bg-blue-50"
-                                    : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
-                                }`}
+                                className={`cursor-pointer box-border overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 border ${
+                                    selectedProductVariation?.toLowerCase() === opt.value?.toLowerCase()
+                                      ? "ring-2 ring-blue-500 border-transparent"
+                                      : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
+                                  }`}
                               >
                                 <img
                                   src={getPackagingImage(
@@ -800,9 +832,9 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                                         setShowPreview(false);
                                       }
                                     }}
-                                    className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                    className={`cursor-pointer box-border overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 border ${
                                       selectedSizeFrame === opt.value
-                                        ? "border-2 border-blue-500 bg-blue-50"
+                                        ? "ring-2 ring-blue-500 border-transparent"
                                         : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
                                     }`}
                                   >
@@ -831,9 +863,9 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                                   <div
                                     key={opt.value}
                                     onClick={() => setSelectedShading(opt.value)}
-                                    className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                    className={`cursor-pointer box-border overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 border ${
                                       selectedShading === opt.value
-                                        ? "border-2 border-blue-500 bg-blue-50"
+                                        ? "ring-2 ring-blue-500 border-transparent"
                                         : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
                                     }`}
                                   >
@@ -901,9 +933,9 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                                     prev === option ? "" : option
                                   )
                                 }
-                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                className={`cursor-pointer box-border overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 border ${
                                   selectedKarikaturOption === option
-                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    ? "ring-2 ring-blue-500 border-transparent"
                                     : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
                                 }`}
                               >
@@ -943,9 +975,9 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                                       return isSame ? "" : size;
                                     });
                                   }}
-                                  className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                  className={`cursor-pointer box-border overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 border ${
                                     selectedSizeFrame === size
-                                      ? "border-2 border-blue-500 bg-blue-50"
+                                      ? "ring-2 ring-blue-500 border-transparent"
                                       : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
                                   }`}
                                 >
@@ -982,9 +1014,9 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                                     prev === option ? "" : option
                                   )
                                 }
-                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                className={`cursor-pointer box-border overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 border ${
                                   selectedFaceOptionCustom === option
-                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    ? "ring-2 ring-blue-500 border-transparent"
                                     : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
                                 }`}
                               >
@@ -1023,9 +1055,9 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                                     prev === option.label ? "" : option.label
                                   )
                                 }
-                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                className={`cursor-pointer box-border overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 border ${
                                   selectedExpressOption === option.label
-                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    ? "ring-2 ring-blue-500 border-transparent"
                                     : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
                                 }`}
                               >
@@ -1060,9 +1092,9 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                                     prev === option.key ? "" : option.key
                                   )
                                 }
-                                className={`cursor-pointer border rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 ${
+                                className={`cursor-pointer box-border overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1.5 md:gap-2 p-2 md:p-3 w-28 h-28 md:w-36 md:h-36 transition-all duration-150 border ${
                                   selectedAcrylicOption === option.key
-                                    ? "border-2 border-blue-500 bg-blue-50"
+                                    ? "ring-2 ring-blue-500 border-transparent"
                                     : "border-gray-300 hover:border-blue-400 hover:shadow-sm"
                                 }`}
                               >

@@ -15,6 +15,8 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [selectedMainCategories, setSelectedMainCategories] = useState<Set<string>>(new Set());
   const [selectedSubcategories, setSelectedSubcategories] = useState<Set<string>>(new Set());
+  const [selectedShippedFrom, setSelectedShippedFrom] = useState<Set<string>>(new Set());
+  const [selectedShippedTo, setSelectedShippedTo] = useState<Set<string>>(new Set());
 
   // Map kategori terjemahan → nama asli
   const translationMap: Record<string, string> = {
@@ -135,17 +137,35 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Checkbox filter umum
-  const handleCheckboxChange = (
-    type: keyof FilterOptions,
-    value: string,
-    isChecked: boolean
-  ) => {
+  // Handle Shipped From dengan tracking state
+  const handleShippedFromChange = (location: string, isChecked: boolean) => {
+    setSelectedShippedFrom((prev) => {
+      const newSet = new Set(prev);
+      isChecked ? newSet.add(location) : newSet.delete(location);
+      return newSet;
+    });
+
     onFilterChange((prev) => {
-      const newFilters = { ...prev };
-      if (isChecked) newFilters[type] = [...newFilters[type], value];
-      else newFilters[type] = newFilters[type].filter((item) => item !== value);
-      return newFilters;
+      const newShippedFrom = isChecked
+        ? [...prev.shippedFrom, location]
+        : prev.shippedFrom.filter((loc) => loc !== location);
+      return { ...prev, shippedFrom: newShippedFrom };
+    });
+  };
+
+  // Handle Shipped To dengan tracking state
+  const handleShippedToChange = (destination: string, isChecked: boolean) => {
+    setSelectedShippedTo((prev) => {
+      const newSet = new Set(prev);
+      isChecked ? newSet.add(destination) : newSet.delete(destination);
+      return newSet;
+    });
+
+    onFilterChange((prev) => {
+      const newShippedTo = isChecked
+        ? [...prev.shippedTo, destination]
+        : prev.shippedTo.filter((dest) => dest !== destination);
+      return { ...prev, shippedTo: newShippedTo };
     });
   };
 
@@ -267,14 +287,20 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
           >
             <input
               type="checkbox"
-              id={`desktop-${item.toLowerCase()}`}
-              className="w-4 h-4 border rounded"
-              onChange={(e) =>
-                handleCheckboxChange("shippedFrom", item, e.target.checked)
-              }
+              id={`desktop-from-${item.toLowerCase()}`}
+              checked={selectedShippedFrom.has(item)}
+              onChange={(e) => handleShippedFromChange(item, e.target.checked)}
+              className="appearance-none w-4 h-4 border border-black rounded-sm
+                         cursor-pointer transition-all duration-200 relative
+                         checked:bg-white checked:border-black
+                         after:content-[''] after:absolute after:hidden checked:after:block
+                         after:w-[6px] after:h-[10px]
+                         after:border-r-[2px] after:border-b-[2px]
+                         after:border-black after:top-[0px] after:left-[5px]
+                         after:rotate-45"
             />
             <label
-              htmlFor={`desktop-${item.toLowerCase()}`}
+              htmlFor={`desktop-from-${item.toLowerCase()}`}
               className="text-sm cursor-pointer hover:text-primary"
             >
               {item}
@@ -289,21 +315,27 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
         <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
           {t("side.shippedTo")}
         </h3>
-        {["worldwide"].map((dest) => (
+        {["Worldwide"].map((dest) => (
           <div
             key={dest}
             className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
           >
             <input
               type="checkbox"
-              id={`desktop-${dest.toLowerCase()}`}
-              className="w-4 h-4 border rounded"
-              onChange={(e) =>
-                handleCheckboxChange("shippedTo", dest, e.target.checked)
-              }
+              id={`desktop-to-${dest.toLowerCase()}`}
+              checked={selectedShippedTo.has(dest)}
+              onChange={(e) => handleShippedToChange(dest, e.target.checked)}
+              className="appearance-none w-4 h-4 border border-black rounded-sm
+                         cursor-pointer transition-all duration-200 relative
+                         checked:bg-white checked:border-black
+                         after:content-[''] after:absolute after:hidden checked:after:block
+                         after:w-[6px] after:h-[10px]
+                         after:border-r-[2px] after:border-b-[2px]
+                         after:border-black after:top-[0px] after:left-[5px]
+                         after:rotate-45"
             />
             <label
-              htmlFor={`desktop-${dest.toLowerCase()}`}
+              htmlFor={`desktop-to-${dest.toLowerCase()}`}
               className="text-sm cursor-pointer hover:text-primary"
             >
               {t(`side.to.${dest.toLowerCase()}`)}
@@ -370,21 +402,27 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
         <h3 className="font-nataliecaydence text-lg font-light mb-4 ml-2">
           {t("side.shippedTo")}
         </h3>
-        {["worldwide"].map((dest) => (
+        {["Worldwide"].map((dest) => (
           <div
             key={dest}
             className="font-poppinsRegular flex items-center gap-2 mb-3 ml-4"
           >
             <input
               type="checkbox"
-              id={`mobile-${dest.toLowerCase()}`}
-              className="w-4 h-4 border rounded"
-              onChange={(e) =>
-                handleCheckboxChange("shippedTo", dest, e.target.checked)
-              }
+              id={`mobile-to-${dest.toLowerCase()}`}
+              checked={selectedShippedTo.has(dest)}
+              onChange={(e) => handleShippedToChange(dest, e.target.checked)}
+              className="appearance-none w-4 h-4 border border-black rounded-sm
+                         cursor-pointer transition-all duration-200 relative
+                         checked:bg-white checked:border-black
+                         after:content-[''] after:absolute after:hidden checked:after:block
+                         after:w-[6px] after:h-[10px]
+                         after:border-r-[2px] after:border-b-[2px]
+                         after:border-black after:top-[0px] after:left-[5px]
+                         after:rotate-45"
             />
             <label
-              htmlFor={`mobile-${dest.toLowerCase()}`}
+              htmlFor={`mobile-to-${dest.toLowerCase()}`}
               className="text-sm cursor-pointer hover:text-primary"
             >
               {t(`side.to.${dest.toLowerCase()}`)}

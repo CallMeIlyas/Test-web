@@ -20,6 +20,10 @@ export interface CartItem {
     isPacking?: boolean;
     isShipping?: boolean;
     backgroundType?: string;
+    // 🆕 TAMBAHKAN ATTRIBUTES BARU
+    is8RProduct?: boolean;
+    packagingPriceMap?: Record<string, number>;
+    packagingType?: string;
   };
 }
 
@@ -37,6 +41,10 @@ interface CartContextType {
         selectedAcrylicOption?: string;
         isShipping?: boolean;
         shippingCost?: number;
+        // 🆕 UPDATE DENGAN ATTRIBUTES BARU
+        packagingPriceMap?: Record<string, number>;
+        packagingVariations?: string[];
+        selectedPackagingVariation?: string;
       };
     }
   ) => void;
@@ -80,6 +88,9 @@ const addToCart = (
       selectedAcrylicOption?: string;
       isShipping?: boolean;
       shippingCost?: number;
+      packagingPriceMap?: Record<string, number>;
+      packagingVariations?: string[];
+      selectedPackagingVariation?: string;
     };
   }
 ) => {
@@ -107,6 +118,13 @@ const addToCart = (
   const includePacking = attributes?.includePacking || false;
   const isAcrylicStand = attributes?.isAcrylicStand || false;
   const selectedAcrylicOption = attributes?.selectedAcrylicOption || "";
+  
+  // 🆕 DETEKSI APAKAH INI PRODUK 8R DAN ADA PACKAGING VARIATIONS
+  const is8RProduct = rest.name?.toLowerCase().includes("8r") || 
+                     attributes?.frameSize?.toLowerCase().includes("8r");
+  const packagingPriceMap = attributes?.packagingPriceMap || {};
+  const packagingVariations = attributes?.packagingVariations || [];
+  const selectedPackagingVariation = attributes?.selectedPackagingVariation || "";
 
   // === Deteksi kategori produk ===
   const isAdditionalOrSoftcopy =
@@ -146,6 +164,11 @@ const addToCart = (
     detectedVariants = ["15x15cm 1 sisi", "A4 2 sisi", "A3 2 sisi"];
   }
 
+  // 🆕 DETECT VARIANT UNTUK PACKAGING 8R
+  else if (is8RProduct && packagingVariations.length > 0) {
+    detectedVariants = packagingVariations;
+  }
+
   // Bersihkan nama produk
   const rawName = (rest.name || "").toString().trim();
   const cleanProductName = rawName
@@ -181,6 +204,10 @@ const addToCart = (
     
     finalPrice = acrylicPriceMap[selectedAcrylicOption] || rest.price;
   }
+  // 🆕 UPDATE HARGA BERDASARKAN PACKAGING VARIATION UNTUK 8R
+  else if (is8RProduct && selectedPackagingVariation && packagingPriceMap[selectedPackagingVariation]) {
+    finalPrice = packagingPriceMap[selectedPackagingVariation] || rest.price;
+  }
 
   let productType: CartItem["productType"] = "frame";
   if (isStandaloneProduct) {
@@ -210,8 +237,12 @@ const addToCart = (
   } else if (isAcrylicStand && detectedVariants.length > 0) {
     defaultVariation = selectedAcrylicOption || detectedVariants[0];
   }
+  // 🆕 SET DEFAULT VARIATION UNTUK PACKAGING 8R
+  else if (is8RProduct && detectedVariants.length > 0) {
+    defaultVariation = selectedPackagingVariation || detectedVariants[0];
+  }
 
-  // buat produk utama
+  // 🆕 BUAT PRODUK UTAMA DENGAN PACKAGING VARIATIONS
   const mainCartItem: CartItem = {
     ...rest,
     name: finalProductName,
@@ -220,13 +251,19 @@ const addToCart = (
     price: finalPrice,
     productType: productType,
     variationOptions:
-      (isStandaloneProduct || isAcrylicStand) && detectedVariants.length > 0
+      (isStandaloneProduct || isAcrylicStand || is8RProduct) && detectedVariants.length > 0
         ? detectedVariants
         : isStandaloneProduct
         ? ["Default"]
         : ["Frame Kaca", "Frame Acrylic"],
     variation: defaultVariation,
     image: rest.imageUrl,
+    // 🆕 SIMPAN PACKAGING PRICE MAP DI ATTRIBUTES UNTUK UPDATE HARGA
+    attributes: {
+      ...rest.attributes,
+      ...(is8RProduct && packagingPriceMap && { packagingPriceMap }),
+      ...(is8RProduct && { is8RProduct: true })
+    }
   };
 
   if (isStandaloneProduct) {
@@ -280,15 +317,14 @@ const addToCart = (
     variationOptions: ["BG Default", "BG Custom"],
   });
 
-  // 📦 Packing (opsional)
-  if (includePacking) {
+  // 📦 Additional Packing (opsional) - HANYA UNTUK PRODUK 8R
+  if (includePacking && is8RProduct) {
     newItems.push({
       cartId: uuidv4(),
       parentCartId: mainCartItem.cartId,
       id: `${rest.id}-packing`,
       name: "Additional Packing",
-      price:
-        priceList.Additional["Biaya Tambahan Packing (Biasa)"] || 52800,
+      price: priceList.Additional["Biaya Tambahan Packing untuk Order Banyak via Kargo"] || 52800,
       quantity: 1,
       imageUrl: rest.imageUrl,
       image: rest.imageUrl,
@@ -341,7 +377,6 @@ const addToCart = (
   const getProductGroup = (productId: string) =>
     cart.filter((item) => item.id === productId);
 
-  // 🚚 Fungsi untuk update shipping cost
   const updateShippingCost = (cartId: string, cost: number) => {
     setCart((prev) =>
       prev.map((p) =>
@@ -376,7 +411,13 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
             ? priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"] || 62800
             : priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || 52800;
         }
-        
+
+        // 🆕 UPDATE HARGA PACKAGING 8R BERDASARKAN VARIATION
+        if (p.attributes?.is8RProduct && p.attributes?.packagingPriceMap) {
+          updated.price = p.attributes.packagingPriceMap[newVariation] || p.price;
+          // ❌ TIDAK UPDATE NAMA - NAMA TETAP SAMA
+        }
+
         // Additional Wajah Karikatur
         if (p.name.toLowerCase().includes("wajah karikatur")) {
           const key = newVariation.includes("10")
@@ -440,7 +481,7 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
         clearCart,
         getProductGroup,
         updateItemVariant,
-        updateShippingCost, // 🆕 Tambahkan fungsi updateShippingCost
+        updateShippingCost,
       }}
     >
       {children}

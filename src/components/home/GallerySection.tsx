@@ -33,6 +33,8 @@ const GallerySection: FC = () => {
 
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
   const { addToCart } = useOutletContext<LayoutContext>();
 
   // Fungsi untuk mendapatkan nama produk lengkap seperti di ProductDetail
@@ -434,100 +436,110 @@ const GallerySection: FC = () => {
         )}
       </section>
 
-{/* Fullscreen Modal dengan Tombol Add to Cart Sederhana */}
+{/* Fullscreen Modal */}
 {selectedImage && (
   <div
     className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
     onClick={() => setSelectedImage(null)}
   >
-    <div className="relative max-w-4xl w-full">
-      <img
-        src={selectedImage}
-        alt="Full view"
-        className="max-h-[80vh] w-full object-contain rounded-lg shadow-2xl"
-      />
+    <div className="w-full flex items-center justify-center">
       
-      {/* Tombol info produk di fullscreen */}
-      {(() => {
-        const selectedPhoto = photos.find(photo => photo.image === selectedImage)
-        if (!selectedPhoto?.label) return null
+      {/* Gambar jadi parent relatif */}
+      <div className="relative">
+        <img
+          src={selectedImage}
+          alt="Full view"
+          className="
+            max-h-[92vh]
+            w-auto
+            max-w-full
+            object-contain
+            rounded-lg
+            shadow-2xl
+          "
+        />
 
-        const matchingProduct = findMatchingProduct(selectedPhoto.label)
-        const fullProductName = getFullProductName(selectedPhoto.label)
+        {/* Box info berada DI DALAM gambar */}
+        {(() => {
+          const selectedPhoto = photos.find(photo => photo.image === selectedImage)
+          if (!selectedPhoto?.label) return null
 
-        return (
-          <div
-            className="
-              absolute top-4 right-4
-              bg-white
-              rounded-2xl
-              shadow-2xl
-              px-6 py-4
-              flex flex-col gap-3
-              max-w-xs
-            "
-          >
-            <div className="flex flex-col">
-              <span className="text-[16px] font-semibold text-black leading-tight">
-                {fullProductName}
-              </span>
+          const matchingProduct = findMatchingProduct(selectedPhoto.label)
+          const fullProductName = getFullProductName(selectedPhoto.label)
 
-              <span className="text-[20px] font-bold text-[#e45d5d] leading-tight mt-2">
-                {matchingProduct && matchingProduct.price 
-                  ? `Rp ${matchingProduct.price.toLocaleString("id-ID")}`
-                  : (() => {
-                      const cleanLabel = selectedPhoto.label
-                        .split(/[\/\s(]/)[0]
-                        .trim()
-                        .toLowerCase()
+          return (
+            <div
+              className="
+                absolute top-4 right-0
+                bg-white
+                rounded-l-3xl
+                shadow-2xl
+                px-5 py-4
+                flex flex-col gap-2
+                w-auto
+                max-w-[70vw]
+              "
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col">
+                <span className="text-[16px] font-semibold text-black leading-tight">
+                  {fullProductName}
+                </span>
 
-                      const price = getPrice(cleanLabel)
-                      return price
-                        ? `Rp ${price.toLocaleString("id-ID")}`
-                        : "Harga tidak tersedia"
-                    })()
-                }
-              </span>
+                <span className="text-[20px] font-bold text-red-500 leading-tight mt-1">
+                  {matchingProduct
+                    ? `Rp ${matchingProduct.price.toLocaleString("id-ID")}`
+                    : currentLang === "id" ? "Harga tidak tersedia" : "Price not available"}
+                </span>
+              </div>
+
+              <div className="flex gap-2 mt-1 justify-start">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    const price = matchingProduct?.price || getPrice(selectedPhoto.label.split(/[\/\s(]/)[0].trim().toLowerCase()) || 0
+                    
+                    const message = `Halo Admin Little Amora, saya tertarik dengan produk:\n\n${fullProductName}\nHarga: Rp ${price.toLocaleString("id-ID")}\n\nBisa info lebih detail?`
+                    const encodedMessage = encodeURIComponent(message)
+                    window.open(`https://wa.me/6281380340307?text=${encodedMessage}`, '_blank')
+                  }}
+                  className="
+                    bg-[#dcbec1] text-black font-poppinsSemiBold
+                    rounded-lg py-2 px-6 text-[14px]
+                    whitespace-nowrap hover:bg-gray-300
+                  "
+                >
+                  {currentLang === "id" ? "Chat Admin" : "Chat Admin"}
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleAddToCart(selectedPhoto)
+                  }}
+                  className="
+                    bg-[#dcbec1] text-black font-poppinsSemiBold
+                    rounded-lg py-2 px-6 text-[14px]
+                    whitespace-nowrap hover:bg-[#d4b0b4]
+                  "
+                >
+                  {currentLang === "id" ? "Masukin ke Keranjang" : "Add to Cart"}
+                </button>
+              </div>
             </div>
+          )
+        })()}
+      </div>
 
-            <div className="flex gap-2 mt-2 justify-start">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleLabelClick(selectedPhoto.label, e)
-                }}
-                className="
-                  bg-gray-200 text-black font-semibold
-                  rounded-lg py-2 px-4 text-[14px] text-center
-                  whitespace-nowrap hover:bg-gray-300 transition-colors
-                  flex-1
-                "
-              >
-                Lihat Detail
-              </button>
-            
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleAddToCart(selectedPhoto)
-                }}
-                className="
-                  bg-[#dcbec1] text-black font-semibold
-                  rounded-lg py-2 px-4 text-[14px] text-center
-                  whitespace-nowrap hover:bg-[#d4b0b4] transition-colors
-                  flex-1
-                "
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        )
-      })()}
     </div>
-    
+
+    {/* Close button */}
     <button
-      className="absolute top-5 right-5 text-white text-3xl font-bold bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70 transition-colors"
+      className="
+        absolute top-5 right-5 text-white text-3xl font-bold
+        bg-black/50 rounded-full w-10 h-10 flex items-center justify-center
+        hover:bg-black/70 transition-colors
+      "
       onClick={() => setSelectedImage(null)}
     >
       ✕

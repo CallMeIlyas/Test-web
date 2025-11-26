@@ -11,18 +11,18 @@ interface Product {
   price: number;
   shippedFrom: string;
   shippedTo: string[];
-  displayName?: string; // ✅ dukung nama tampil
+  displayName?: string;
   allImages?: string[];
 }
 
 export const useSort = (products: Product[]) => {
   const [sortOption, setSortOption] = useState("default");
 
-  // ✅ Logika penentuan produk Best Selling
+  // ✅ Fungsi penentuan produk Best Selling
   const isBestSelling = (p: Product) => {
     if (!p.displayName || !p.category) return false;
 
-    const name = (p.displayName || p.name).toLowerCase().trim();
+    const name = p.displayName.toLowerCase().trim();
     const category = p.category.toLowerCase().trim();
 
     // ✅ 3D Category: hanya 12R & 10R (bukan "by AI")
@@ -39,8 +39,8 @@ export const useSort = (products: Product[]) => {
       return true;
     }
 
-    // ✅ Acrylic Stand 2cm (atau 2 cm)
-    if (name.includes("acrylic stand") && (name.includes("2cm") || name.includes("2 cm"))) {
+    // ✅ Acrylic Stand 2cm
+    if (name.includes("acrylic stand") && name.includes("2cm")) {
       return true;
     }
 

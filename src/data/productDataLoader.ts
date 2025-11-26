@@ -142,26 +142,26 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
     const cleanSubcategory = subcategory?.trim() || null;
     const fileName = cleanSubcategory || `Product ${index + 1}`;
 
-    return {
-      id: `prod-${index + 1}`,
-      imageUrl: mainImage,
-      name: fileName,
-      displayName: subcategory
-        ? `${mappedCategory} ${subcategory.replace(/-\s*\d+\s*x\s*\d+\s*cm/i, "").trim()}`
-        : mappedCategory,
-      size: "Custom",
-      category: mappedCategory,
-      subcategory: subcategory || null,
-      fullPath: `${mappedCategory}${subcategory ? " / " + subcategory : ""}`,
-      price: getPrice(mappedCategory, fileName),
-      shippedFrom: ["Bogor", "Jakarta"][index % 2],
-      shippedTo: ["Worldwide"],
-      allImages: decodedImages,
-      shadingOptions:
-        mappedCategory === "2D Frame" ? get2DShadingOptions() : undefined,
-      sizeFrameOptions:
-        mappedCategory === "2D Frame" ? get2DSizeFrameOptions() : undefined,
-    };
+return {
+  id: `prod-${index + 1}`,
+  imageUrl: mainImage,
+  name: fileName,
+  displayName: subcategory
+    ? `${mappedCategory} ${subcategory.replace(/-\s*\d+\s*x\s*\d+\s*cm/i, "").trim()}`
+    : mappedCategory,
+  size: "Custom",
+  category: mappedCategory,
+  subcategory: subcategory || null,
+  fullPath: `${mappedCategory}${subcategory ? " / " + subcategory : ""}`,
+  price: getPrice(mappedCategory, fileName),
+  shippedFrom: ["Bogor", "Jakarta"], // SEMUA produk dari kedua lokasi
+  shippedTo: ["Worldwide"],
+  allImages: decodedImages,
+  shadingOptions:
+    mappedCategory === "2D Frame" ? get2DShadingOptions() : undefined,
+  sizeFrameOptions:
+    mappedCategory === "2D Frame" ? get2DSizeFrameOptions() : undefined,
+};
   }
 );
 
