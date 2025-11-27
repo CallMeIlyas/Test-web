@@ -39,9 +39,6 @@ const ProductCard: FC<ProductCardProps> = ({ imageUrl, name }) => {
           alt={name}
           className="w-full aspect-square object-cover rounded-[8px] mb-[12px]"
         />
-        <p className="mt-[8px] font-bold text-[#555] text-[16px] hidden group-hover:block">
-          {name}
-        </p>
       </div>
 
       {/* ✅ MODAL PREVIEW */}
@@ -51,32 +48,42 @@ const ProductCard: FC<ProductCardProps> = ({ imageUrl, name }) => {
               className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center"
               onClick={() => setOpenModal(false)}
             >
-              <div
-                className="relative animate-fadeZoomCenter max-w-[85vw] max-h-[90vh]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="absolute top-3 right-3 flex gap-2 z-50">
+            <div
+              className="relative animate-fadeZoomCenter max-w-[85vw] max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Overlay tombol dan teks DI ATAS GAMBAR */}
+              <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-50">
+                
+                {/* Nama di dalam foto */}
+                <p className="bg-white/80 px-2 py-1 rounded text-black font-bold text-[16px]">
+                  {name}
+                </p>
+            
+                {/* Tombol kanan */}
+                <div className="flex gap-2">
                   <button
                     onClick={handleScreenshot}
-                    className="bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200 text-sm"
+                    className="bg-white text-black px-3 py-1 rounded-md shadow text-sm"
                   >
                     Save Picture
                   </button>
                   <button
                     onClick={() => setOpenModal(false)}
-                    className="bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200 text-sm"
+                    className="bg-white text-black px-3 py-1 rounded-md shadow text-sm"
                   >
                     ✕
                   </button>
                 </div>
-        
+              </div>
+            
               <img
                 id="preview-image"
                 src={imageUrl}
                 alt={name}
-                className="block w-auto max-w-[70vw] max-h-[75vh] mx-auto rounded-lg object-contain shadow-xl transition-transform duration-300 hover:scale-[1.02]"
+                className="block w-auto max-w-[70vw] max-h-[75vh] mx-auto rounded-lg object-contain shadow-xl"
               />
-              </div>
+            </div>
             </div>,
             document.body
           )}

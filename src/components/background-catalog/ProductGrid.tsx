@@ -27,6 +27,15 @@ const folderToCategory: Record<string, string> = {
   "plakat": "Acrylic Stand",
 };
 
+// --- Daftar gambar FREQUENTLY USED (berdasarkan nama file) ---
+const FREQUENTLY_USED_NAMES = [
+  "HES-FEB25",
+  "APR-MAY23",
+  "CAT-DEC20",
+  "BIM-JAN24",
+  "EKA-JAN25"
+];
+
 // --- Import semua gambar ---
 const allImages = import.meta.glob(
   "/src/assets/bg-catalog/*/*.{jpg,JPG,jpeg,png}",
@@ -51,25 +60,49 @@ const allProducts: Product[] = Object.keys(allImages).map((path, i) => {
 interface ProductGridWithPaginationProps {
   filters: FilterOptions;
   searchQuery?: string;
-  sortOption?: string; // Tambahkan prop ini
+  sortOption?: string;
 }
 
 const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({ 
   filters, 
   searchQuery = "",
-  sortOption = "all" // Default value
+  sortOption = "all"
 }) => {
   const PRODUCTS_PER_PAGE = 16;
   const [currentPage, setCurrentPage] = useState(1);
 
-  // --- Filter kategori + search ---
+  // --- Helper: Check if product is frequently used ---
+  const isFrequentlyUsed = (product: Product): boolean => {
+    // Cek apakah nama produk ada di daftar frequently used
+    const isInList = FREQUENTLY_USED_NAMES.some(name => 
+      product.name.toUpperCase().includes(name.toUpperCase())
+    );
+    
+    // ATAU apakah dari kategori Company/Office/Brand
+    const isCompanyCategory = product.category === "Company/Office/Brand";
+    
+    return isInList || isCompanyCategory;
+  };
+
+  // --- Filter kategori + search + frequently/rarely ---
   const filteredProducts = allProducts.filter((product) => {
-    // filter kategori
+    // 1. Filter berdasarkan sortOption (frequently/rarely)
+    if (sortOption === "frequently-used") {
+      if (!isFrequentlyUsed(product)) {
+        return false;
+      }
+    } else if (sortOption === "rarely-used") {
+      if (isFrequentlyUsed(product)) {
+        return false;
+      }
+    }
+
+    // 2. Filter kategori (dari sidebar)
     if (filters.categories.length > 0 && !filters.categories.includes(product.category)) {
       return false;
     }
     
-    // filter search
+    // 3. Filter search
     if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
@@ -77,12 +110,42 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
     return true;
   });
 
-  // --- Sorting ---
+  // --- Sorting (alphabetical + priority for frequently used) ---
   const sortedProducts = [...filteredProducts].sort((a, b) => {
+    // Jika sortOption adalah "frequently-used", prioritaskan gambar spesifik
+    if (sortOption === "frequently-used") {
+      const aIsSpecific = FREQUENTLY_USED_NAMES.some(name => 
+        a.name.toUpperCase().includes(name.toUpperCase())
+      );
+      const bIsSpecific = FREQUENTLY_USED_NAMES.some(name => 
+        b.name.toUpperCase().includes(name.toUpperCase())
+      );
+
+      // Jika a adalah gambar spesifik tapi b bukan, a lebih dulu
+      if (aIsSpecific && !bIsSpecific) return -1;
+      // Jika b adalah gambar spesifik tapi a bukan, b lebih dulu
+      if (!aIsSpecific && bIsSpecific) return 1;
+
+      // Jika keduanya gambar spesifik, urutkan sesuai urutan di FREQUENTLY_USED_NAMES
+      if (aIsSpecific && bIsSpecific) {
+        const aIndex = FREQUENTLY_USED_NAMES.findIndex(name => 
+          a.name.toUpperCase().includes(name.toUpperCase())
+        );
+        const bIndex = FREQUENTLY_USED_NAMES.findIndex(name => 
+          b.name.toUpperCase().includes(name.toUpperCase())
+        );
+        return aIndex - bIndex;
+      }
+
+      // Jika keduanya bukan gambar spesifik, sort alphabetically
+      return a.name.localeCompare(b.name);
+    }
+
+    // Sorting biasa untuk option lainnya
     if (sortOption === "name-asc") return a.name.localeCompare(b.name);
     if (sortOption === "name-desc") return b.name.localeCompare(a.name);
     if (sortOption === "size-asc") return a.size.localeCompare(b.size);
-    if (sortOption === "size-desc") return b.size.localeCompare(b.size);
+    if (sortOption === "size-desc") return b.size.localeCompare(a.size);
     return 0;
   });
 
@@ -99,8 +162,6 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
 
   return (
     <div className="pb-10 bg-white">
-      {/* HAPUS SortControl dari sini karena sudah ada di BackgroundCatalog */}
-
       {/* Product Grid - responsive */}
       <div className="
         grid 

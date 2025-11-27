@@ -194,7 +194,7 @@ const DesktopLayout: React.FC<{ location: LocationSectionProps['location']; isLa
   const { t } = useTranslation();
 
   return (
-    <div className={`mx-16 ${!isLast ? "mb-20 pb-10" : "mb-8"}`}>
+    <div className={`mx-16 ${!isLast ? "pb-10" : "mb-8"}`}>
       {/* 📍 Location Info */}
       <div className="flex items-start gap-3">
         <img
@@ -263,7 +263,11 @@ const DesktopLayout: React.FC<{ location: LocationSectionProps['location']; isLa
       </div>
 
       {/* 🚚 Shipping Methods */}
-      <div className="border border-gray-600 rounded-[30px] p-4 max-w-xl mt-8 mx-auto">
+<div
+  className={`border border-gray-600 rounded-[30px] p-4 max-w-xl mt-8 mx-auto 
+    ${isLast ? "mb-32" : ""}
+  `}
+>
         {location.shippingMethods.map((method, index) => {
           const courierName =
             typeof method === "string"

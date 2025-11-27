@@ -27,15 +27,15 @@ interface HeaderProps {
 }    
     
 const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {    
-  const currentLang = i18n.language;    
   const location = useLocation();    
   const [isLangOpen, setIsLangOpen] = useState(false);    
-  const [menuOpen, setMenuOpen] = useState(false);    
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState(i18n.language);    
   const isMobile = useIsMobile();    
 
   const { t } = useTranslation();    
     
-  // ✅ Refs untuk input search    
+  // Refs untuk input search    
   const searchInputRef = useRef<HTMLInputElement>(null);    
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);    
     
@@ -45,6 +45,28 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
       : searchInputRef.current?.value || "";    
     onSearch(value);    
   };    
+
+  // Handler untuk mengganti bahasa
+  const handleLanguageChange = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+    setCurrentLang(langCode);
+    localStorage.setItem("i18nextLng", langCode);
+    localStorage.setItem("i18n-manual-change", "true"); // Tandai bahwa user sudah manual pilih
+    setIsLangOpen(false);
+  };
+
+  // Update currentLang saat i18n.language berubah
+  useEffect(() => {
+    const handleLanguageChanged = (lng: string) => {
+      setCurrentLang(lng);
+    };
+
+    i18n.on('languageChanged', handleLanguageChanged);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
+  }, []);
     
   // === Refs untuk animasi GSAP ===    
   const navRef = useRef<HTMLDivElement | null>(null);    
@@ -108,7 +130,7 @@ const DesktopLayout = () => (
       >    
         {/* === Menu kiri === */}    
         <ul className={`flex gap-6 p-0 m-0 mr-auto text-black font-poppinsBold flex-shrink-0 max-w-[50%] whitespace-nowrap ${
-          i18n.language === 'id' ? 'text-sm ' : 'text-sm gap-[35px]'
+          currentLang === 'id' ? 'text-sm ' : 'text-sm gap-[35px]'
         }`}>    
           <li className="nav-item-left">    
             <a href="/" className="block truncate">{t("header.nav.home")}</a>    
@@ -129,7 +151,7 @@ const DesktopLayout = () => (
     
         {/* === Search bar === */}    
         <div className={`nav-item-search flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 mx-[40px] ${
-          i18n.language === 'id' ? 'min-w-[380px] max-w-[350px] -translate-x-5' : 'min-w-[380px] max-w-[350px] -translate-x-10'
+          currentLang === 'id' ? 'min-w-[380px] max-w-[350px] -translate-x-5' : 'min-w-[380px] max-w-[350px] -translate-x-10'
         }`}>    
           <input    
             ref={searchInputRef}    
@@ -145,11 +167,11 @@ const DesktopLayout = () => (
     
         {/* === Menu kanan === */}    
         <ul className={`flex gap-4 items-center flex-shrink-0 whitespace-nowrap ${
-          i18n.language === 'id' ? 'gap-4' : 'gap-[35px]'
+          currentLang === 'id' ? 'gap-4' : 'gap-[35px]'
         }`}>    
           <li className="nav-item-right">    
             <a href="/faq" className={`font-poppinsBold font-bold ${
-              i18n.language === 'id' ? 'text-sm' : 'text-sm'
+              currentLang === 'id' ? 'text-sm' : 'text-sm'
             }`}>    
               {t("header.nav.faq")}    
             </a>    
@@ -160,7 +182,7 @@ const DesktopLayout = () => (
             <button    
               onClick={() => setIsLangOpen(!isLangOpen)}    
               className={`font-poppinsBold flex items-center gap-2 font-bold ${
-                i18n.language === 'id' ? 'text-[15px]' : 'text-[15px]'
+                currentLang === 'id' ? 'text-[15px]' : 'text-[15px]'
               }`}    
             >    
               {t("header.nav.language")}    
@@ -173,7 +195,7 @@ const DesktopLayout = () => (
             {isLangOpen && (    
               <ul    
                 className={`absolute left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 ${
-                  i18n.language === 'id' ? 'w-40' : 'w-40'
+                  currentLang === 'id' ? 'w-40' : 'w-40'
                 }`}    
                 style={{    
                   top: "100%",    
@@ -185,18 +207,15 @@ const DesktopLayout = () => (
                     { code: "en", label: t("header.languageOptions.en") },    
                     { code: "id", label: t("header.languageOptions.id") }    
                   ].sort((a, b) =>    
-                    a.code === i18n.language ? -1 : b.code === i18n.language ? 1 : 0    
+                    a.code === currentLang ? -1 : b.code === currentLang ? 1 : 0    
                   )    
                 ).map((lang) => (    
                   <li key={lang.code}>    
                     <button    
-                      onClick={() => {    
-                        i18n.changeLanguage(lang.code);    
-                        setIsLangOpen(false);    
-                      }}    
+                      onClick={() => handleLanguageChange(lang.code)}    
                       className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                        i18n.language === 'id' ? 'text-sm' : 'text-sm'
-                      } ${i18n.language === lang.code ? "bg-gray-100 font-semibold" : ""}`}    
+                        currentLang === 'id' ? 'text-sm' : 'text-sm'
+                      } ${currentLang === lang.code ? "bg-gray-100 font-semibold" : ""}`}    
                     >    
                       {lang.label}    
                     </button>    
@@ -213,12 +232,12 @@ const DesktopLayout = () => (
                 src={cartIcon}    
                 alt="Cart"    
                 className={`w-[30px] h-auto cursor-pointer ${
-                  i18n.language === 'id' ? 'w-[30px]' : 'w-[30px]'
+                  currentLang === 'id' ? 'w-[30px]' : 'w-[30px]'
                 }`}    
               />    
               {cartCount > 0 && (    
                 <span className={`font-poppinsBold absolute top-[-5px] right-[-5px] text rounded-full px-[6px] py-[2px] translate-x-[-9px] mt-[5px] ${
-                  i18n.language === 'id' ? 'text-[12px]' : 'text-[12px]'
+                  currentLang === 'id' ? 'text-[12px]' : 'text-[12px]'
                 }`}>    
                   {cartCount}    
                 </span>    
@@ -227,7 +246,7 @@ const DesktopLayout = () => (
     
             {/* Hover popup */}    
             <div className={`absolute right-0 mt-3 hidden group-hover:block z-50 ${
-              i18n.language === 'id' ? 'w-[420px]' : 'w-[420px]'
+              currentLang === 'id' ? 'w-[420px]' : 'w-[420px]'
             }`}>    
               <div    
                 className="relative bg-no-repeat bg-contain bg-top p-6"    
@@ -239,14 +258,14 @@ const DesktopLayout = () => (
                 }}    
               >    
                 <p className={`font-poppinsBold ml-10 mb-3 ${
-                  i18n.language === 'id' ? 'text-sm' : 'text-sm'
+                  currentLang === 'id' ? 'text-sm' : 'text-sm'
                 }`}>    
                   {t("header.recentlyAdded") || "Recently Added Products"} ({cartCount})    
                 </p>    
     
                 {cartItems.length === 0 ? (    
                   <div className={`flex items-center justify-center h-full -translate-y-[60px] text-gray-500 ${
-                    i18n.language === 'id' ? 'text-sm' : 'text-sm'
+                    currentLang === 'id' ? 'text-sm' : 'text-sm'
                   }`}>    
                     {t("header.emptyCart") || "Your cart is empty"}    
                   </div>    
@@ -255,14 +274,14 @@ const DesktopLayout = () => (
                     {cartItems.map((item) => (    
                       <li key={item.id} className="flex items-center gap-3">    
                         <img src={item.imageUrl} alt={item.name} className={`rounded ${
-                          i18n.language === 'id' ? 'w-12 h-12' : 'w-12 h-12'
+                          currentLang === 'id' ? 'w-12 h-12' : 'w-12 h-12'
                         }`} />    
                         <div className="flex-1">    
                           <p className={`font-semibold ${
-                            i18n.language === 'id' ? 'text-sm' : 'text-sm'
+                            currentLang === 'id' ? 'text-sm' : 'text-sm'
                           }`}>{item.name}</p>    
                           <p className={`text-gray-600 ${
-                            i18n.language === 'id' ? 'text-xs' : 'text-xs'
+                            currentLang === 'id' ? 'text-xs' : 'text-xs'
                           }`}>    
                             {item.quantity} × Rp {item.price.toLocaleString("id-ID")}    
                           </p>    
@@ -327,12 +346,9 @@ const MobileLayout = () => (
                 ].map((lang) => (
                   <li key={lang.code}>
                     <button
-                      onClick={() => {
-                        i18n.changeLanguage(lang.code);
-                        setIsLangOpen(false);
-                      }}
+                      onClick={() => handleLanguageChange(lang.code)}
                       className={`block w-full text-center px-4 py-2 hover:bg-gray-100 text-sm ${
-                        i18n.language === lang.code ? "bg-gray-100 font-semibold" : ""
+                        currentLang === lang.code ? "bg-gray-100 font-semibold" : ""
                       }`}
                     >
                       {lang.label}
@@ -384,7 +400,7 @@ const MobileLayout = () => (
           {t("header.nav.faq")}    
         </a>    
       </li>    
-      {/* TAMBAHKAN MENU CONTACT DI SINI */}
+      {/* Menu Contact */}
       <li>    
         <a    
           href="/contact"    

@@ -76,7 +76,7 @@ i18n
         }
       }
     },
-    fallbackLng: "en",
+    fallbackLng: "id",
     defaultNS: "translation",
     interpolation: {
       escapeValue: false
@@ -87,90 +87,90 @@ i18n
     }
   });
 
-// Auto detect country dan set language dengan multiple fallback APIs
-const detectAndSetLanguage = async () => {
-  // Jika user sudah manual pilih bahasa, jangan override
-  const userSelectedLang = localStorage.getItem("i18nextLng");
-  const hasUserManuallyChanged = localStorage.getItem("i18n-manual-change");
-  
-  if (hasUserManuallyChanged === "true") {
-    return; // User sudah pernah manual ganti bahasa, jangan auto-detect lagi
+// Timezone detector
+const detectFromTimezone = () => {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  if (
+    timezone.includes("Jakarta") ||
+    timezone.includes("Makassar") ||
+    timezone.includes("Jayapura") ||
+    timezone.includes("Pontianak")
+  ) {
+    return "id";
   }
 
-  // Coba deteksi dari timezone dulu (quick fallback)
-  const detectFromTimezone = () => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    // Indonesia timezones
-    if (timezone.includes("Jakarta") || 
-        timezone.includes("Makassar") || 
-        timezone.includes("Jayapura") ||
-        timezone.includes("Pontianak")) {
-      return "id";
-    }
-    return null;
-  };
+  return null;
+};
 
+// Main detection
+const detectAndSetLanguage = async () => {
   const timezoneGuess = detectFromTimezone();
 
-  // API endpoints untuk coba secara berurutan
   const apis = [
     {
       url: "https://ipapi.co/json/",
-      parse: (data) => data.country_code === "ID" ? "id" : "en"
+      parse: (data) => (data.country_code === "ID" ? "id" : "en")
     },
     {
       url: "https://api.country.is/",
-      parse: (data) => data.country === "ID" ? "id" : "en"
+      parse: (data) => (data.country === "ID" ? "id" : "en")
     },
     {
       url: "https://ipwhois.app/json/",
-      parse: (data) => data.country_code === "ID" ? "id" : "en"
+      parse: (data) => (data.country_code === "ID" ? "id" : "en")
+    },
+    {
+      url: "https://freeipapi.com/api/json",
+      parse: (data) => (data.countryCode === "ID" ? "id" : "en")
+    },
+    {
+      url: "https://ip-api.com/json/",
+      parse: (data) => (data.countryCode === "ID" ? "id" : "en")
     }
   ];
 
-  // Coba setiap API sampai ada yang berhasil
+  // Kalau user sudah pernah memilih bahasa simpanan
+  const savedLang = localStorage.getItem("i18nextLng");
+  if (savedLang) {
+    await i18n.changeLanguage(savedLang);
+    return;
+  }
+
+  // Coba API
   for (const api of apis) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 detik timeout
-      
-      const res = await fetch(api.url, { 
-        signal: controller.signal
-      });
-      
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+      const res = await fetch(api.url, { signal: controller.signal });
       clearTimeout(timeoutId);
-      
-      if (!res.ok) continue; // Coba API berikutnya
-      
+
+      if (!res.ok) continue;
+
       const data = await res.json();
       const detectedLang = api.parse(data);
-      
-      // Hanya ganti bahasa jika berbeda dengan yang sekarang
-      if (i18n.language !== detectedLang) {
-        await i18n.changeLanguage(detectedLang);
-        localStorage.setItem("i18nextLng", detectedLang);
-      }
-      
-      return; // Berhasil, keluar dari fungsi
-    } catch (err) {
-      console.warn(`API ${api.url} gagal:`, err.message);
-      continue; // Coba API berikutnya
+
+      await i18n.changeLanguage(detectedLang);
+      localStorage.setItem("i18nextLng", detectedLang);
+
+      return;
+    } catch {
+      continue;
     }
   }
 
-  // Jika semua API gagal, gunakan timezone guess
+  // Jika API gagal
   if (timezoneGuess) {
-    console.log("Menggunakan deteksi timezone sebagai fallback");
     await i18n.changeLanguage(timezoneGuess);
     localStorage.setItem("i18nextLng", timezoneGuess);
-  } else if (!userSelectedLang) {
-    // Ultimate fallback ke English
-    console.log("Menggunakan English sebagai default");
-    await i18n.changeLanguage("en");
+  } else {
+    await i18n.changeLanguage("id");
+    localStorage.setItem("i18nextLng", "id");
   }
 };
 
-// Jalankan deteksi setelah i18n ready
+// Run detection
 if (i18n.isInitialized) {
   detectAndSetLanguage();
 } else {
