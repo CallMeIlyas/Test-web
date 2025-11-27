@@ -19,6 +19,38 @@ import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import productOptions from "../data/productOptions";
 
+// Helper function to determine variations based on category and size
+const getProductVariations = (category: string, name: string): string[] => {
+  const categoryLower = category?.toLowerCase() || "";
+  const nameLower = name?.toLowerCase() || "";
+  
+  // Sizes yang dapat Frame Kaca (2D dan 3D)
+  const glassFrameSizes = ["4r", "15cm", "6r", "20cm", "8r", "10r", "12r"];
+  
+  // Sizes yang dapat Acrylic (hanya 3D besar)
+  const acrylicSizes = ["a2", "a1", "a0"];
+  
+  // Check if product is 2D or 3D Frame
+  if (categoryLower.includes("2d") || categoryLower.includes("3d")) {
+    // Check for glass frame sizes
+    const hasGlassSize = glassFrameSizes.some(size => nameLower.includes(size));
+    if (hasGlassSize) {
+      return ["Frame Kaca"];
+    }
+    
+    // Check for acrylic sizes (only for 3D)
+    if (categoryLower.includes("3d")) {
+      const hasAcrylicSize = acrylicSizes.some(size => nameLower.includes(size));
+      if (hasAcrylicSize) {
+        return ["Frame Acrylic"];
+      }
+    }
+  }
+  
+  // Default: no variations
+  return [];
+};
+
 const getFullSizeLabel = (category, shortName) => {
   const categoryData = productOptions[category];
   if (!categoryData || !categoryData.sizes) return shortName;
@@ -74,7 +106,6 @@ const getAdditionalPrice = (name: string): number | string => {
 // Mock fallback data
 const MOCK_PRODUCT_DATA = {
   shipped: "Jakarta",
-  variations: ["Frame Kaca", "Frame Acrylic"],
   details: {
     "Greeting card": "Artcarton 310gr 1 side 10x15cm",
     "Black Envelope": "Aster black 150gsm A6 11x16,2cm",
@@ -129,9 +160,13 @@ const ProductDetail = () => {
   const [selectedAdditionalFaceOption, setSelectedAdditionalFaceOption] = useState<"1-9" | "10+" | null>("1-9");
   const [selectedKarikaturOption, setSelectedKarikaturOption] = useState<string>("");
   const additionalSectionRef = useRef<HTMLDivElement | null>(null);
+  
+  // Gunakan fungsi getProductVariations untuk menentukan variations
+  const productVariations = getProductVariations(category, name);
   const [selectedVariation, setSelectedVariation] = useState(
-    MOCK_PRODUCT_DATA.variations[0]
+    productVariations[0] || ""
   );
+  
   const [quantity, setQuantity] = useState<number | "">(1);
   const [faces] = useState<number | "">(1);
   const [background, setBackground] = useState<"Default" | "Custom">("Default");
@@ -225,6 +260,7 @@ const product = {
   allImages: allImages || [],
   shadingOptions,
   sizeFrameOptions: frameSizeOptions,
+  variations: productVariations, // Gunakan hasil dari getProductVariations
   ...MOCK_PRODUCT_DATA,
 };
 
@@ -251,7 +287,6 @@ const specialVariations =
   product.category === "3D Frame" && normalizedSizeKey
     ? categoryOptions?.specialCases?.[normalizedSizeKey] || []
     : [];
-
 
   // semua useEffect
   useEffect(() => {
@@ -888,12 +923,12 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                       )}
           
                       {/* Variation - Mobile: Stack vertically */}
-                      {!["Additional", "Softcopy Design"].includes(product.category) && (
+                      {!["Additional", "Softcopy Design"].includes(product.category) && product.variations.length > 0 && (
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between mt-4 space-y-2 md:space-y-0">
                           <label className="block text-[16px] md:text-[18px] font-poppinsSemiBold md:translate-y-3">
                               {t("product.variation")}
                           </label>
-                          <div className="flex flex-row flex-wrap gap-2 md:-translate-x-[25px] md:translate-y-2 font-poppinsRegular">
+                          <div className="flex flex-row flex-wrap gap-2 md:-translate-x-[165px] md:translate-y-2 font-poppinsRegular">
                             {product.variations.map((variation) => (
                               <button
                                 key={variation}

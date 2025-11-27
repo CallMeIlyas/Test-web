@@ -96,7 +96,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
   }, [location.pathname]);
     
   // ================= Desktop Layout =================    
-  const DesktopLayout = () => (    
+const DesktopLayout = () => (    
     <header>    
       <div className="bg-[#dcbec1] flex justify-center items-center">    
         <img ref={logoRef} src={logoAmora} alt="Little Amora Logo" className="h-24" />    
@@ -107,7 +107,9 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
         className="flex justify-between items-center px-10 py-3 gap-4 overflow-x-visible relative z-40"    
       >    
         {/* === Menu kiri === */}    
-        <ul className="flex gap-6 p-0 m-0 mr-auto text-black font-poppinsBold text-sm flex-shrink-0 max-w-[50%] whitespace-nowrap">    
+        <ul className={`flex gap-6 p-0 m-0 mr-auto text-black font-poppinsBold flex-shrink-0 max-w-[50%] whitespace-nowrap ${
+          i18n.language === 'id' ? 'text-sm ' : 'text-sm gap-[35px]'
+        }`}>    
           <li className="nav-item-left">    
             <a href="/" className="block truncate">{t("header.nav.home")}</a>    
           </li>    
@@ -126,12 +128,14 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
         </ul>    
     
         {/* === Search bar === */}    
-        <div className="nav-item-search flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 min-w-[280px] max-w-[350px] mx-[40px]">    
+        <div className={`nav-item-search flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 mx-[40px] ${
+          i18n.language === 'id' ? 'min-w-[380px] max-w-[350px] -translate-x-5' : 'min-w-[380px] max-w-[350px] -translate-x-10'
+        }`}>    
           <input    
             ref={searchInputRef}    
             type="text"    
             placeholder={t("header.search") || "Search"}    
-            className="border-none outline-none text-sm px-2 w-full bg-transparent"    
+            className="border-none outline-none px-2 w-full bg-transparent"    
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}    
           />    
           <button className="ml-3" onClick={handleSearch}>    
@@ -140,9 +144,13 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
         </div>    
     
         {/* === Menu kanan === */}    
-        <ul className="flex gap-4 items-center flex-shrink-0 whitespace-nowrap">    
+        <ul className={`flex gap-4 items-center flex-shrink-0 whitespace-nowrap ${
+          i18n.language === 'id' ? 'gap-4' : 'gap-[35px]'
+        }`}>    
           <li className="nav-item-right">    
-            <a href="/faq" className="font-poppinsBold text-sm font-bold">    
+            <a href="/faq" className={`font-poppinsBold font-bold ${
+              i18n.language === 'id' ? 'text-sm' : 'text-sm'
+            }`}>    
               {t("header.nav.faq")}    
             </a>    
           </li>    
@@ -151,7 +159,9 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
           <div className="relative inline-block text-left nav-item-right">    
             <button    
               onClick={() => setIsLangOpen(!isLangOpen)}    
-              className="font-poppinsBold flex items-center gap-2 font-bold text-[15px]"    
+              className={`font-poppinsBold flex items-center gap-2 font-bold ${
+                i18n.language === 'id' ? 'text-[15px]' : 'text-[15px]'
+              }`}    
             >    
               {t("header.nav.language")}    
               <FaChevronDown    
@@ -162,7 +172,9 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
     
             {isLangOpen && (    
               <ul    
-                className="absolute left-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50"    
+                className={`absolute left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 ${
+                  i18n.language === 'id' ? 'w-40' : 'w-40'
+                }`}    
                 style={{    
                   top: "100%",    
                   marginTop: "8px"    
@@ -182,9 +194,9 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
                         i18n.changeLanguage(lang.code);    
                         setIsLangOpen(false);    
                       }}    
-                      className={`block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm ${    
-                        i18n.language === lang.code ? "bg-gray-100 font-semibold" : ""    
-                      }`}    
+                      className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
+                        i18n.language === 'id' ? 'text-sm' : 'text-sm'
+                      } ${i18n.language === lang.code ? "bg-gray-100 font-semibold" : ""}`}    
                     >    
                       {lang.label}    
                     </button>    
@@ -200,17 +212,23 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
               <img    
                 src={cartIcon}    
                 alt="Cart"    
-                className="w-[30px] h-auto cursor-pointer"    
+                className={`w-[30px] h-auto cursor-pointer ${
+                  i18n.language === 'id' ? 'w-[30px]' : 'w-[30px]'
+                }`}    
               />    
               {cartCount > 0 && (    
-                <span className="font-poppinsBold absolute top-[-5px] right-[-5px] text rounded-full px-[6px] py-[2px] text-[12px] translate-x-[-9px] mt-[5px]">    
+                <span className={`font-poppinsBold absolute top-[-5px] right-[-5px] text rounded-full px-[6px] py-[2px] translate-x-[-9px] mt-[5px] ${
+                  i18n.language === 'id' ? 'text-[12px]' : 'text-[12px]'
+                }`}>    
                   {cartCount}    
                 </span>    
               )}    
             </a>    
     
             {/* Hover popup */}    
-            <div className="absolute right-0 mt-3 hidden group-hover:block z-50 w-[420px]">    
+            <div className={`absolute right-0 mt-3 hidden group-hover:block z-50 ${
+              i18n.language === 'id' ? 'w-[420px]' : 'w-[420px]'
+            }`}>    
               <div    
                 className="relative bg-no-repeat bg-contain bg-top p-6"    
                 style={{    
@@ -220,22 +238,32 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
                   backgroundPosition: "10px top",    
                 }}    
               >    
-                <p className="font-poppinsBold ml-10 text-sm mb-3">    
+                <p className={`font-poppinsBold ml-10 mb-3 ${
+                  i18n.language === 'id' ? 'text-sm' : 'text-sm'
+                }`}>    
                   {t("header.recentlyAdded") || "Recently Added Products"} ({cartCount})    
                 </p>    
     
                 {cartItems.length === 0 ? (    
-                  <div className="flex items-center justify-center h-full -translate-y-[60px] text-gray-500 text-sm">    
+                  <div className={`flex items-center justify-center h-full -translate-y-[60px] text-gray-500 ${
+                    i18n.language === 'id' ? 'text-sm' : 'text-sm'
+                  }`}>    
                     {t("header.emptyCart") || "Your cart is empty"}    
                   </div>    
                 ) : (    
                   <ul className="ml-10 space-y-3 overflow-y-auto max-h-[180px] pr-2">    
                     {cartItems.map((item) => (    
                       <li key={item.id} className="flex items-center gap-3">    
-                        <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded" />    
+                        <img src={item.imageUrl} alt={item.name} className={`rounded ${
+                          i18n.language === 'id' ? 'w-12 h-12' : 'w-12 h-12'
+                        }`} />    
                         <div className="flex-1">    
-                          <p className="text-sm font-semibold">{item.name}</p>    
-                          <p className="text-xs text-gray-600">    
+                          <p className={`font-semibold ${
+                            i18n.language === 'id' ? 'text-sm' : 'text-sm'
+                          }`}>{item.name}</p>    
+                          <p className={`text-gray-600 ${
+                            i18n.language === 'id' ? 'text-xs' : 'text-xs'
+                          }`}>    
                             {item.quantity} × Rp {item.price.toLocaleString("id-ID")}    
                           </p>    
                         </div>    
@@ -249,7 +277,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
         </ul>    
       </nav>    
     </header>    
-  );    
+  );
     
 // ================= Mobile Layout =================    
 const MobileLayout = () => (    
