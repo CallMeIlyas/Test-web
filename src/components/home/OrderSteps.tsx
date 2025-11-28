@@ -48,7 +48,6 @@ const DateInput = ({
           appearance: "none",
           WebkitAppearance: "none",
           MozAppearance: "none",
-          MozAppearance: "textfield",
           textAlignLast: "center",
           color: "transparent",
           caretColor: "black",
@@ -56,7 +55,7 @@ const DateInput = ({
         }}
         placeholder=" "
       />
-
+      
       {!value && !isFocused ? (
         <span className="absolute inset-0 flex items-center justify-center text-black text-sm font-poppinsSemiBoldItalic pointer-events-none">
           {placeholder}
@@ -91,9 +90,9 @@ const LocationModal = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-poppinsSemiBold">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">
+        <label className="block text-sm font-poppinsSemiBold text-gray-700 mb-1 text-left">
           Kecamatan
         </label>
         <input
@@ -101,11 +100,11 @@ const LocationModal = ({
           value={district}
           onChange={(e) => setDistrict(e.target.value)}
           placeholder="Masukkan kecamatan"
-          className="w-full border  rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+          className="w-full border rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 text-left">
+        <label className="block text-sm font-poppinsSemiBold text-gray-700 mb-1 text-left">
           Kota
         </label>
         <input
@@ -306,7 +305,7 @@ Deadline date & month = ${form.deadline}
             <div className="text-xs text-gray-500 font-poppinsSemiBold text-left pl-4">
               Kecamatan
             </div>
-            <div className="text-center rounded-full border  px-6 py-2 bg-white w-full">
+            <div className="text-center rounded-full border bg-[#dcbec1] px-6 py-2 w-full">
               <span className="text-sm font-poppinsSemiBold text-black">
                 {form.district}
               </span>
@@ -318,7 +317,7 @@ Deadline date & month = ${form.deadline}
             <div className="text-xs text-gray-500 font-poppinsSemiBold text-left pl-4">
               Kota
             </div>
-            <div className="text-center rounded-full border  px-6 py-2 bg-white w-full">
+            <div className="text-center rounded-full border px-6 py-2 bg-[#dcbec1] w-full">
               <span className="text-sm font-poppinsSemiBold text-black">
                 {form.city}
               </span>
@@ -348,7 +347,7 @@ Deadline date & month = ${form.deadline}
       className="float-item bg-white rounded-xl p-5 relative flex flex-col items-center justify-between h-full cursor-pointer transition-transform hover:-translate-y-1 shadow-none group hover:shadow-hover hover:scale-110 transition-all duration-300"
     >
       <div
-        className={`absolute -top-3 left-5 text-sm rounded-full w-7 h-7 flex items-center justify-center font-bold ${
+        className={`absolute -top-3 left-5 text-sm rounded-full w-7 h-7 flex items-center justify-center font-poppinsSemiBold ${
           step.special ? "bg-red-500" : "bg-black"
         } text-white`}
       >
@@ -411,7 +410,7 @@ Deadline date & month = ${form.deadline}
       return (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-lg text-gray-800">{activeStep?.text}</h3>
+            <h3 className="font-poppinsSemiBold text-lg text-gray-800">{activeStep?.text}</h3>
             <button
               onClick={handleCloseModal}
               className="text-gray-500 hover:text-gray-700 transition"
@@ -426,7 +425,7 @@ Deadline date & month = ${form.deadline}
                 <button
                   key={type}
                   onClick={() => setCategory(type as "2D" | "3D")}
-                  className="px-5 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition font-semibold"
+                  className="px-5 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition font-poppinsSemiBold"
                 >
                   {type}
                 </button>
@@ -449,7 +448,7 @@ Deadline date & month = ${form.deadline}
                     }`}
                   >
                     <div className="text-left">
-                      <div className="font-semibold">{item.size}</div>
+                      <div className="font-poppinsSemiBold">{item.size}</div>
                       <div className="text-xs text-gray-600">{item.faces}</div>
                     </div>
                     {selectedSize === item.size && (
@@ -461,7 +460,7 @@ Deadline date & month = ${form.deadline}
                 ))}
               </div>
 
-              <div className="flex justify-center gap-3 mt-6">
+              <div className="flex justify-center gap-3 mt-6 font-poppinsSemiBold">
                 <button
                   onClick={() => setCategory(null)}
                   className="px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
@@ -496,7 +495,7 @@ Deadline date & month = ${form.deadline}
       return (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-lg text-gray-800">{activeStep?.text}</h3>
+            <h3 className="font-poppinsSemiBold text-lg text-gray-800">{activeStep?.text}</h3>
             <button
               onClick={handleCloseModal}
               className="text-gray-500 hover:text-gray-700 transition"
@@ -518,7 +517,7 @@ Deadline date & month = ${form.deadline}
       return (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-lg text-gray-800">{activeStep?.text}</h3>
+            <h3 className="font-poppinsSemiBold text-lg text-gray-800">{activeStep?.text}</h3>
             <button
               onClick={handleCloseModal}
               className="text-gray-500 hover:text-gray-700 transition"
@@ -531,10 +530,10 @@ Deadline date & month = ${form.deadline}
             value={promptValue}
             onChange={(e) => setPromptValue(e.target.value)}
             placeholder={t("orderSteps.modal.placeholder")}
-            className="w-full border  rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+            className="w-full border font-poppinsSemiBold rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
             min="1"
           />
-          <div className="flex justify-center gap-4 mt-6">
+          <div className="flex justify-center gap-4 mt-6 font-poppinsSemiBold">
             <button
               onClick={handleCloseModal}
               className="px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
@@ -555,7 +554,7 @@ Deadline date & month = ${form.deadline}
     return (
       <>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-lg text-gray-800">{activeStep?.text}</h3>
+          <h3 className="font-poppinsSemiBold text-lg text-gray-800">{activeStep?.text}</h3>
           <button
             onClick={handleCloseModal}
             className="text-gray-500 hover:text-gray-700 transition"
@@ -568,9 +567,9 @@ Deadline date & month = ${form.deadline}
           value={promptValue}
           onChange={(e) => setPromptValue(e.target.value)}
           placeholder={t("orderSteps.modal.placeholder")}
-          className="w-full border  rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+          className="w-full border rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
         />
-        <div className="flex justify-center gap-4 mt-6">
+        <div className="flex justify-center gap-4 mt-6 font-poppinsSemiBold">
           <button
             onClick={handleCloseModal}
             className="px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"

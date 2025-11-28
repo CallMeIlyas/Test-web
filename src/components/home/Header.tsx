@@ -151,7 +151,7 @@ const DesktopLayout = () => (
     
         {/* === Search bar === */}    
         <div className={`nav-item-search flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 mx-[40px] ${
-          currentLang === 'id' ? 'min-w-[380px] max-w-[350px] -translate-x-5' : 'min-w-[380px] max-w-[350px] -translate-x-10'
+          currentLang === 'id' ? 'min-w-[380px] max-w-[350px] -translate-x-2' : 'min-w-[380px] max-w-[350px] -translate-x-5'
         }`}>    
           <input    
             ref={searchInputRef}    
@@ -178,10 +178,10 @@ const DesktopLayout = () => (
           </li>    
     
           {/* Language selector */}    
-          <div className="relative inline-block text-left nav-item-right">    
+          <div className="relative inline-block nav-item-right">    
             <button    
               onClick={() => setIsLangOpen(!isLangOpen)}    
-              className={`font-poppinsBold flex items-center gap-2 font-bold ${
+              className={`font-poppinsBold translate-y-0.5 flex items-center gap-2 ${
                 currentLang === 'id' ? 'text-[15px]' : 'text-[15px]'
               }`}    
             >    

@@ -101,7 +101,7 @@ const BestSelling = () => {
                 alt={product.displayName}
                 className="w-full h-48 object-cover rounded-lg mb-4 group-hover:scale-110 transition-transform duration-500"
               />
-              <p className="m-2.5 font-bold text-gray-600 text-base">{product.displayName}</p>
+              <p className="m-2.5 font-poppinsBold text-gray-600 text-base">{product.displayName}</p>
             </div>
           ))}
         </div>
