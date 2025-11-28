@@ -21,7 +21,13 @@ interface DateInputProps {
   className?: string;
 }
 
-const DateInput: React.FC<DateInputProps> = ({ value, onChange, name, placeholder, className }) => {
+const DateInput: React.FC<DateInputProps> = ({
+  value,
+  onChange,
+  name,
+  placeholder,
+  className
+}) => {
   const [inputType, setInputType] = useState('text');
 
   const handleFocus = () => {
@@ -34,6 +40,12 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, name, placeholde
     }
   };
 
+  const getMinDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d.toISOString().split("T")[0];
+  };
+
   return (
     <input
       type={inputType}
@@ -43,6 +55,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, name, placeholde
       onBlur={handleBlur}
       name={name}
       placeholder={placeholder}
+      min={inputType === "date" ? getMinDate() : undefined}
       className={className}
     />
   );

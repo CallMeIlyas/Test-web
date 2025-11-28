@@ -14,16 +14,10 @@ const DateInput = ({
   value,
   onChange,
   placeholder,
-}: {
-  name: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  
-  // Format date function lokal untuk DateInput
-  const formatDisplayDate = (iso: string) => {
+
+  const formatDisplayDate = iso => {
     if (!iso) return "";
     const parts = iso.split("-");
     if (parts.length !== 3) return iso;
@@ -31,35 +25,43 @@ const DateInput = ({
     return `${d}/${m}/${y}`;
   };
 
+  const getMinDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d.toISOString().split("T")[0];
+  };
+
   return (
     <div className="relative inline-block w-48">
       <input
         type="date"
         name={name}
-        value={value}
+        value={value || ""}
+        min={getMinDate()}
         onChange={onChange}
         onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        className="text-center rounded-full border border-gray-300 px-6 py-2 outline-none bg-white w-full"
+        onBlur={() => {
+          setTimeout(() => setIsFocused(false), 10);
+        }}
+        className="text-center rounded-full border px-6 py-2 outline-none w-full"
         style={{
           appearance: "none",
           WebkitAppearance: "none",
           MozAppearance: "none",
+          MozAppearance: "textfield",
           textAlignLast: "center",
-          color: "transparent", // Selalu transparent
+          color: "transparent",
           caretColor: "black",
+          backgroundColor: "#dcbec1",
         }}
         placeholder=" "
       />
-      
-      {/* Hanya satu span yang ditampilkan - tidak pernah bersamaan */}
+
       {!value && !isFocused ? (
-        // Placeholder ketika kosong dan tidak focused
-        <span className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm font-poppinsSemiBoldItalic pointer-events-none">
+        <span className="absolute inset-0 flex items-center justify-center text-black text-sm font-poppinsSemiBoldItalic pointer-events-none">
           {placeholder}
         </span>
       ) : value ? (
-        // Tanggal formatted ketika ada value
         <span className="absolute inset-0 flex items-center justify-center text-black text-sm font-poppinsSemiBold pointer-events-none">
           {formatDisplayDate(value)}
         </span>
@@ -99,7 +101,7 @@ const LocationModal = ({
           value={district}
           onChange={(e) => setDistrict(e.target.value)}
           placeholder="Masukkan kecamatan"
-          className="w-full border border-gray-300 rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+          className="w-full border  rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
         />
       </div>
       <div>
@@ -111,7 +113,7 @@ const LocationModal = ({
           value={city}
           onChange={(e) => setCity(e.target.value)}
           placeholder="Masukkan kota"
-          className="w-full border border-gray-300 rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+          className="w-full border  rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
         />
       </div>
       <div className="flex justify-center gap-4 mt-6">
@@ -304,7 +306,7 @@ Deadline date & month = ${form.deadline}
             <div className="text-xs text-gray-500 font-poppinsSemiBold text-left pl-4">
               Kecamatan
             </div>
-            <div className="text-center rounded-full border border-gray-300 px-6 py-2 bg-white w-full">
+            <div className="text-center rounded-full border  px-6 py-2 bg-white w-full">
               <span className="text-sm font-poppinsSemiBold text-black">
                 {form.district}
               </span>
@@ -316,7 +318,7 @@ Deadline date & month = ${form.deadline}
             <div className="text-xs text-gray-500 font-poppinsSemiBold text-left pl-4">
               Kota
             </div>
-            <div className="text-center rounded-full border border-gray-300 px-6 py-2 bg-white w-full">
+            <div className="text-center rounded-full border  px-6 py-2 bg-white w-full">
               <span className="text-sm font-poppinsSemiBold text-black">
                 {form.city}
               </span>
@@ -328,9 +330,9 @@ Deadline date & month = ${form.deadline}
     
     // Jika hanya satu yang diisi atau belum diisi sama sekali, tampilkan 1 kolom
     return (
-      <div className="text-center rounded-full border border-gray-300 px-6 py-2 bg-white w-full">
+      <div className="text-center rounded-full border  px-6 py-2 bg-[#dcbec1] w-full">
         <span className={`text-sm font-poppinsSemiBoldItalic ${
-          hasDistrict || hasCity ? "text-black" : "text-gray-400"
+          hasDistrict || hasCity ? "text-black" : "text-black"
         }`}>
           {hasDistrict || hasCity ? `${form.district}${form.city ? `, ${form.city}` : ''}` : 
             currentLang === "id" ? "Ketik jawabanmu di sini" : "Type your answer here"}
@@ -388,10 +390,10 @@ Deadline date & month = ${form.deadline}
               renderLocationDisplay()
             ) : (
               // Tampilan normal untuk step lainnya
-              <div className="text-center rounded-full border border-gray-300 px-6 py-2 bg-white w-full">
+              <div className="text-center rounded-full border  px-6 py-2 bg-[#dcbec1] w-full">
                 <span
                   className={`text-sm font-poppinsSemiBoldItalic ${
-                    form[step.key as keyof typeof form] ? "text-black" : "text-gray-400"
+                    form[step.key as keyof typeof form] ? "text-black" : "text-black"
                   }`}
                 >
                   {getDisplayText(step)}
@@ -443,7 +445,7 @@ Deadline date & month = ${form.deadline}
                     className={`flex items-center justify-between px-4 py-3 rounded-lg border transition ${
                       selectedSize === item.size
                         ? "bg-[#dcbec1] border-black"
-                        : "bg-gray-100 border-gray-300 hover:bg-gray-200"
+                        : "bg-gray-100  hover:bg-gray-200"
                     }`}
                   >
                     <div className="text-left">
@@ -529,7 +531,7 @@ Deadline date & month = ${form.deadline}
             value={promptValue}
             onChange={(e) => setPromptValue(e.target.value)}
             placeholder={t("orderSteps.modal.placeholder")}
-            className="w-full border border-gray-300 rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+            className="w-full border  rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
             min="1"
           />
           <div className="flex justify-center gap-4 mt-6">
@@ -566,7 +568,7 @@ Deadline date & month = ${form.deadline}
           value={promptValue}
           onChange={(e) => setPromptValue(e.target.value)}
           placeholder={t("orderSteps.modal.placeholder")}
-          className="w-full border border-gray-300 rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+          className="w-full border  rounded-full px-5 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
         />
         <div className="flex justify-center gap-4 mt-6">
           <button

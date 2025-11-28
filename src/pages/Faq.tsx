@@ -72,7 +72,7 @@ export default function FAQPage() {
 
       {/* 🏷️ JUDUL & DESKRIPSI DESKTOP - Hanya tampil di desktop */}
       <div className="hidden md:block">
-        <div className="relative my-8 mb-10 text-center">
+        <div className="relative my-8 text-center">
           <h1
             className={`inline-block font-nataliecaydence relative z-10 leading-tight break-words px-6 ${
               currentLang === "id"
