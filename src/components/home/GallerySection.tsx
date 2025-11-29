@@ -116,65 +116,8 @@ const GallerySection: FC = () => {
     return fallback || null;
   };
 
-  // Fungsi untuk mendapatkan gambar produk seperti di ProductDetail
-  const getProductImage = (matchingProduct: any) => {
-    // Gunakan imageUrl dari produk jika ada
-    if (matchingProduct?.imageUrl) {
-      return matchingProduct.imageUrl;
-    }
-    
-    // Gunakan allImages pertama jika ada
-    if (matchingProduct?.allImages && matchingProduct.allImages.length > 0) {
-      return matchingProduct.allImages[0];
-    }
-    
-    // Fallback ke gambar default dari ProductDetail
-    return "https://i.ibb.co/z5pYtWj/1000273753.jpg";
-  };
-
-  // Fungsi addToCart yang sama seperti di ProductDetail
-  const handleAddToCart = (selectedPhoto: any) => {
-    const matchingProduct = findMatchingProduct(selectedPhoto.label);
-    const fullProductName = getFullProductName(selectedPhoto.label);
-
-
-    // Default values seperti di ProductDetail
-    const faceCountLabel = "1–9 wajah";
-    const backgroundType = "BG Default";
-    const includePacking = false;
-    const variation = "Frame Kaca";
-
-    // Gunakan gambar produk seperti di ProductDetail, bukan gambar gallery
-    const productImage = getProductImage(matchingProduct);
-
-    const cartItem = {
-      id: matchingProduct.id || `gallery-${selectedPhoto.id}`,
-      name: fullProductName,
-      price: matchingProduct.price || getPrice(selectedPhoto.label.split(/[\/\s(]/)[0].trim().toLowerCase()) || 0,
-      quantity: 1, // Default quantity 1
-      imageUrl: productImage, // Gunakan gambar produk, bukan gambar gallery
-      image: productImage, // Juga set image untuk konsistensi
-      variation: variation,
-      productType: "frame",
-      attributes: {
-        faceCount: faceCountLabel,
-        backgroundType: backgroundType,
-        includePacking: includePacking,
-        frameSize: selectedPhoto.label.split(/[\/\s(]/)[0].trim(),
-        category: "3D Frame"
-      }
-    };
-
-    addToCart(cartItem);
-    
-    
-    // Tutup modal setelah add to cart
-    setSelectedImage(null);
-  };
-
-  const handleLabelClick = (label: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
+  // Fungsi untuk navigasi ke halaman produk seperti di BestSelling
+  const handleGoToProduct = (label: string) => {
     const matchingProduct = findMatchingProduct(label);
     
     if (matchingProduct) {
@@ -186,6 +129,11 @@ const GallerySection: FC = () => {
         },
       });
     }
+  };
+
+  const handleLabelClick = (label: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleGoToProduct(label);
   };
 
   useScrollFloat(".scroll-float", {
@@ -512,10 +460,11 @@ const GallerySection: FC = () => {
                   {currentLang === "id" ? "Chat Admin" : "Chat Admin"}
                 </button>
 
+                {/* 🔄 Tombol yang diubah menjadi navigasi ke halaman produk */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleAddToCart(selectedPhoto)
+                    handleGoToProduct(selectedPhoto.label)
                   }}
                   className="
                     bg-[#dcbec1] text-black font-poppinsSemiBold
@@ -523,7 +472,7 @@ const GallerySection: FC = () => {
                     whitespace-nowrap hover:bg-[#d4b0b4]
                   "
                 >
-                  {currentLang === "id" ? "Masukin ke Keranjang" : "Add to Cart"}
+                  {currentLang === "id" ? "Ke Halaman Produk" : "Go to Product"}
                 </button>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";    
 import { useLocation } from "react-router-dom";    
-import { FaSearch, FaChevronDown, FaBars, FaTimes, FaHome, FaShoppingBag, FaMapMarkerAlt, FaUser } from "react-icons/fa";    
-import { IoHomeOutline, IoBagHandleOutline, IoLocationOutline, IoImageOutline} from "react-icons/io5";    
+import { FaSearch, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";    
+import { IoHomeOutline, IoBagHandleOutline, IoLocationOutline, IoImageOutline } from "react-icons/io5";    
 import { CiRuler } from "react-icons/ci";
 import logoAmora from "../../assets/logo/logo-amora-footer2.png";    
 import cartIcon from "../../assets/Icons/CART.png";    
@@ -51,7 +51,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
     i18n.changeLanguage(langCode);
     setCurrentLang(langCode);
     localStorage.setItem("i18nextLng", langCode);
-    localStorage.setItem("i18n-manual-change", "true"); // Tandai bahwa user sudah manual pilih
+    localStorage.setItem("i18n-manual-change", "true");
     setIsLangOpen(false);
   };
 
@@ -119,84 +119,73 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
     
   // ================= Desktop Layout =================    
 const DesktopLayout = () => (    
-    <header>    
-      <div className="bg-[#dcbec1] flex justify-center items-center">    
-        <img ref={logoRef} src={logoAmora} alt="Little Amora Logo" className="h-24" />    
+    <header className="w-full">    
+      <div className="bg-[#dcbec1] flex justify-center items-center w-full">    
+        <img ref={logoRef} src={logoAmora} alt="Little Amora Logo" className="h-24 w-auto object-contain" />    
       </div>    
     
       <nav    
         ref={navRef}    
-        className="flex justify-between items-center px-10 py-3 gap-4 overflow-x-visible relative z-40"    
+        className="flex justify-between items-center px-6 lg:px-10 xl:px-12 2xl:px-16 py-3 gap-4 lg:gap-6 overflow-x-visible relative z-40 w-full mx-auto"
+        style={{ maxWidth: '1920px' }}    
       >    
         {/* === Menu kiri === */}    
-        <ul className={`flex gap-6 p-0 m-0 mr-auto text-black font-poppinsBold flex-shrink-0 max-w-[50%] whitespace-nowrap ${
-          currentLang === 'id' ? 'text-sm ' : 'text-sm gap-[35px]'
-        }`}>    
+<ul className="flex p-0 m-0 mr-auto text-black font-poppinsBold flex-shrink-0 whitespace-nowrap gap-4 lg:gap-6 xl:gap-7 2xl:gap-8 text-[11px] lg:text-xs xl:text-[13px]">   
           <li className="nav-item-left">    
-            <a href="/" className="block truncate">{t("header.nav.home")}</a>    
+            <a href="/" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.home")}</a>    
           </li>    
           <li className="nav-item-left">    
-            <a href="/products" className="block truncate">{t("header.nav.products")}</a>    
+            <a href="/products" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.products")}</a>    
           </li>    
           <li className="nav-item-left">    
-            <a href="/size-guide" className="block truncate">{t("header.nav.sizeGuide")}</a>    
+            <a href="/size-guide" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.sizeGuide")}</a>    
           </li>    
           <li className="nav-item-left">    
-            <a href="/background-catalog" className="block truncate">{t("header.nav.backgroundCatalog")}</a>    
+            <a href="/background-catalog" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.backgroundCatalog")}</a>    
           </li>    
           <li className="nav-item-left">    
-            <a href="/location" className="block truncate">{t("header.nav.location")}</a>    
+            <a href="/location" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.location")}</a>    
           </li>    
         </ul>    
     
         {/* === Search bar === */}    
-        <div className={`nav-item-search flex border border-black rounded-[40px] px-[25px] py-[10px] items-center flex-1 mx-[40px] ${
-          currentLang === 'id' ? 'min-w-[380px] max-w-[350px] -translate-x-2' : 'min-w-[380px] max-w-[350px] -translate-x-5'
-        }`}>    
+        <div className="nav-item-search flex border border-black rounded-[40px] px-4 lg:px-6 py-2 items-center flex-1 min-w-[180px] max-w-[350px] mx-4 lg:mx-8 xl:mx-12">   
           <input    
             ref={searchInputRef}    
             type="text"    
             placeholder={t("header.search") || "Search"}    
-            className="border-none outline-none px-2 w-full bg-transparent"    
+            className="border-none outline-none px-2 w-full bg-transparent text-xs lg:text-sm"    
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}    
           />    
-          <button className="ml-3" onClick={handleSearch}>    
-            <FaSearch />    
+          <button className="ml-2 lg:ml-3 flex-shrink-0" onClick={handleSearch}>    
+            <FaSearch className="text-sm lg:text-base" />    
           </button>    
         </div>    
     
         {/* === Menu kanan === */}    
-        <ul className={`flex gap-4 items-center flex-shrink-0 whitespace-nowrap ${
-          currentLang === 'id' ? 'gap-4' : 'gap-[35px]'
-        }`}>    
+        <ul className="flex items-center flex-shrink-0 whitespace-nowrap gap-4 lg:gap-6 xl:gap-7 2xl:gap-8">    
           <li className="nav-item-right">    
-            <a href="/faq" className={`font-poppinsBold font-bold ${
-              currentLang === 'id' ? 'text-sm' : 'text-sm'
-            }`}>    
+            <a href="/faq" className="font-poppinsBold font-bold hover:opacity-70 transition-opacity text-[11px] lg:text-xs xl:text-[13px]">    
               {t("header.nav.faq")}    
             </a>    
           </li>    
-    
+        
           {/* Language selector */}    
           <div className="relative inline-block nav-item-right">    
             <button    
               onClick={() => setIsLangOpen(!isLangOpen)}    
-              className={`font-poppinsBold translate-y-0.5 flex items-center gap-2 ${
-                currentLang === 'id' ? 'text-[15px]' : 'text-[15px]'
-              }`}    
-            >    
+              className="font-poppinsBold translate-y-0.5 flex items-center gap-1 lg:gap-2 hover:opacity-70 transition-opacity text-[11px] lg:text-xs xl:text-[13px]"    
+            >   
               {t("header.nav.language")}    
               <FaChevronDown    
-                size={16}    
-                className={`transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`}    
+                size={14}    
+                className={`lg:w-4 lg:h-4 transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`}    
               />    
             </button>    
     
             {isLangOpen && (    
               <ul    
-                className={`absolute left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 ${
-                  currentLang === 'id' ? 'w-40' : 'w-40'
-                }`}    
+                className="absolute left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 w-32 lg:w-40"    
                 style={{    
                   top: "100%",    
                   marginTop: "8px"    
@@ -213,9 +202,7 @@ const DesktopLayout = () => (
                   <li key={lang.code}>    
                     <button    
                       onClick={() => handleLanguageChange(lang.code)}    
-                      className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                        currentLang === 'id' ? 'text-sm' : 'text-sm'
-                      } ${currentLang === lang.code ? "bg-gray-100 font-semibold" : ""}`}    
+                      className={`block w-full text-left px-4 py-2 hover:bg-gray-100 text-xs lg:text-sm ${currentLang === lang.code ? "bg-gray-100 font-semibold" : ""}`}    
                     >    
                       {lang.label}    
                     </button>    
@@ -231,25 +218,19 @@ const DesktopLayout = () => (
               <img    
                 src={cartIcon}    
                 alt="Cart"    
-                className={`w-[30px] h-auto cursor-pointer ${
-                  currentLang === 'id' ? 'w-[30px]' : 'w-[30px]'
-                }`}    
+                className="w-[26px] lg:w-[30px] xl:w-[32px] h-auto cursor-pointer hover:opacity-70 transition-opacity"    
               />    
               {cartCount > 0 && (    
-                <span className={`font-poppinsBold absolute top-[-5px] right-[-5px] text rounded-full px-[6px] py-[2px] translate-x-[-9px] mt-[5px] ${
-                  currentLang === 'id' ? 'text-[12px]' : 'text-[12px]'
-                }`}>    
+                <span className="font-poppinsBold absolute top-[-5px] right-[-5px] text rounded-full px-[6px] py-[2px] translate-x-[-9px] mt-[5px] text-[11px] lg:text-[12px]">    
                   {cartCount}    
                 </span>    
               )}    
             </a>    
     
             {/* Hover popup */}    
-            <div className={`absolute right-0 mt-3 hidden group-hover:block z-50 ${
-              currentLang === 'id' ? 'w-[420px]' : 'w-[420px]'
-            }`}>    
+            <div className="absolute right-0 mt-3 hidden group-hover:block z-50" style={{ width: 'min(450px, 90vw)' }}>    
               <div    
-                className="relative bg-no-repeat bg-contain bg-top p-6"    
+                className="relative bg-no-repeat bg-contain bg-top p-5 lg:p-6"    
                 style={{    
                   backgroundImage: `url(${cartPopup})`,    
                   width: "100%",    
@@ -257,32 +238,22 @@ const DesktopLayout = () => (
                   backgroundPosition: "10px top",    
                 }}    
               >    
-                <p className={`font-poppinsBold ml-10 mb-3 ${
-                  currentLang === 'id' ? 'text-sm' : 'text-sm'
-                }`}>    
+                <p className="font-poppinsBold ml-8 lg:ml-10 mb-3 text-xs lg:text-sm">    
                   {t("header.recentlyAdded") || "Recently Added Products"} ({cartCount})    
                 </p>    
     
                 {cartItems.length === 0 ? (    
-                  <div className={`flex items-center justify-center h-full -translate-y-[60px] text-gray-500 ${
-                    currentLang === 'id' ? 'text-sm' : 'text-sm'
-                  }`}>    
+                  <div className="flex items-center justify-center h-full -translate-y-[60px] text-gray-500 text-xs lg:text-sm">    
                     {t("header.emptyCart") || "Your cart is empty"}    
                   </div>    
                 ) : (    
-                  <ul className="ml-10 space-y-3 overflow-y-auto max-h-[180px] pr-2">    
+                  <ul className="ml-8 lg:ml-10 space-y-3 overflow-y-auto max-h-[180px] pr-2">    
                     {cartItems.map((item) => (    
                       <li key={item.id} className="flex items-center gap-3">    
-                        <img src={item.imageUrl} alt={item.name} className={`rounded ${
-                          currentLang === 'id' ? 'w-12 h-12' : 'w-12 h-12'
-                        }`} />    
-                        <div className="flex-1">    
-                          <p className={`font-semibold ${
-                            currentLang === 'id' ? 'text-sm' : 'text-sm'
-                          }`}>{item.name}</p>    
-                          <p className={`text-gray-600 ${
-                            currentLang === 'id' ? 'text-xs' : 'text-xs'
-                          }`}>    
+                        <img src={item.imageUrl} alt={item.name} className="rounded w-10 h-10 lg:w-12 lg:h-12 object-cover flex-shrink-0" />    
+                        <div className="flex-1 min-w-0">    
+                          <p className="font-semibold text-xs lg:text-sm truncate">{item.name}</p>    
+                          <p className="text-gray-600 text-[10px] lg:text-xs">    
                             {item.quantity} × Rp {item.price.toLocaleString("id-ID")}    
                           </p>    
                         </div>    
@@ -303,14 +274,15 @@ const MobileLayout = () => (
   <>    
     <header    
       id="mobile-header"    
-      className="bg-[#dcbec1] shadow-sm sticky top-0 left-0 right-0 z-50"    
+      className="bg-[#dcbec1] shadow-sm sticky top-0 left-0 right-0 z-50 w-full"    
     >    
-      <div className="flex items-center justify-between px-4 py-3">    
+      <div className="flex items-center justify-between px-4 py-3 w-full" style={{ maxWidth: '640px', margin: '0 auto' }}>    
         
         {/* Hamburger */}    
         <button    
           onClick={() => setMenuOpen(!menuOpen)}    
-          className="text-black focus:outline-none p-1 w-10 flex justify-center"    
+          className="text-black focus:outline-none p-1 flex justify-center items-center"
+          style={{ minWidth: '2.5rem' }}    
           aria-label="Toggle menu"    
         >    
           {menuOpen ? (    
@@ -321,10 +293,10 @@ const MobileLayout = () => (
         </button>    
         
         {/* Logo */}    
-        <img src={logoAmora} alt="Little Amora Logo" className="h-14" />    
+        <img src={logoAmora} alt="Little Amora Logo" className="h-12 sm:h-14 w-auto object-contain" style={{ maxWidth: '50%' }} />    
         
         {/* Right Section - Language + Cart */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* Language Selector */}
           <div className="relative">
             <button
@@ -362,19 +334,20 @@ const MobileLayout = () => (
           {/* Cart */}
           <a 
             href="/shoppingcart" 
-            className="relative"
+            className="relative flex items-center"
+            style={{ minWidth: '2rem' }}
           >
             <div className="relative">
               <img 
                 src={cartIcon} 
                 alt="Cart" 
-                className="w-[30px] h-auto" 
+                className="w-[28px] sm:w-[30px] h-auto" 
                 style={{
                   filter: 'brightness(0) saturate(100%)'
                 }}
               />
               {cartCount > 0 && (
-                <span className="font-poppinsBold absolute -top-0.5 right-1 text-black rounded-full px-[6px] py-[2px] text-[13px]">
+                <span className="font-poppinsBold absolute -top-0.5 right-1 text-black rounded-full px-[6px] py-[2px] text-[12px] sm:text-[13px]">
                   {cartCount}
                 </span>
               )}
@@ -386,7 +359,7 @@ const MobileLayout = () => (
     
 {/* Hamburger Menu Sidebar - Minimalist Design */}    
 <div    
-  className={`fixed top-[70px] left-0 h-[calc(100vh-70px)] w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${    
+  className={`fixed top-[64px] sm:top-[70px] left-0 h-[calc(100vh-64px)] sm:h-[calc(100vh-70px)] w-64 sm:w-72 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${    
     menuOpen ? "translate-x-0" : "-translate-x-full"    
   }`}    
 >    
@@ -421,7 +394,7 @@ const MobileLayout = () => (
           className="border-none outline-none text-sm w-full bg-transparent"    
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}    
         />    
-        <button className="ml-2" onClick={handleSearch}>    
+        <button className="ml-2 flex-shrink-0" onClick={handleSearch}>    
           <FaSearch size={16} className="text-gray-600" />    
         </button>    
       </div>    
@@ -432,22 +405,22 @@ const MobileLayout = () => (
     {/* Overlay when menu is open */}    
     {menuOpen && (    
       <div    
-        className="fixed inset-0 bg-black/30 z-30 top-[70px]"    
+        className="fixed inset-0 bg-black/30 z-30 top-[64px] sm:top-[70px]"    
         onClick={() => setMenuOpen(false)}    
       ></div>    
     )}    
     
     {/* Bottom Navigation */}    
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">    
-      <div className="flex justify-around items-center py-2 px-1">    
+      <div className="flex justify-around items-center py-2 px-1 w-full" style={{ maxWidth: '640px', margin: '0 auto' }}>    
         {/* Home */}    
         <a     
           href="/"     
-          className={`flex flex-col items-center gap-1 flex-1 ${    
+          className={`flex flex-col items-center gap-1 flex-1 min-w-0 ${    
             location.pathname === '/' ? 'text-[#dcbec1]' : 'text-gray-600'    
           }`}    
         >    
-          <IoHomeOutline size={24} strokeWidth={1} />    
+          <IoHomeOutline size={24} strokeWidth={1} className="sm:w-6 sm:h-6" />    
           <span className="text-[8px] sm:text-xs font-poppinsBold">    
             {t("header.nav.home")}    
           </span>    
@@ -456,11 +429,11 @@ const MobileLayout = () => (
         {/* Products */}    
         <a     
           href="/products"     
-          className={`flex flex-col items-center gap-1 flex-1 ${    
+          className={`flex flex-col items-center gap-1 flex-1 min-w-0 ${    
             location.pathname === '/products' ? 'text-[#dcbec1]' : 'text-gray-600'    
           }`}    
         >    
-          <IoBagHandleOutline size={24} strokeWidth={1} />    
+          <IoBagHandleOutline size={24} strokeWidth={1} className="sm:w-6 sm:h-6" />    
           <span className="text-[8px] sm:text-xs font-poppinsBold">    
             {t("header.nav.products")}    
           </span>    
@@ -469,11 +442,11 @@ const MobileLayout = () => (
         {/* Size Guide */}    
         <a     
           href="/size-guide"
-          className={`flex flex-col items-center gap-1 flex-1 translate-x-1.5 ${    
+          className={`flex flex-col items-center gap-1 flex-1 min-w-0 translate-x-1.5 ${    
             location.pathname === '/size-guide' ? 'text-[#dcbec1]' : 'text-gray-600'    
           }`}    
         >    
-          <CiRuler size={24} strokeWidth={0.5} />    
+          <CiRuler size={24} strokeWidth={0.5} className="sm:w-6 sm:h-6" />    
           <span className="text-[8px] font-poppinsBold">    
             {t("header.nav.sizeGuide")}    
           </span>    
@@ -482,11 +455,11 @@ const MobileLayout = () => (
         {/* Location */}    
         <a     
           href="/location"     
-          className={`flex flex-col items-center gap-1 flex-1 ${    
+          className={`flex flex-col items-center gap-1 flex-1 min-w-0 ${    
             location.pathname === '/location' ? 'text-[#dcbec1]' : 'text-gray-600'    
           }`}    
         >    
-          <IoLocationOutline size={24} strokeWidth={1} />    
+          <IoLocationOutline size={24} strokeWidth={1} className="sm:w-6 sm:h-6" />    
           <span className="text-[8px] sm:text-xs font-poppinsBold">    
             {t("header.nav.location")}    
           </span>    
@@ -495,11 +468,11 @@ const MobileLayout = () => (
         {/* Background Catalog */}    
         <a     
           href="/background-catalog"    
-          className={`flex flex-col items-center gap-1 flex-1 ${    
+          className={`flex flex-col items-center gap-1 flex-1 min-w-0 ${    
             location.pathname === '/background-catalog' ? 'text-[#dcbec1]' : 'text-gray-600'    
           }`}    
         >    
-          <IoImageOutline size={24} strokeWidth={1} />    
+          <IoImageOutline size={24} strokeWidth={1} className="sm:w-6 sm:h-6" />    
           <span className="text-[8px] sm:text-xs font-poppinsBold">    
             {currentLang === "id" ? "Background" : "Background"}    
           </span>    
