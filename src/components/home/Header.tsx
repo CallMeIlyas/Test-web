@@ -124,148 +124,152 @@ const DesktopLayout = () => (
         <img ref={logoRef} src={logoAmora} alt="Little Amora Logo" className="h-24 w-auto object-contain" />    
       </div>    
     
-      <nav    
-        ref={navRef}    
-        className="flex justify-between items-center px-6 lg:px-10 xl:px-12 2xl:px-16 py-3 gap-4 lg:gap-6 overflow-x-visible relative z-40 w-full mx-auto"
-        style={{ maxWidth: '1920px' }}    
-      >    
-        {/* === Menu kiri === */}    
-<ul className="flex p-0 m-0 mr-auto text-black font-poppinsBold flex-shrink-0 whitespace-nowrap gap-4 lg:gap-6 xl:gap-7 2xl:gap-8 text-[11px] lg:text-xs xl:text-[13px]">   
-          <li className="nav-item-left">    
-            <a href="/" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.home")}</a>    
-          </li>    
-          <li className="nav-item-left">    
-            <a href="/products" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.products")}</a>    
-          </li>    
-          <li className="nav-item-left">    
-            <a href="/size-guide" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.sizeGuide")}</a>    
-          </li>    
-          <li className="nav-item-left">    
-            <a href="/background-catalog" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.backgroundCatalog")}</a>    
-          </li>    
-          <li className="nav-item-left">    
-            <a href="/location" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.location")}</a>    
-          </li>    
-        </ul>    
-    
-        {/* === Search bar === */}    
-        <div className="nav-item-search flex border border-black rounded-[40px] px-4 lg:px-6 py-2 items-center flex-1 min-w-[180px] max-w-[350px] mx-4 lg:mx-8 xl:mx-12">   
-          <input    
-            ref={searchInputRef}    
-            type="text"    
-            placeholder={t("header.search") || "Search"}    
-            className="border-none outline-none px-2 w-full bg-transparent text-xs lg:text-sm"    
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}    
-          />    
-          <button className="ml-2 lg:ml-3 flex-shrink-0" onClick={handleSearch}>    
-            <FaSearch className="text-sm lg:text-base" />    
-          </button>    
-        </div>    
-    
-        {/* === Menu kanan === */}    
-        <ul className="flex items-center flex-shrink-0 whitespace-nowrap gap-4 lg:gap-6 xl:gap-7 2xl:gap-8">    
-          <li className="nav-item-right">    
-            <a href="/faq" className="font-poppinsBold font-bold hover:opacity-70 transition-opacity text-[11px] lg:text-xs xl:text-[13px]">    
-              {t("header.nav.faq")}    
-            </a>    
-          </li>    
-        
-          {/* Language selector */}    
-          <div className="relative inline-block nav-item-right">    
-            <button    
-              onClick={() => setIsLangOpen(!isLangOpen)}    
-              className="font-poppinsBold translate-y-0.5 flex items-center gap-1 lg:gap-2 hover:opacity-70 transition-opacity text-[11px] lg:text-xs xl:text-[13px]"    
-            >   
-              {t("header.nav.language")}    
-              <FaChevronDown    
-                size={14}    
-                className={`lg:w-4 lg:h-4 transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`}    
-              />    
-            </button>    
-    
-            {isLangOpen && (    
-              <ul    
-                className="absolute left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 w-32 lg:w-40"    
-                style={{    
-                  top: "100%",    
-                  marginTop: "8px"    
-                }}    
-              >    
-                {(    
-                  [    
-                    { code: "en", label: t("header.languageOptions.en") },    
-                    { code: "id", label: t("header.languageOptions.id") }    
-                  ].sort((a, b) =>    
-                    a.code === currentLang ? -1 : b.code === currentLang ? 1 : 0    
-                  )    
-                ).map((lang) => (    
-                  <li key={lang.code}>    
-                    <button    
-                      onClick={() => handleLanguageChange(lang.code)}    
-                      className={`block w-full text-left px-4 py-2 hover:bg-gray-100 text-xs lg:text-sm ${currentLang === lang.code ? "bg-gray-100 font-semibold" : ""}`}    
-                    >    
-                      {lang.label}    
-                    </button>    
-                  </li>    
-                ))}    
-              </ul>    
-            )}    
-          </div>    
-    
-          {/* === CART === */}    
-          <li className="relative group nav-item-right">    
-            <a href="/shoppingcart" className="block relative">    
-              <img    
-                src={cartIcon}    
-                alt="Cart"    
-                className="w-[26px] lg:w-[30px] xl:w-[32px] h-auto cursor-pointer hover:opacity-70 transition-opacity"    
-              />    
-              {cartCount > 0 && (    
-                <span className="font-poppinsBold absolute top-[-5px] right-[-5px] text rounded-full px-[6px] py-[2px] translate-x-[-9px] mt-[5px] text-[11px] lg:text-[12px]">    
-                  {cartCount}    
-                </span>    
-              )}    
-            </a>    
-    
-            {/* Hover popup */}    
-            <div className="absolute right-0 mt-3 hidden group-hover:block z-50" style={{ width: 'min(450px, 90vw)' }}>    
-              <div    
-                className="relative bg-no-repeat bg-contain bg-top p-5 lg:p-6"    
-                style={{    
-                  backgroundImage: `url(${cartPopup})`,    
-                  width: "100%",    
-                  height: "300px",    
-                  backgroundPosition: "10px top",    
-                }}    
-              >    
-                <p className="font-poppinsBold ml-8 lg:ml-10 mb-3 text-xs lg:text-sm">    
-                  {t("header.recentlyAdded") || "Recently Added Products"} ({cartCount})    
-                </p>    
-    
-                {cartItems.length === 0 ? (    
-                  <div className="flex items-center justify-center h-full -translate-y-[60px] text-gray-500 text-xs lg:text-sm">    
-                    {t("header.emptyCart") || "Your cart is empty"}    
-                  </div>    
-                ) : (    
-                  <ul className="ml-8 lg:ml-10 space-y-3 overflow-y-auto max-h-[180px] pr-2">    
-                    {cartItems.map((item) => (    
-                      <li key={item.id} className="flex items-center gap-3">    
-                        <img src={item.imageUrl} alt={item.name} className="rounded w-10 h-10 lg:w-12 lg:h-12 object-cover flex-shrink-0" />    
-                        <div className="flex-1 min-w-0">    
-                          <p className="font-semibold text-xs lg:text-sm truncate">{item.name}</p>    
-                          <p className="text-gray-600 text-[10px] lg:text-xs">    
-                            {item.quantity} × Rp {item.price.toLocaleString("id-ID")}    
-                          </p>    
-                        </div>    
-                      </li>    
-                    ))}    
-                  </ul>    
-                )}    
-              </div>    
-            </div>    
-          </li>    
-        </ul>    
-      </nav>    
+<nav
+  ref={navRef}
+  className="flex items-center justify-between px-6 lg:px-10 xl:px-12 2xl:px-16 py-3 gap-4 lg:gap-6 overflow-x-visible relative z-40 w-full mx-auto"
+  style={{ maxWidth: '1920px' }}
+>
+  {/* === Menu kiri - Fixed Width === */}
+  <div className="flex-shrink-0">
+    <ul className="flex p-0 m-0 text-black font-poppinsBold whitespace-nowrap gap-4 lg:gap-6 xl:gap-7 2xl:gap-8 text-[11px] lg:text-xs xl:text-[13px]">
+      <li className="nav-item-left">
+        <a href="/" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.home")}</a>
+      </li>
+      <li className="nav-item-left">
+        <a href="/products" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.products")}</a>
+      </li>
+      <li className="nav-item-left">
+        <a href="/size-guide" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.sizeGuide")}</a>
+      </li>
+      <li className="nav-item-left">
+        <a href="/background-catalog" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.backgroundCatalog")}</a>
+      </li>
+      <li className="nav-item-left">
+        <a href="/location" className="block truncate hover:opacity-70 transition-opacity">{t("header.nav.location")}</a>
+      </li>
+    </ul>
+  </div>
+
+  {/* === Search bar - Ultra Flexible === */}
+  <div className="nav-item-search flex border border-black rounded-[40px] px-4 lg:px-6 py-2 items-center flex-1 min-w-[200px] max-w-[50vw] mx-4 lg:mx-8 xl:mx-12">
+    <input
+      ref={searchInputRef}
+      type="text"
+      placeholder={t("header.search") || "Search"}
+      className="border-none outline-none px-2 w-full bg-transparent text-xs lg:text-sm"
+      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+    />
+    <button className="ml-2 lg:ml-3 flex-shrink-0" onClick={handleSearch}>
+      <FaSearch className="text-sm lg:text-base" />
+    </button>
+  </div>
+
+  {/* === Menu kanan - Fixed Width === */}
+  <div className="flex-shrink-0">
+    <ul className="flex items-center whitespace-nowrap gap-4 lg:gap-6 xl:gap-7 2xl:gap-8">
+      <li className="nav-item-right">
+        <a href="/faq" className="font-poppinsBold font-bold hover:opacity-70 transition-opacity text-[11px] lg:text-xs xl:text-[13px]">
+          {t("header.nav.faq")}
+        </a>
+      </li>
+
+      {/* Language selector */}
+      <div className="relative inline-block nav-item-right">
+        <button
+          onClick={() => setIsLangOpen(!isLangOpen)}
+          className="font-poppinsBold translate-y-0.5 flex items-center gap-1 lg:gap-2 hover:opacity-70 transition-opacity text-[11px] lg:text-xs xl:text-[13px]"
+        >
+          {t("header.nav.language")}
+          <FaChevronDown
+            size={14}
+            className={`lg:w-4 lg:h-4 transition-transform duration-300 ${isLangOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {isLangOpen && (
+          <ul
+            className="absolute left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 w-32 lg:w-40"
+            style={{
+              top: "100%",
+              marginTop: "8px"
+            }}
+          >
+            {(
+              [
+                { code: "en", label: t("header.languageOptions.en") },
+                { code: "id", label: t("header.languageOptions.id") }
+              ].sort((a, b) =>
+                a.code === currentLang ? -1 : b.code === currentLang ? 1 : 0
+              )
+            ).map((lang) => (
+              <li key={lang.code}>
+                <button
+                  onClick={() => handleLanguageChange(lang.code)}
+                  className={`block w-full text-left px-4 py-2 hover:bg-gray-100 text-xs lg:text-sm ${currentLang === lang.code ? "bg-gray-100 font-semibold" : ""}`}
+                >
+                  {lang.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* === CART === */}
+      <li className="relative group nav-item-right">
+        <a href="/shoppingcart" className="block relative">
+          <img
+            src={cartIcon}
+            alt="Cart"
+            className="w-[26px] lg:w-[30px] xl:w-[32px] h-auto cursor-pointer hover:opacity-70 transition-opacity"
+          />
+          {cartCount > 0 && (
+            <span className="font-poppinsBold absolute top-[-5px] right-[-5px] text rounded-full px-[6px] py-[2px] translate-x-[-9px] mt-[5px] text-[11px] lg:text-[12px]">
+              {cartCount}
+            </span>
+          )}
+        </a>
+
+        {/* Hover popup */}
+        <div className="absolute right-0 mt-3 hidden group-hover:block z-50" style={{ width: 'min(450px, 90vw)' }}>
+          <div
+            className="relative bg-no-repeat bg-contain bg-top p-5 lg:p-6"
+            style={{
+              backgroundImage: `url(${cartPopup})`,
+              width: "100%",
+              height: "300px",
+              backgroundPosition: "10px top",
+            }}
+          >
+            <p className="font-poppinsBold ml-8 lg:ml-10 mb-3 text-xs lg:text-sm">
+              {t("header.recentlyAdded") || "Recently Added Products"} ({cartCount})
+            </p>
+
+            {cartItems.length === 0 ? (
+              <div className="flex items-center justify-center h-full -translate-y-[60px] text-gray-500 text-xs lg:text-sm">
+                {t("header.emptyCart") || "Your cart is empty"}
+              </div>
+            ) : (
+              <ul className="ml-8 lg:ml-10 space-y-3 overflow-y-auto max-h-[180px] pr-2">
+                {cartItems.map((item) => (
+                  <li key={item.id} className="flex items-center gap-3">
+                    <img src={item.imageUrl} alt={item.name} className="rounded w-10 h-10 lg:w-12 lg:h-12 object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-xs lg:text-sm truncate">{item.name}</p>
+                      <p className="text-gray-600 text-[10px] lg:text-xs">
+                        {item.quantity} × Rp {item.price.toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>    
     </header>    
   );
     
