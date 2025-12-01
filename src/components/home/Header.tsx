@@ -174,7 +174,7 @@ const DesktopLayout = () => (
       </li>
 
       {/* Language selector */}
-      <div className="relative inline-block nav-item-right">
+      <div className="relative inline-block nav-item-right font-poppinsBold">
         <button
           onClick={() => setIsLangOpen(!isLangOpen)}
           className="font-poppinsBold translate-y-0.5 flex items-center gap-1 lg:gap-2 hover:opacity-70 transition-opacity text-[11px] lg:text-xs xl:text-[13px]"
@@ -302,7 +302,7 @@ const MobileLayout = () => (
         {/* Right Section - Language + Cart */}
         <div className="flex items-center gap-3 sm:gap-4">
           {/* Language Selector */}
-          <div className="relative">
+          <div className="relative font-poppinsBold">
             <button
               onClick={() => setIsLangOpen(!isLangOpen)}
               className="font-poppinsBold text-sm font-semibold text-black px-2 py-1 rounded hover:bg-white/30 transition-colors flex items-center gap-1"
