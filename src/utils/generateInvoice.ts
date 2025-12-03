@@ -40,7 +40,7 @@ export const generateInvoice = async (cartData, customerData) => {
 
   // 💼 BILL TO (posisi sudah pas)
   const billToX = 240; 
-  let billToY = 724;   
+  let billToY = 735;   
   const lineGap = 16;  
 
   // Helper: fallback kalau field kosong → "-"
@@ -69,8 +69,51 @@ export const generateInvoice = async (cartData, customerData) => {
   // Payment transfer via Bank
   drawText(safeText(customerData.paymentMethod), billToX, billToY, { font: poppinsRegular, size: 10 });
 
-  // 🧾 Area tabel produk - REDUCED row height untuk muat lebih banyak produk
-  const box = { left: 45, right: 545, top: 620, bottom: 50, rowH: 48 }; // Adjusted untuk fit 7 produk
+
+// 🔴 INVOICE NUMBER di bawah INVOICE - FORMAT BARU: INV/LAC/NAMATANGGAL
+const invoiceInfoX = 45;
+const invoiceInfoY = 790; // Posisi di bawah "INVOICE"
+
+// Helper untuk format nama (ambil 5 karakter pertama, uppercase, tanpa spasi)
+const formatCustomerName = (name) => {
+  if (!name || name === "-") return "CUST";
+  // Hapus spasi, ambil 5 karakter pertama, uppercase
+  const cleanName = name.replace(/\s+/g, '').toUpperCase();
+  return cleanName.substring(0, 5);
+};
+
+// Helper untuk format tanggal ke DDMMYYYY
+const formatToDDMMYYYY = (dateString) => {
+  if (!dateString || dateString === "-") return "";
+  
+  try {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${day}${month}${year}`; // DDMMYYYY
+  } catch {
+    // Jika format lain, coba ekstrak angka saja
+    return dateString.replace(/\D/g, '').substring(0, 8);
+  }
+};
+
+// Format nama customer
+const customerName = formatCustomerName(customerData.contactPerson);
+// Format tanggal payment date
+const paymentDateFormatted = formatToDDMMYYYY(customerData.paymentDate) || "00000000";
+
+// Gabungkan: INV/LAC/NAMATANGGAL
+const finalInvoiceText = `INV/LAC/${customerName}${paymentDateFormatted}`;
+
+drawText(finalInvoiceText, invoiceInfoX, invoiceInfoY, {
+  font: poppinsSemiBold,
+  size: 9,
+  color: rgb(0.862, 0.149, 0.149),
+});
+
+  // 🧾 Area tabel produk
+  const box = { left: 45, right: 545, top: 630, bottom: 50, rowH: 50 }; // 🔥 TURUNKAN bottom dari 170 ke 50
   const cols = { image: 60, name: 210, price: 90, qty: 60, total: 90 };
   let y = box.top;
   
@@ -79,23 +122,18 @@ export const generateInvoice = async (cartData, customerData) => {
   
   // 🎯 Flag untuk halaman pertama (punya header BILL TO)
   let isFirstPage = true;
-  
-  // 📊 Counter jumlah produk
-  let productCount = 0;
 
-  // 📝 Loop produk
+  // 🔁 Loop produk
   for (const [i, item] of cartData.entries()) {
-    productCount++;
-    
     // ⚠️ Cek apakah perlu halaman baru UNTUK PRODUK
-    // Halaman pertama: bottom 30 (untuk muat 10-11 produk), halaman lain: bottom 30
-    const currentBottom = 30;
+    // Gunakan bottom yang berbeda untuk halaman pertama vs halaman berikutnya
+    const currentBottom = isFirstPage ? 170 : 30; // Halaman 1: bottom 170, halaman lain: bottom 30
     
     if (y - box.rowH < currentBottom) {
       // 🔥 Buat halaman BLANK (TANPA apapun)
       page = pdfDoc.addPage([595.28, 841.89]);
-      y = 841; // 🎯 MENTOK ATAS - tinggi penuh A4
-      isFirstPage = false;
+      y = 841; // 🎯 MENTOK ATAS (dari 830 ke 841 - tinggi penuh A4)
+      isFirstPage = false; // Sekarang bukan halaman pertama lagi
     }
 
     // 🖼️ Gambar produk proporsional
@@ -105,21 +143,21 @@ export const generateInvoice = async (cartData, customerData) => {
         ? await pdfDoc.embedPng(imgBytes)
         : await pdfDoc.embedJpg(imgBytes);
 
-      const size = 32; // Turun dari 35 ke 32 untuk kompak
+      const size = 35;
       const { width, height } = img.scale(1);
       const aspect = width / height;
       const drawW = aspect >= 1 ? size : size * aspect;
       const drawH = aspect >= 1 ? size / aspect : size;
       const imgX = box.left + (cols.image - drawW) / 2;
-      const imgY = y - drawH - 48; // Adjust posisi
+      const imgY = y - drawH - 53;
       page.drawImage(img, { x: imgX, y: imgY, width: drawW, height: drawH });
     } catch {}
 
     // 🧮 Hitung subtotal
     const subtotal = item.price * item.quantity;
 
-    // 📝 Posisi teks produk
-    const textY = y - 65; // Adjust dari 70 ke 65
+    // 📍 Posisi teks produk
+    const textY = y - 70;
     const nameX = box.left + cols.image + 8;
     const nameY = textY;
     const nameSize = 8;
@@ -197,9 +235,10 @@ export const generateInvoice = async (cartData, customerData) => {
       color: rgb(0.862, 0.149, 0.149),
     });
 
+    // 🔽 Update Y position SEBELUM update lastProductY
     y -= box.rowH;
     
-    // 📍 Update posisi produk terakhir
+    // 📍 Update posisi produk terakhir SETELAH Y dikurangi
     lastProductY = y;
   }
 
@@ -213,7 +252,11 @@ export const generateInvoice = async (cartData, customerData) => {
     poppinsBold
   };
 
-  // 🔗 Merge footer PDF - otomatis bikin halaman baru kalau produk >= 7
+  // 🔥 LOGIC: Jika produk >= 7, footer pasti di halaman baru (turun dari 8)
+  const productCount = cartData.length;
+  const forceNewPageForFooter = productCount >= 7;
+
+  // 🔗 Merge footer PDF
   const { finalPage, finalY } = await mergeFooterPdf(
     pdfDoc,
     page,
@@ -221,7 +264,7 @@ export const generateInvoice = async (cartData, customerData) => {
     "/FOOTER.pdf",
     total,
     fonts,
-    productCount // Pass product count
+    cartData.length
   );
 
   // Update page reference ke page terakhir

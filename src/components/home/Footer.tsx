@@ -20,24 +20,39 @@ const Footer = () => {
     <footer className="w-full bg-[#dcbec1] overflow-hidden">
       {isMobile ? (
         <>
-          {/* MOBILE VIEW - TETAP SAMA */}
-          <div className="flex flex-row items-start justify-between px-4 py-6 gap-4 mb-16 w-full">
-            <img
-              src={logoFooter}
-              alt="Little Amora Logo"
-              className="h-[70px] w-auto object-contain"
-            />
-          
-            <ul className="flex flex-col items-end mt-6 text-right">
-              <li>
-                <a
-                  href="/terms"
-                  className="no-underline text-black font-poppinsBold whitespace-nowrap text-sm hover:opacity-70 transition-opacity"
-                >
-                  {t("footer.terms")}
+          {/* MOBILE VIEW - SAMA SEPERTI DESKTOP */}
+          <div className="flex flex-row items-start justify-between px-4 py-9 w-full -mt-8">
+            {/* Bagian kiri: Logo dan copyright perusahaan */}
+            <div className="flex flex-col">
+              <img
+                src={logoFooter}
+                alt="Little Amora Logo"
+                className="h-[70px] w-auto object-contain"
+              />
+              <p className="font-poppinsRegular text-[8px] mt-5 -translate-y-8">
+                <span className="text-lg relative top-0.5">©</span> 2018-{currrentYear} Little Amora Karikatur
+              </p>
+            </div>
+            
+            {/* Bagian kanan: Menu dan copyright creator */}
+            <div className="flex flex-col items-end">
+              <ul className="flex flex-col items-end mt-6 text-right">
+                <li>
+                  <a
+                    href="/terms"
+                    className="no-underline text-black font-poppinsBold whitespace-nowrap text-sm hover:opacity-70 transition-opacity"
+                  >
+                    {t("footer.terms")}
+                  </a>
+                </li>
+              </ul>
+              <p className="font-poppinsRegular text-[8px] text-right translate-y-0.5 mt-2">
+                <span className="text-lg relative top-0.5">©</span> Created by{" "}
+                <a href="" className="underline hover:opacity-70 transition-opacity">
+                  Muhammad Ilyas
                 </a>
-              </li>
-            </ul>
+              </p>
+            </div>
           </div>
         </>
       ) : (
@@ -58,9 +73,9 @@ const Footer = () => {
                 transform: 'translateX(calc(-1 * min(5vw, 100px)))'
               }}
             />
-            <p className="font-poppinsBold text-[13px]"
+            <p className="font-poppinsRegular text-[11px]"
               style={{ 
-                transform: 'translateX(calc(-1 * min(5vw, 100px)))'
+                transform: 'translateX(calc(-1 * min(4vw, 100px)))'
               }}
             >
               <span className="text-lg relative top-0.5">©</span> 2018-{currrentYear} Little Amora Karikatur
@@ -91,9 +106,9 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
-            <p className="font-poppinsBold ml-3 text-[13px]"
+            <p className="font-poppinsRegular ml-3 text-[11px]"
               style={{ 
-                transform: 'translate(calc(min(6vw, 120px)), calc(min(2vw, 40px)))'
+                transform: 'translate(calc(min(8vw, 120px)), calc(min(2vw, 40px)))'
               }}
             >
               <span className="text-lg relative top-0.5">©</span> Created by <a href="" className="underline hover:opacity-70 transition-opacity">Muhammad Ilyas</a>

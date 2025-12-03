@@ -40,11 +40,11 @@ export const mergeFooterPdf = async (
     // ⚙️ KONFIGURASI MARGIN FOOTER
     const FOOTER_CONFIG = {
       newPageTopMargin: 0,  // 🔝 Jarak dari atas halaman BARU (0 = paling atas, tanpa jeda)
-      samePageMarginTop: 40, // 📍 Jarak dari produk terakhir di halaman SAMA
+      samePageMarginTop: -10, // 📍 Jarak dari produk terakhir di halaman SAMA
     };
 
-    // 🎯 LOGIKA: Jika produk >= 8, PASTI buat halaman baru untuk footer
-    if (productCount >= 8) {
+    // 🎯 LOGIKA: Jika produk >= 3, PASTI buat halaman baru untuk footer
+    if (productCount >= 3) {
       // 📄 Buat halaman baru untuk footer
       targetPage = pdfDoc.addPage([595.28, 841.89]);
       
@@ -74,7 +74,7 @@ export const mergeFooterPdf = async (
 
     // 💰 Tulis total di atas footer
     const totalX = 405;
-    const totalY = footerY - 40;
+    const totalY = footerY - 70;
 
     targetPage.drawText(`Rp${total.toLocaleString("id-ID")}`, {
       x: totalX,

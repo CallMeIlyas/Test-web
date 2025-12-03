@@ -761,6 +761,26 @@ const ShoppingCart: React.FC = () => {
                     {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
                   </button>
                 </form>
+                <p className="mt-12 font-poppinsRegular">
+                  {currentLang === "id" ? (
+                    <>
+                      Jika <span className="font-poppinsSemiBold">MAU BAYAR</span> atau <span className="font-poppinsSemiBold">SUDAH BAYAR</span>, bisa konfirmasi dahulu ke tim Little Amora.
+                      <br />
+                      1. Untuk cek detail pesanan (ongkir, sesuai deadline, kaca/acrylic, dll)
+                      <br />
+                      2. Agar invoice yang didapatkan benar dan sah
+                    </>
+                  ) : (
+                    <>
+                      If you <span className="font-poppinsSemiBold">WANT TO PAY</span> or <span className="font-poppinsSemiBold">ALREADY PAID</span>, you can confirm first with Little Amora team.
+                      <br />
+                      <br />
+                      1. To check order details (shipping fee, meeting deadline, glass/acrylic, etc)
+                      <br />
+                      2. So the invoice you get is correct and valid
+                    </>
+                  )}
+                </p>
               </div>
             </div>
           )}
