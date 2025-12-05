@@ -17,6 +17,10 @@ import onHand3 from "../assets/size-guide/3.png";
 import onHand4 from "../assets/size-guide/4.png";
 import onHand5 from "../assets/size-guide/5.png";
 import onHand6 from "../assets/size-guide/6.png";
+import portofolio from "../assets/size-guide/A.png";
+import cartoon from "../assets/size-guide/B.png"
+import facewithcartoonbody from "../assets/size-guide/C.png"
+
 
 // 🌐 Import gambar berdasarkan bahasa
 // Indonesia
@@ -190,7 +194,7 @@ const SizeGuide: React.FC = () => {
 
   const SectionTitle = ({ title }: { title: string }) => (
     <div className="relative my-6 mb-8 md:my-8 md:mb-10 text-center w-screen left-1/2 -translate-x-1/2">
-      <h1 className="inline-block px-4 text-2xl md:text-4xl lg:text-5xl font-nataliecaydence relative z-10">
+      <h1 className="inline-block px-4 text-4xl font-nataliecaydence relative z-10">
         {title}
       </h1>
       <div className="absolute top-1/2 left-0 w-[15%] md:w-[20%] border-t-2 md:border-t-4 border-black transform -translate-y-1/2"></div>
@@ -305,15 +309,14 @@ const SizeGuide: React.FC = () => {
             </button>
           </div>
 
-{/* Grid Size Chart - Urutan dari kecil ke besar */}
+        {/* Grid Size Chart - Urutan dari kecil ke besar */}
           <div className="w-full mt-12 md:mt-16">
             <div className="grid grid-cols-2 gap-2">
               {/* Render semua ukuran dari mapping */}
               {sizeToProductMap.map((sizeItem, index) => {
                 const isLeftColumn = index % 2 === 0;
                 const isA1orA0 = sizeItem.size === "A1" || sizeItem.size === "A0";
-                
-                // Untuk A1 dan A0, render full width
+
                 if (isA1orA0) {
                   return (
                     <div key={sizeItem.size} className="col-span-2 flex flex-col items-center">
@@ -394,6 +397,51 @@ const SizeGuide: React.FC = () => {
             </div>
           </div>
         </section>
+        
+        {/*Portofolio*/}
+          <section
+          ref={(el) => (sectionsRef.current[3] = el)}
+          className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-12 md:mt-20 mb-16 md:mb-24 relative"
+        >
+          <SectionTitle title={t("size.portofolio")} />
+            <div className="flex justify-center">
+            <img
+              src={portofolio}
+              alt="Size Comparison"
+              className="w-full md:w-4/5 lg:w-3/4 object-contain"
+            />
+          </div>
+          </section>
+          
+          {/*Badan kartun*/}
+          <section
+          ref={(el) => (sectionsRef.current[4] = el)}
+          className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-12 md:mt-20 mb-16 md:mb-24 relative"
+        >
+          <SectionTitle title={t("size.cartoon")} />
+            <div className="flex justify-center">
+            <img
+              src={cartoon}
+              alt="Size Comparison"
+              className="w-full md:w-4/5 lg:w-3/4 object-contain"
+            />
+          </div>
+          </section>
+          
+          {/*wajah asli dengan badan kartun*/}
+          <section
+          ref={(el) => (sectionsRef.current[5] = el)}
+          className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-12 md:mt-20 mb-16 md:mb-24 relative"
+        >
+          <SectionTitle title={t("size.facewithcartoonbody")} />
+            <div className="flex justify-center">
+            <img
+              src={facewithcartoonbody}
+              alt="Size Comparison"
+              className="w-full md:w-4/5 lg:w-3/4 object-contain"
+            />
+          </div>
+          </section>
       </main>
 
       <Footer />

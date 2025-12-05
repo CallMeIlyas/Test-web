@@ -1,5 +1,8 @@
 {
   "frameSize": "Frame Size",
   "sizeComparison": "Size Comparison",
-  "sizeOnHand": "Size on Hand"
+  "sizeOnHand": "Size on Hand",
+  "portofolio": "Caricature Portofolio",
+  "cartoon": "Caricature Face with Cartoon Body",
+  "facewithcartoonbody" : "Photo Faces with Cartoon Body"
 }

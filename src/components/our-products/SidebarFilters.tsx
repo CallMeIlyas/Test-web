@@ -169,182 +169,197 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Layout Desktop
-  const DesktopLayout = () => (
-    <aside className="hidden md:block w-64 p-6 bg-white rounded-xl">
-      {/* Category */}
-      <SplitBorder />
-      <div className="mb-8">
-        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
-          {t("side.category")}
-        </h3>
+// Layout Desktop
+const DesktopLayout = () => (
+  <aside className="hidden md:block w-64 p-6 bg-white rounded-xl">
+    {/* Category */}
+    <SplitBorder />
+    <div className="mb-8">
+      <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
+        {t("side.category")}
+      </h3>
 
-        {Object.entries(customCategories).map(([mainCategory, subcategories]) => {
-          const is2D = mainCategory === t("side.categories.2d");
-          const isExpanded = expandedCategories.has(mainCategory) || is2D;
+      {Object.entries(customCategories).map(([mainCategory, subcategories]) => {
+        const is2D = mainCategory === t("side.categories.2d");
+        const isExpanded = expandedCategories.has(mainCategory) || is2D;
 
-          return (
-            <div key={mainCategory} className="mb-2">
-              {/* Kategori utama */}
-              <div className="font-poppinsRegular flex items-center gap-2 mb-2 ml-6">
-                <input
-                  type="checkbox"
-                  id={`desktop-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
-                  checked={selectedMainCategories.has(mainCategory)}
-                  onChange={(e) =>
-                    handleMainCategoryChange(mainCategory, e.target.checked)
-                  }
-                  className="appearance-none w-4 h-4 border border-black rounded-sm
-                             cursor-pointer transition-all duration-200 relative
-                             checked:bg-white checked:border-black
-                             after:content-[''] after:absolute after:hidden checked:after:block
-                             after:w-[6px] after:h-[10px]
-                             after:border-r-[2px] after:border-b-[2px]
-                             after:border-black after:top-[0px] after:left-[5px]
-                             after:rotate-45"
-                />
-                <label
-                  htmlFor={`desktop-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="text-sm cursor-pointer hover:text-primary flex-1"
-                  onClick={() => !is2D && toggleCategory(mainCategory)}
-                >
-                  {mainCategory}
-                </label>
-
-                {!is2D && (
-                  <button
-                    onClick={() => toggleCategory(mainCategory)}
-                    className="text-gray-500 hover:text-primary"
-                  >
-                    <FaChevronDown
-                      size={12}
-                      className={`transition-transform duration-300 ${
-                        expandedCategories.has(mainCategory) ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                )}
+        return (
+          <div key={mainCategory} className="mb-2">
+            {/* Kategori utama */}
+            <div className="font-poppinsRegular flex items-center gap-2 mb-2 ml-6">
+              <input
+                type="checkbox"
+                id={`desktop-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
+                checked={selectedMainCategories.has(mainCategory)}
+                onChange={(e) =>
+                  handleMainCategoryChange(mainCategory, e.target.checked)
+                }
+                className="appearance-none w-4 h-4 border border-black rounded-sm
+                           cursor-pointer transition-all duration-200 relative
+                           checked:bg-white checked:border-black
+                           after:content-[''] after:absolute after:hidden checked:after:block
+                           after:w-[6px] after:h-[10px]
+                           after:border-r-[2px] after:border-b-[2px]
+                           after:border-black after:top-[0px] after:left-[5px]
+                           after:rotate-45"
+              />
+              {/* Label dengan event click langsung */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMainCategoryChange(mainCategory, !selectedMainCategories.has(mainCategory));
+                }}
+                className="text-sm cursor-pointer hover:text-primary flex-1"
+              >
+                {mainCategory}
               </div>
 
-              {/* Subkategori */}
-              {isExpanded && (
-                <div className="ml-10 space-y-2">
-                  {subcategories.map((subcat) => {
-                    const canonicalMain = translationMap[mainCategory] || mainCategory;
-                    const canonicalSub = subcategoryTranslationMap[subcat] || subcat;
-                    
-                    // Untuk kategori "Additional", gunakan folder mapping
-                    const finalSub = canonicalMain === "Additional" 
-                      ? (folderMap[canonicalSub] || canonicalSub)
-                      : canonicalSub;
-                    
-                    const fullKey = `${canonicalMain}/${finalSub}`;
-                    const isChecked = selectedSubcategories.has(fullKey);
-
-                    return (
-                      <div key={fullKey} className="font-poppinsRegular flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id={`desktop-${fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
-                          checked={isChecked}
-                          onChange={(e) =>
-                            handleSubcategoryChange(mainCategory, subcat, e.target.checked)
-                          }
-                          className="appearance-none relative w-4 h-4 min-w-[16px] min-h-[16px] aspect-square 
-                                     border border-black rounded-[3px] cursor-pointer flex-shrink-0
-                                     checked:bg-white checked:border-black transition-all duration-200
-                                     after:content-[''] after:absolute after:hidden checked:after:block
-                                     after:w-[5px] after:h-[9px]
-                                     after:border-r-[2px] after:border-b-[2px]
-                                     after:border-black after:top-[1px] after:left-[4px] after:rotate-45"
-                        />
-                        <label
-                          htmlFor={`desktop-${fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
-                          className="text-sm cursor-pointer hover:text-primary"
-                        >
-                          {subcat}
-                        </label>
-                      </div>
-                    );
-                  })}
-                </div>
+              {!is2D && (
+                <button
+                  onClick={() => toggleCategory(mainCategory)}
+                  className="text-gray-500 hover:text-primary"
+                >
+                  <FaChevronDown
+                    size={12}
+                    className={`transition-transform duration-300 ${
+                      expandedCategories.has(mainCategory) ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
               )}
             </div>
-          );
-        })}
-      </div>
 
-      {/* Shipped From */}
-      <SplitBorder />
-      <div className="mb-8">
-        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
-          {t("side.shippedFrom")}
-        </h3>
-        {["Bogor", "Jakarta"].map((item) => (
-          <div
-            key={item}
-            className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
-          >
-            <input
-              type="checkbox"
-              id={`desktop-from-${item.toLowerCase()}`}
-              checked={selectedShippedFrom.has(item)}
-              onChange={(e) => handleShippedFromChange(item, e.target.checked)}
-              className="appearance-none w-4 h-4 border border-black rounded-sm
-                         cursor-pointer transition-all duration-200 relative
-                         checked:bg-white checked:border-black
-                         after:content-[''] after:absolute after:hidden checked:after:block
-                         after:w-[6px] after:h-[10px]
-                         after:border-r-[2px] after:border-b-[2px]
-                         after:border-black after:top-[0px] after:left-[5px]
-                         after:rotate-45"
-            />
-            <label
-              htmlFor={`desktop-from-${item.toLowerCase()}`}
-              className="text-sm cursor-pointer hover:text-primary"
-            >
-              {item}
-            </label>
-          </div>
-        ))}
-      </div>
+            {/* Subkategori */}
+            {isExpanded && (
+              <div className="ml-10 space-y-2">
+                {subcategories.map((subcat) => {
+                  const canonicalMain = translationMap[mainCategory] || mainCategory;
+                  const canonicalSub = subcategoryTranslationMap[subcat] || subcat;
+                  
+                  // Untuk kategori "Additional", gunakan folder mapping
+                  const finalSub = canonicalMain === "Additional" 
+                    ? (folderMap[canonicalSub] || canonicalSub)
+                    : canonicalSub;
+                  
+                  const fullKey = `${canonicalMain}/${finalSub}`;
+                  const isChecked = selectedSubcategories.has(fullKey);
 
-      {/* Shipped To */}
-      <SplitBorder />
-      <div className="mb-8">
-        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
-          {t("side.shippedTo")}
-        </h3>
-        {["Worldwide"].map((dest) => (
-          <div
-            key={dest}
-            className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
-          >
-            <input
-              type="checkbox"
-              id={`desktop-to-${dest.toLowerCase()}`}
-              checked={selectedShippedTo.has(dest)}
-              onChange={(e) => handleShippedToChange(dest, e.target.checked)}
-              className="appearance-none w-4 h-4 border border-black rounded-sm
-                         cursor-pointer transition-all duration-200 relative
-                         checked:bg-white checked:border-black
-                         after:content-[''] after:absolute after:hidden checked:after:block
-                         after:w-[6px] after:h-[10px]
-                         after:border-r-[2px] after:border-b-[2px]
-                         after:border-black after:top-[0px] after:left-[5px]
-                         after:rotate-45"
-            />
-            <label
-              htmlFor={`desktop-to-${dest.toLowerCase()}`}
-              className="text-sm cursor-pointer hover:text-primary"
-            >
-              {t(`side.to.${dest.toLowerCase()}`)}
-            </label>
+                  return (
+                    <div key={fullKey} className="font-poppinsRegular flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={`desktop-${fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
+                        checked={isChecked}
+                        onChange={(e) =>
+                          handleSubcategoryChange(mainCategory, subcat, e.target.checked)
+                        }
+                        className="appearance-none relative w-4 h-4 min-w-[16px] min-h-[16px] aspect-square 
+                                   border border-black rounded-[3px] cursor-pointer flex-shrink-0
+                                   checked:bg-white checked:border-black transition-all duration-200
+                                   after:content-[''] after:absolute after:hidden checked:after:block
+                                   after:w-[5px] after:h-[9px]
+                                   after:border-r-[2px] after:border-b-[2px]
+                                   after:border-black after:top-[1px] after:left-[4px] after:rotate-45"
+                      />
+                      {/* Label subkategori dengan event click langsung */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSubcategoryChange(mainCategory, subcat, !isChecked);
+                        }}
+                        className="text-sm cursor-pointer hover:text-primary"
+                      >
+                        {subcat}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
-    </aside>
-  );
+        );
+      })}
+    </div>
+
+    {/* Shipped From */}
+    <SplitBorder />
+    <div className="mb-8">
+      <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
+        {t("side.shippedFrom")}
+      </h3>
+      {["Bogor", "Jakarta"].map((item) => (
+        <div
+          key={item}
+          className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
+        >
+          <input
+            type="checkbox"
+            id={`desktop-from-${item.toLowerCase()}`}
+            checked={selectedShippedFrom.has(item)}
+            onChange={(e) => handleShippedFromChange(item, e.target.checked)}
+            className="appearance-none w-4 h-4 border border-black rounded-sm
+                       cursor-pointer transition-all duration-200 relative
+                       checked:bg-white checked:border-black
+                       after:content-[''] after:absolute after:hidden checked:after:block
+                       after:w-[6px] after:h-[10px]
+                       after:border-r-[2px] after:border-b-[2px]
+                       after:border-black after:top-[0px] after:left-[5px]
+                       after:rotate-45"
+          />
+          {/* Label Shipped From dengan event click langsung */}
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShippedFromChange(item, !selectedShippedFrom.has(item));
+            }}
+            className="text-sm cursor-pointer hover:text-primary"
+          >
+            {item}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Shipped To */}
+    <SplitBorder />
+    <div className="mb-8">
+      <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
+        {t("side.shippedTo")}
+      </h3>
+      {["Worldwide"].map((dest) => (
+        <div
+          key={dest}
+          className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
+        >
+          <input
+            type="checkbox"
+            id={`desktop-to-${dest.toLowerCase()}`}
+            checked={selectedShippedTo.has(dest)}
+            onChange={(e) => handleShippedToChange(dest, e.target.checked)}
+            className="appearance-none w-4 h-4 border border-black rounded-sm
+                       cursor-pointer transition-all duration-200 relative
+                       checked:bg-white checked:border-black
+                       after:content-[''] after:absolute after:hidden checked:after:block
+                       after:w-[6px] after:h-[10px]
+                       after:border-r-[2px] after:border-b-[2px]
+                       after:border-black after:top-[0px] after:left-[5px]
+                       after:rotate-45"
+          />
+          {/* Label Shipped To dengan event click langsung */}
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShippedToChange(dest, !selectedShippedTo.has(dest));
+            }}
+            className="text-sm cursor-pointer hover:text-primary"
+          >
+            {t(`side.to.${dest.toLowerCase()}`)}
+          </div>
+        </div>
+      ))}
+    </div>
+  </aside>
+);
 
   // Layout Mobile
   const MobileLayout = () => (
