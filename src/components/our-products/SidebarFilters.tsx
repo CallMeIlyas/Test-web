@@ -18,65 +18,81 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
   const [selectedShippedFrom, setSelectedShippedFrom] = useState<Set<string>>(new Set());
   const [selectedShippedTo, setSelectedShippedTo] = useState<Set<string>>(new Set());
 
-  // Map kategori terjemahan → nama asli
-  const translationMap: Record<string, string> = {
-    [t("side.categories.3d")]: "3D Frame",
-    [t("side.categories.2d")]: "2D Frame",
-    [t("side.categories.additional")]: "Additional",
-    [t("side.categories.acrylic")]: "Acrylic Stand",
-    [t("side.categories.softcopy")]: "Softcopy Design",
+  // Map kategori UI → nama folder backend
+  const categoryFolderMap: Record<string, string> = {
+    [t("side.categories.3d")]: "3D",
+    [t("side.categories.2d")]: "2D",
+    [t("side.categories.additional")]: "ADDITIONAL",
+    [t("side.categories.acrylic")]: "ACRYLIC STAND",
+    [t("side.categories.softcopy")]: "SOFTCOPY DESIGN",
   };
 
-  // Map subkategori terjemahan → nama asli
-  const subcategoryTranslationMap: Record<string, string> = {
-    [t("side.subcategories.backgroundCustom")]: "Background Custom",
-    [t("side.subcategories.boldShading")]: "Additional Face (Bold Shading)",
-    [t("side.subcategories.byAI")]: "Additional Face (by AI)",
-    [t("side.subcategories.caricature")]: "Additional Face (Caricature)",
-    [t("side.subcategories.acrylic2cm")]: "Acrylic Stand 2CM",
-    [t("side.subcategories.acrylic3mm")]: "Acrylic Stand 3MM",
-    [t("side.subcategories.withBackgroundCatalog")]: "With Background Catalog",
-    [t("side.subcategories.withBackgroundCustom")]: "With Background Custom",
-    [t("side.subcategories.withoutBackground")]: "Without Background",
+  // Map ukuran 3D UI → nama folder backend (untuk 3D)
+  const threeDSizeMap: Record<string, string> = {
+    "12R": "12R",
+    "10R": "10R", 
+    "8R": "8R",
+    "20x20cm": "20X20CM",
+    "6R": "6R",
+    "15x15cm": "15X15CM",
+    "4R": "4R",
+    "A2": "A2-40X55CM",
+    "A1": "A1-55X80CM",
+    "A0": "A0-80X110CM"
   };
 
-  // Map subkategori → nama folder backend
-  const folderMap: Record<string, string> = {
-    "Background Custom": "BACKGROUND CUSTOM",
-    "Additional Face (Bold Shading)": "BIAYA TAMBAHAN WAJAH BOLD SHADING",
-    "Additional Face (by AI)": "BIAYA TAMBAHAN WAJAH by AI",
-    "Additional Face (Caricature)": "BIAYA TAMBAHAN WAJAH KARIKATUR",
+  // Map subkategori UI → nama folder backend BERDASARKAN STRUKTUR FOLDER
+  const subcategoryFolderMap: Record<string, Record<string, string>> = {
+    // ADDITIONAL subcategories
+    [t("side.categories.additional")]: {
+      [t("side.subcategories.backgroundCustom") || "Background Custom"]: "BACKGROUND CUSTOM",
+      [t("side.subcategories.additionalFaces") || "Additional Faces"]: "BIAYA TAMBAHAN WAJAH KARIKATUR",
+      // Jika ada lebih banyak jenis Additional Faces, bisa ditambahkan:
+      // "Additional Face (by AI)": "BIAYA TAMBAHAN WAJAH by AI",
+      // "Additional Face (Caricature)": "BIAYA TAMBAHAN WAJAH KARIKATUR",
+    },
+    
+    // ACRYLIC STAND subcategories
+    [t("side.categories.acrylic")]: {
+      [t("side.subcategories.2cm") || "2CM"]: "2CM",
+      [t("side.subcategories.3mm") || "3MM"]: "3MM",
+    },
+    
+    // SOFTCOPY DESIGN subcategories
+    [t("side.categories.softcopy")]: {
+      [t("side.subcategories.backgroundCatalog") || "With Background Catalog"]: "WITH BACKGROUND CATALOG",
+      [t("side.subcategories.backgroundCustomSoftcopy") || "With Background Custom"]: "WITH BACKGROUND CUSTOM", 
+      [t("side.subcategories.withoutBackground") || "Without Background"]: "WITHOUT BACKGROUND"
+    }
   };
-  
+
+  // Struktur kategori sesuai gambar
   const customCategories = {
     [t("side.categories.3d")]: [
-      "10R",
       "12R",
-      "12R by AI",
-      "15X15CM",
-      "20X20CM",
-      "4R",
-      "6R",
+      "10R", 
       "8R",
-      "A0-80X110CM",
-      "A1-55X80CM",
-      "A2-40X55CM"
+      "20x20cm",
+      "6R",
+      "15x15cm",
+      "4R",
+      "A2",
+      "A1",
+      "A0"
     ],
-    [t("side.categories.2d")]: [],
+    [t("side.categories.2d")]: [], // 2D Frame tidak ada subkategori di UI
     [t("side.categories.additional")]: [
-      t("side.subcategories.backgroundCustom"),
-      t("side.subcategories.boldShading"),
-      t("side.subcategories.byAI"),
-      t("side.subcategories.caricature")
+      t("side.subcategories.backgroundCustom") || "Background Custom",
+      t("side.subcategories.additionalFaces") || "Additional Faces"
     ],
     [t("side.categories.acrylic")]: [
-      t("side.subcategories.acrylic2cm"),
-      t("side.subcategories.acrylic3mm")
+      t("side.subcategories.2cm") || "2CM",
+      t("side.subcategories.3mm") || "3MM"
     ],
     [t("side.categories.softcopy")]: [
-      t("side.subcategories.withBackgroundCatalog"),
-      t("side.subcategories.withBackgroundCustom"),
-      t("side.subcategories.withoutBackground")
+      t("side.subcategories.backgroundCatalog") || "With Background Catalog",
+      t("side.subcategories.backgroundCustomSoftcopy") || "With Background Custom",
+      t("side.subcategories.withoutBackground") || "Without Background"
     ]
   };
 
@@ -89,9 +105,9 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Handle kategori utama
+  // Handle kategori utama (checkbox di kategori utama)
   const handleMainCategoryChange = (category: string, isChecked: boolean) => {
-    const originalCategory = translationMap[category] || category;
+    const folderName = categoryFolderMap[category] || category;
   
     setSelectedMainCategories((prev) => {
       const newSet = new Set(prev);
@@ -101,8 +117,8 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
   
     onFilterChange((prev) => {
       const newCategories = isChecked
-        ? [...prev.categories, originalCategory]
-        : prev.categories.filter((cat) => cat !== originalCategory);
+        ? [...prev.categories, folderName]
+        : prev.categories.filter((cat) => cat !== folderName);
       return { ...prev, categories: newCategories };
     });
   };
@@ -113,15 +129,28 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     subcategory: string,
     isChecked: boolean
   ) => {
-    const canonicalMain = translationMap[mainCategory] || mainCategory;
-    const canonicalSub = subcategoryTranslationMap[subcategory] || subcategory;
+    const mainFolderName = categoryFolderMap[mainCategory] || mainCategory;
     
-    // Untuk kategori "Additional", gunakan folder mapping
-    const finalSub = canonicalMain === "Additional" 
-      ? (folderMap[canonicalSub] || canonicalSub)
-      : canonicalSub;
+    // Tentukan nama folder untuk subkategori
+    let subFolderName: string;
     
-    const fullKey = `${canonicalMain}/${finalSub}`;
+    if (mainFolderName === "3D") {
+      // Untuk 3D, gunakan mapping ukuran
+      subFolderName = threeDSizeMap[subcategory] || subcategory;
+    } else if (mainFolderName === "2D") {
+      // Untuk 2D, saat ini tidak ada subkategori di UI
+      subFolderName = subcategory;
+    } else {
+      // Untuk kategori lain, gunakan mapping berdasarkan kategori utama
+      const categoryMap = subcategoryFolderMap[mainCategory];
+      if (categoryMap) {
+        subFolderName = categoryMap[subcategory] || subcategory;
+      } else {
+        subFolderName = subcategory;
+      }
+    }
+    
+    const fullKey = `${mainFolderName}/${subFolderName}`;
 
     setSelectedSubcategories((prev) => {
       const newSet = new Set(prev);
@@ -137,7 +166,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Handle Shipped From dengan tracking state
+  // Handle Shipped From
   const handleShippedFromChange = (location: string, isChecked: boolean) => {
     setSelectedShippedFrom((prev) => {
       const newSet = new Set(prev);
@@ -153,7 +182,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Handle Shipped To dengan tracking state
+  // Handle Shipped To
   const handleShippedToChange = (destination: string, isChecked: boolean) => {
     setSelectedShippedTo((prev) => {
       const newSet = new Set(prev);
@@ -169,199 +198,207 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-// Layout Desktop
-const DesktopLayout = () => (
-  <aside className="hidden md:block w-64 p-6 bg-white rounded-xl">
-    {/* Category */}
-    <SplitBorder />
-    <div className="mb-8">
-      <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
-        {t("side.category")}
-      </h3>
+  // Layout Desktop
+  const DesktopLayout = () => (
+    <aside className="hidden md:block w-64 p-6 bg-white rounded-xl">
+      {/* Category */}
+      <SplitBorder />
+      <div className="mb-8">
+        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
+          {t("side.category")}
+        </h3>
 
-      {Object.entries(customCategories).map(([mainCategory, subcategories]) => {
-        const is2D = mainCategory === t("side.categories.2d");
-        const isExpanded = expandedCategories.has(mainCategory) || is2D;
+        {Object.entries(customCategories).map(([mainCategory, subcategories]) => {
+          const is2D = mainCategory === t("side.categories.2d");
+          const isExpanded = expandedCategories.has(mainCategory) || is2D;
 
-        return (
-          <div key={mainCategory} className="mb-2">
-            {/* Kategori utama */}
-            <div className="font-poppinsRegular flex items-center gap-2 mb-2 ml-6">
-              <input
-                type="checkbox"
-                id={`desktop-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
-                checked={selectedMainCategories.has(mainCategory)}
-                onChange={(e) =>
-                  handleMainCategoryChange(mainCategory, e.target.checked)
-                }
-                className="appearance-none w-4 h-4 border border-black rounded-sm
-                           cursor-pointer transition-all duration-200 relative
-                           checked:bg-white checked:border-black
-                           after:content-[''] after:absolute after:hidden checked:after:block
-                           after:w-[6px] after:h-[10px]
-                           after:border-r-[2px] after:border-b-[2px]
-                           after:border-black after:top-[0px] after:left-[5px]
-                           after:rotate-45"
-              />
-              {/* Label dengan event click langsung */}
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleMainCategoryChange(mainCategory, !selectedMainCategories.has(mainCategory));
-                }}
-                className="text-sm cursor-pointer hover:text-primary flex-1"
-              >
-                {mainCategory}
+          return (
+            <div key={mainCategory} className="mb-2">
+              {/* Kategori utama */}
+              <div className="font-poppinsRegular flex items-center gap-2 mb-2 ml-6">
+                <input
+                  type="checkbox"
+                  id={`desktop-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
+                  checked={selectedMainCategories.has(mainCategory)}
+                  onChange={(e) =>
+                    handleMainCategoryChange(mainCategory, e.target.checked)
+                  }
+                  className="appearance-none w-4 h-4 border border-black rounded-sm
+                             cursor-pointer transition-all duration-200 relative
+                             checked:bg-white checked:border-black
+                             after:content-[''] after:absolute after:hidden checked:after:block
+                             after:w-[6px] after:h-[10px]
+                             after:border-r-[2px] after:border-b-[2px]
+                             after:border-black after:top-[0px] after:left-[5px]
+                             after:rotate-45"
+                />
+                {/* Label dengan event click langsung */}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMainCategoryChange(mainCategory, !selectedMainCategories.has(mainCategory));
+                  }}
+                  className="text-sm cursor-pointer hover:text-primary flex-1"
+                >
+                  {mainCategory}
+                </div>
+
+                {!is2D && subcategories.length > 0 && (
+                  <button
+                    onClick={() => toggleCategory(mainCategory)}
+                    className="text-gray-500 hover:text-primary"
+                  >
+                    <FaChevronDown
+                      size={12}
+                      className={`transition-transform duration-300 ${
+                        expandedCategories.has(mainCategory) ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                )}
               </div>
 
-              {!is2D && (
-                <button
-                  onClick={() => toggleCategory(mainCategory)}
-                  className="text-gray-500 hover:text-primary"
-                >
-                  <FaChevronDown
-                    size={12}
-                    className={`transition-transform duration-300 ${
-                      expandedCategories.has(mainCategory) ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
+              {/* Subkategori */}
+              {isExpanded && subcategories.length > 0 && (
+                <div className="ml-10 space-y-2">
+                  {subcategories.map((subcat) => {
+                    const mainFolderName = categoryFolderMap[mainCategory] || mainCategory;
+                    
+                    // Tentukan nama folder untuk subkategori
+                    let subFolderName: string;
+                    
+                    if (mainFolderName === "3D") {
+                      subFolderName = threeDSizeMap[subcat] || subcat;
+                    } else {
+                      const categoryMap = subcategoryFolderMap[mainCategory];
+                      if (categoryMap) {
+                        subFolderName = categoryMap[subcat] || subcat;
+                      } else {
+                        subFolderName = subcat;
+                      }
+                    }
+                    
+                    const fullKey = `${mainFolderName}/${subFolderName}`;
+                    const isChecked = selectedSubcategories.has(fullKey);
+
+                    return (
+                      <div key={fullKey} className="font-poppinsRegular flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={`desktop-${fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
+                          checked={isChecked}
+                          onChange={(e) =>
+                            handleSubcategoryChange(mainCategory, subcat, e.target.checked)
+                          }
+                          className="appearance-none relative w-4 h-4 min-w-[16px] min-h-[16px] aspect-square 
+                                     border border-black rounded-[3px] cursor-pointer flex-shrink-0
+                                     checked:bg-white checked:border-black transition-all duration-200
+                                     after:content-[''] after:absolute after:hidden checked:after:block
+                                     after:w-[5px] after:h-[9px]
+                                     after:border-r-[2px] after:border-b-[2px]
+                                     after:border-black after:top-[1px] after:left-[4px] after:rotate-45"
+                        />
+                        {/* Label subkategori dengan event click langsung */}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSubcategoryChange(mainCategory, subcat, !isChecked);
+                          }}
+                          className="text-sm cursor-pointer hover:text-primary"
+                        >
+                          {subcat}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
+          );
+        })}
+      </div>
 
-            {/* Subkategori */}
-            {isExpanded && (
-              <div className="ml-10 space-y-2">
-                {subcategories.map((subcat) => {
-                  const canonicalMain = translationMap[mainCategory] || mainCategory;
-                  const canonicalSub = subcategoryTranslationMap[subcat] || subcat;
-                  
-                  // Untuk kategori "Additional", gunakan folder mapping
-                  const finalSub = canonicalMain === "Additional" 
-                    ? (folderMap[canonicalSub] || canonicalSub)
-                    : canonicalSub;
-                  
-                  const fullKey = `${canonicalMain}/${finalSub}`;
-                  const isChecked = selectedSubcategories.has(fullKey);
-
-                  return (
-                    <div key={fullKey} className="font-poppinsRegular flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id={`desktop-${fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
-                        checked={isChecked}
-                        onChange={(e) =>
-                          handleSubcategoryChange(mainCategory, subcat, e.target.checked)
-                        }
-                        className="appearance-none relative w-4 h-4 min-w-[16px] min-h-[16px] aspect-square 
-                                   border border-black rounded-[3px] cursor-pointer flex-shrink-0
-                                   checked:bg-white checked:border-black transition-all duration-200
-                                   after:content-[''] after:absolute after:hidden checked:after:block
-                                   after:w-[5px] after:h-[9px]
-                                   after:border-r-[2px] after:border-b-[2px]
-                                   after:border-black after:top-[1px] after:left-[4px] after:rotate-45"
-                      />
-                      {/* Label subkategori dengan event click langsung */}
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSubcategoryChange(mainCategory, subcat, !isChecked);
-                        }}
-                        className="text-sm cursor-pointer hover:text-primary"
-                      >
-                        {subcat}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-
-    {/* Shipped From */}
-    <SplitBorder />
-    <div className="mb-8">
-      <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
-        {t("side.shippedFrom")}
-      </h3>
-      {["Bogor", "Jakarta"].map((item) => (
-        <div
-          key={item}
-          className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
-        >
-          <input
-            type="checkbox"
-            id={`desktop-from-${item.toLowerCase()}`}
-            checked={selectedShippedFrom.has(item)}
-            onChange={(e) => handleShippedFromChange(item, e.target.checked)}
-            className="appearance-none w-4 h-4 border border-black rounded-sm
-                       cursor-pointer transition-all duration-200 relative
-                       checked:bg-white checked:border-black
-                       after:content-[''] after:absolute after:hidden checked:after:block
-                       after:w-[6px] after:h-[10px]
-                       after:border-r-[2px] after:border-b-[2px]
-                       after:border-black after:top-[0px] after:left-[5px]
-                       after:rotate-45"
-          />
-          {/* Label Shipped From dengan event click langsung */}
+      {/* Shipped From */}
+      <SplitBorder />
+      <div className="mb-8">
+        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
+          {t("side.shippedFrom")}
+        </h3>
+        {["Bogor", "Jakarta"].map((item) => (
           <div
-            onClick={(e) => {
-              e.stopPropagation();
-              handleShippedFromChange(item, !selectedShippedFrom.has(item));
-            }}
-            className="text-sm cursor-pointer hover:text-primary"
+            key={item}
+            className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
           >
-            {item}
+            <input
+              type="checkbox"
+              id={`desktop-from-${item.toLowerCase()}`}
+              checked={selectedShippedFrom.has(item)}
+              onChange={(e) => handleShippedFromChange(item, e.target.checked)}
+              className="appearance-none w-4 h-4 border border-black rounded-sm
+                         cursor-pointer transition-all duration-200 relative
+                         checked:bg-white checked:border-black
+                         after:content-[''] after:absolute after:hidden checked:after:block
+                         after:w-[6px] after:h-[10px]
+                         after:border-r-[2px] after:border-b-[2px]
+                         after:border-black after:top-[0px] after:left-[5px]
+                         after:rotate-45"
+            />
+            {/* Label Shipped From dengan event click langsung */}
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShippedFromChange(item, !selectedShippedFrom.has(item));
+              }}
+              className="text-sm cursor-pointer hover:text-primary"
+            >
+              {item}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
 
-    {/* Shipped To */}
-    <SplitBorder />
-    <div className="mb-8">
-      <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
-        {t("side.shippedTo")}
-      </h3>
-      {["Worldwide"].map((dest) => (
-        <div
-          key={dest}
-          className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
-        >
-          <input
-            type="checkbox"
-            id={`desktop-to-${dest.toLowerCase()}`}
-            checked={selectedShippedTo.has(dest)}
-            onChange={(e) => handleShippedToChange(dest, e.target.checked)}
-            className="appearance-none w-4 h-4 border border-black rounded-sm
-                       cursor-pointer transition-all duration-200 relative
-                       checked:bg-white checked:border-black
-                       after:content-[''] after:absolute after:hidden checked:after:block
-                       after:w-[6px] after:h-[10px]
-                       after:border-r-[2px] after:border-b-[2px]
-                       after:border-black after:top-[0px] after:left-[5px]
-                       after:rotate-45"
-          />
-          {/* Label Shipped To dengan event click langsung */}
+      {/* Shipped To */}
+      <SplitBorder />
+      <div className="mb-8">
+        <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
+          {t("side.shippedTo")}
+        </h3>
+        {["Worldwide"].map((dest) => (
           <div
-            onClick={(e) => {
-              e.stopPropagation();
-              handleShippedToChange(dest, !selectedShippedTo.has(dest));
-            }}
-            className="text-sm cursor-pointer hover:text-primary"
+            key={dest}
+            className="font-poppinsRegular flex items-center gap-2 mb-3 ml-6"
           >
-            {t(`side.to.${dest.toLowerCase()}`)}
+            <input
+              type="checkbox"
+              id={`desktop-to-${dest.toLowerCase()}`}
+              checked={selectedShippedTo.has(dest)}
+              onChange={(e) => handleShippedToChange(dest, e.target.checked)}
+              className="appearance-none w-4 h-4 border border-black rounded-sm
+                         cursor-pointer transition-all duration-200 relative
+                         checked:bg-white checked:border-black
+                         after:content-[''] after:absolute after:hidden checked:after:block
+                         after:w-[6px] after:h-[10px]
+                         after:border-r-[2px] after:border-b-[2px]
+                         after:border-black after:top-[0px] after:left-[5px]
+                         after:rotate-45"
+            />
+            {/* Label Shipped To dengan event click langsung */}
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShippedToChange(dest, !selectedShippedTo.has(dest));
+              }}
+              className="text-sm cursor-pointer hover:text-primary"
+            >
+              {t(`side.to.${dest.toLowerCase()}`)}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  </aside>
-);
+        ))}
+      </div>
+    </aside>
+  );
 
-  // Layout Mobile
+  // Layout Mobile (tidak berubah)
   const MobileLayout = () => (
     <aside className="block md:hidden w-full p-4 bg-white rounded-xl">
       {/* Category - Mobile */}
@@ -372,8 +409,6 @@ const DesktopLayout = () => (
         </h3>
 
         {Object.entries(customCategories).map(([mainCategory, subcategories]) => {
-          const is2D = mainCategory === t("side.categories.2d");
-          
           return (
             <div key={mainCategory} className="mb-2">
               {/* Kategori utama - Mobile: tanpa panah dan subkategori */}
@@ -400,16 +435,11 @@ const DesktopLayout = () => (
                 >
                   {mainCategory}
                 </label>
-                {/* Panah dihilangkan untuk mobile */}
               </div>
-
-              {/* Subkategori dihilangkan untuk mobile */}
             </div>
           );
         })}
       </div>
-
-      {/* Shipped From dihilangkan untuk mobile */}
 
       {/* Shipped To - Mobile */}
       <SplitBorder />

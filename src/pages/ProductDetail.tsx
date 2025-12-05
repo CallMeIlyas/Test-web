@@ -146,11 +146,15 @@ const MOCK_PRODUCT_DATA = {
 };
 
 const ProductDetail = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { addToCart } = useOutletContext<LayoutContext>();
+  const currentLang = i18n.language;
+  const faceOptions = currentLang === "id" 
+  ? ["1–9 Wajah", "Di atas 10 Wajah"]
+  : ["1–9 Faces", "Above 10 Faces"];
 
   const { imageUrl, name, category, size, type, price, allImages } =
     (location.state as any) || {};
@@ -959,8 +963,8 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                             {t("product.chooseFaceCount")}
                           </p>
                       
-                          <div className="flex gap-2 md:gap-4 flex-wrap">
-                            {["1–9 Wajah", "Di atas 10 Wajah"].map((option) => (
+<div className="flex gap-2 md:gap-4 flex-wrap">
+  {faceOptions.map((option) => (
                               <div
                                 key={option}
                                 onClick={() =>
@@ -1040,8 +1044,8 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                               {t("product.chooseFaceCount")}
                           </p>
                       
-                          <div className="flex gap-2 md:gap-4 flex-wrap">
-                            {["1–9 Wajah", "Di atas 10 Wajah"].map((option) => (
+<div className="flex gap-2 md:gap-4 flex-wrap">
+  {faceOptions.map((option) => (
                               <div
                                 key={option}
                                 onClick={() =>

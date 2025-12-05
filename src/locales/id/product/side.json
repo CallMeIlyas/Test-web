@@ -9,13 +9,11 @@
   },
   "subcategories": {
     "backgroundCustom": "Background Custom",
-    "boldShading": "Tambahan Wajah Bold Shading",
-    "byAI": "Tambahan Wajah by AI",
-    "caricature": "Tambahan Wajah Karikatur",
-    "acrylic2cm": "Plakat Acrylic 2CM",
-    "acrylic3mm": "Plakat Acrylic 3MM",
-    "withBackgroundCatalog": "Dengan Background Katalog",
-    "withBackgroundCustom": "Dengan Background Custom",
+    "additionalFaces": "Tambahan Wajah",
+    "2cm": "2cm",
+    "3mm": "3mm",
+    "backgroundCatalog": "Background Katalog",
+    "backgroundCustomSoftcopy": "Background Custom",
     "withoutBackground": "Tanpa Background"
   },
   "shippedFrom": "Dikirim Dari",
