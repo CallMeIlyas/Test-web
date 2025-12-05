@@ -45,6 +45,7 @@ import sizeA2_EN from "../assets/size-guide/ENGLISH/A2.png";
 
 const SizeGuide: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const currentLang = i18n.language;
   const navigate = useNavigate();
   const images = [onHand1, onHand2, onHand3, onHand4, onHand5, onHand6];
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -385,7 +386,7 @@ const SizeGuide: React.FC = () => {
                     
                     {/* Tooltip/indikator klik */}
                     <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      {t("size.clickToViewProduct") || "Click to view product"}
+                      {currentLang === "id" ? "Klik untuk melihat produk" : "Click to view product"}
                     </div>
                   </div>
                 );
