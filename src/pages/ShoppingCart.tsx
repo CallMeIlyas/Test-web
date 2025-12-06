@@ -200,22 +200,107 @@ const FrameVariantDropdown: React.FC<{
   );
 };
 
-// Komponen ShippingCostInput
-const ShippingCostInput: React.FC<{ 
-  item: any; 
-  updateShippingCost: (cartId: string, cost: number) => void 
+// Komponen ShippingCostItem - Baru: Tampilan khusus untuk shipping cost
+const ShippingCostItem: React.FC<{ 
+  item: any;
+  updateShippingCost: (cartId: string, cost: number) => void;
+  editingShippingCost: string | null;
+  tempShippingCost: string;
+  handleEditShippingClick: (item: any) => void;
+  handleSaveShippingCost: (cartId: string) => void;
+  handleCancelShippingEdit: () => void;
+  handleShippingCostChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  deleteItem: (cartId: string) => void;
 }> = ({
   item,
   updateShippingCost,
+  editingShippingCost,
+  tempShippingCost,
+  handleEditShippingClick,
+  handleSaveShippingCost,
+  handleCancelShippingEdit,
+  handleShippingCostChange,
+  deleteItem
 }) => {
   const { i18n } = useTranslation();
   const currentLang = i18n.language;
-  
+
   return (
-    <div className="w-[200px] ml-20">
-      <p className="font-poppinsRegular text-[15px] select-none">
-        {currentLang === "id" ? "Biaya Pengiriman" : "Shipping Cost"}
-      </p>
+    <div className="mt-4 pt-4 border-t border-gray-300">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full mr-3">
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <p className="font-poppinsSemiBold text-[15px]">
+              {item.name}
+            </p>
+            <p className="font-poppinsRegular text-xs text-gray-500">
+              {currentLang === "id" ? "Biaya pengiriman untuk pesanan Anda" : "Shipping cost for your order"}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          {editingShippingCost === item.cartId ? (
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="flex items-center rounded-[20px] border border-black overflow-hidden w-[120px]">
+                  <span className="px-3 py-2 bg-gray-100 font-poppinsSemiBold text-sm">Rp</span>
+                  <input
+                    type="number"
+                    value={tempShippingCost}
+                    onChange={handleShippingCostChange}
+                    className="px-3 py-2 text-sm w-full text-center font-poppinsRegular outline-none"
+                    placeholder="0"
+                    min="0"
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleSaveShippingCost(item.cartId)}
+                  className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
+                >
+                  {currentLang === "id" ? "Simpan" : "Save"}
+                </button>
+                <button
+                  onClick={handleCancelShippingEdit}
+                  className="bg-gray-300 text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
+                >
+                  {currentLang === "id" ? "Batal" : "Cancel"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-right">
+                <p className="font-poppinsBold text-red-600 text-lg">
+                  Rp{item.price > 0 ? item.price.toLocaleString("id-ID") : "0"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleEditShippingClick(item)}
+                  className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
+                >
+                  {currentLang === "id" ? "Edit" : "Edit"}
+                </button>
+                <button
+                  onClick={() => deleteItem(item.cartId)}
+                  className="text-red-500 font-poppinsRegular text-sm"
+                >
+                  {currentLang === "id" ? "Hapus" : "Delete"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -247,70 +332,82 @@ const ShoppingCart: React.FC = () => {
     paymentMethod: "",
   });
 
-const addShippingItem = () => {
-  const hasShippingItem = cart.some(item => 
-    item.name.toLowerCase().includes("ongkir") || 
-    item.name.toLowerCase().includes("shipping")
+  // Filter cart untuk memisahkan produk dan shipping
+  const productItems = useMemo(() => 
+    cart.filter(item => 
+      !item.name.toLowerCase().includes("ongkir") && 
+      !item.name.toLowerCase().includes("shipping")
+    ), 
+    [cart]
   );
-  
-  if (hasShippingItem) {
-    // Custom alert modal
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+
+  const shippingItems = useMemo(() => 
+    cart.filter(item => 
+      item.name.toLowerCase().includes("ongkir") || 
+      item.name.toLowerCase().includes("shipping")
+    ), 
+    [cart]
+  );
+
+  const addShippingItem = () => {
+    const hasShippingItem = shippingItems.length > 0;
     
-    modal.innerHTML = `
-      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl animate-fadeIn">
-        <div class="text-center">
-          <div class="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-[#dcbec1] mb-4">
-            <svg class="w-8 h-8 text-[#a23728]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+    if (hasShippingItem) {
+      // Custom alert modal
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl animate-fadeIn">
+          <div class="text-center">
+            <div class="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-[#dcbec1] mb-4">
+              <svg class="w-8 h-8 text-[#a23728]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="font-poppinsSemiBold text-xl text-gray-800 mb-2">
+              ${currentLang === "id" ? "Ongkir Sudah Ada" : "Shipping Already Exists"}
+            </h3>
+            <p class="font-poppinsRegular text-gray-600 mb-6">
+              ${currentLang === "id" 
+                ? "Biaya pengiriman sudah ada di keranjang belanja." 
+                : "Shipping cost already exists in the shopping cart."}
+            </p>
+            <button 
+              onclick="this.closest('.fixed').remove()"
+              class="font-poppinsSemiBold bg-[#dcbec1] hover:bg-[#c7a9ac] text-gray-800 px-6 py-3 rounded-full transition-colors w-full"
+            >
+              ${currentLang === "id" ? "Mengerti" : "Got it"}
+            </button>
           </div>
-          <h3 class="font-poppinsSemiBold text-xl text-gray-800 mb-2">
-            ${currentLang === "id" ? "Ongkir Sudah Ada" : "Shipping Already Exists"}
-          </h3>
-          <p class="font-poppinsRegular text-gray-600 mb-6">
-            ${currentLang === "id" 
-              ? "Biaya pengiriman sudah ada di keranjang belanja." 
-              : "Shipping cost already exists in the shopping cart."}
-          </p>
-          <button 
-            onclick="this.closest('.fixed').remove()"
-            class="font-poppinsSemiBold bg-[#dcbec1] hover:bg-[#c7a9ac] text-gray-800 px-6 py-3 rounded-full transition-colors w-full"
-          >
-            ${currentLang === "id" ? "Mengerti" : "Got it"}
-          </button>
         </div>
-      </div>
-    `;
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Auto close after 3 seconds
+      setTimeout(() => {
+        if (document.body.contains(modal)) {
+          modal.remove();
+        }
+      }, 3000);
+      
+      return;
+    }
     
-    document.body.appendChild(modal);
-    
-    // Auto close after 3 seconds
-    setTimeout(() => {
-      if (document.body.contains(modal)) {
-        modal.remove();
-      }
-    }, 3000);
-    
-    return;
-  }
-  
-  const firstProductImage = cart.length > 0 ? cart[0].imageUrl : "/default-image.jpg";
-  
-  addToCart({
-    id: "shipping-cost-001",
-    name: currentLang === "id" ? "Biaya Pengiriman (Ongkir)" : "Shipping Cost",
-    price: 0,
-    quantity: 1,
-    imageUrl: firstProductImage,
-    image: firstProductImage,
-    productType: "frame",
-    variation: "",
-    variationOptions: [],
-    attributes: {}
-  });
-};
+    addToCart({
+      id: "shipping-cost-001",
+      name: currentLang === "id" ? "Biaya Pengiriman (Ongkir)" : "Shipping Cost",
+      price: 0,
+      quantity: 1,
+      imageUrl: "/icons/shipping-icon.svg",
+      image: "/icons/shipping-icon.svg",
+      productType: "shipping",
+      variation: "",
+      variationOptions: [],
+      attributes: {}
+    });
+  };
 
   const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -344,25 +441,32 @@ const addShippingItem = () => {
     setTempShippingCost(e.target.value);
   };
 
-  const groupedItems = useMemo(() => {
+  const groupedProductItems = useMemo(() => {
     const groups: { [key: string]: any[] } = {};
-    cart.forEach((item) => {
+    productItems.forEach((item) => {
       const key = item.parentCartId || item.cartId;
       if (!groups[key]) groups[key] = [];
       groups[key].push(item);
     });
     return groups;
-  }, [cart]);
+  }, [productItems]);
 
-  const allSelected = cart.length > 0 && selectedItems.length === cart.length;
+  const allSelected = productItems.length > 0 && selectedItems.length === productItems.length;
+  
   const toggleSelectAll = () => {
     if (allSelected) setSelectedItems([]);
-    else setSelectedItems(cart.map((item) => item.cartId));
+    else setSelectedItems(productItems.map((item) => item.cartId));
   };
 
-  const totalPrice = cart
+  // Hitung total harga (produk terpilih + shipping)
+  const totalProductPrice = productItems
     .filter((item) => selectedItems.includes(item.cartId))
     .reduce((total, item) => total + item.price * item.quantity, 0);
+
+  const totalShippingPrice = shippingItems
+    .reduce((total, item) => total + item.price * item.quantity, 0);
+
+  const totalPrice = totalProductPrice + totalShippingPrice;
     
   const [showCheckout, setShowCheckout] = useState(false);
   const checkoutRef = useRef<HTMLDivElement | null>(null);
@@ -385,73 +489,65 @@ const addShippingItem = () => {
           
           {/* Box Cart - Mobile */}
           <div className="rounded-2xl border border-black p-4 bg-white shadow-sm">
-            {cart.length === 0 ? (
+            {productItems.length === 0 ? (
               <p className="text-center text-gray-500 text-sm">
                 {currentLang === "id" ? "Keranjang kosong" : "Cart is empty"}
               </p>
             ) : (
               <>
-                {/* Select All Atas - Mobile */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="mr-2 w-4 h-4"
-                      checked={allSelected}
-                      onChange={toggleSelectAll}
-                    />
-                    <span className="font-poppinsSemiBold text-sm">
-                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
-                    </span>
-                  </div>
-                  
-                  <button
-                    onClick={addShippingItem}
-                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full shadow-sm hover:opacity-90 transition"
-                  >
-                    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
-                  </button>
-                </div>
+{/* Select All Atas - Mobile */}
+<div className="flex items-center justify-between mb-3">
+  <div className="flex items-center">
+    <input
+      type="checkbox"
+      className="mr-2 w-4 h-4 custom-checkbox"
+      checked={allSelected}
+      onChange={toggleSelectAll}
+    />
+    <span className="font-poppinsSemiBold text-sm">
+      {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
+    </span>
+  </div>
+  
+  <button
+    onClick={addShippingItem}
+    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full shadow-sm hover:opacity-90 transition"
+  >
+    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
+  </button>
+</div>
                 
-                {Object.values(groupedItems).map((group: any[], idx) => (
+                {Object.values(groupedProductItems).map((group: any[], idx) => (
                   <div key={idx} className="mb-4 pb-4 last:pb-0 border-b border-gray-200 last:border-b-0">
                     {group.map((item) => (
                       <div
                         key={item.cartId}
                         className="flex items-start py-3 space-y-2"
                       >
-                        <input
-                          type="checkbox"
-                          className="mr-3 mt-2 w-4 h-4"
-                          checked={selectedItems.includes(item.cartId)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedItems([...selectedItems, item.cartId]);
-                            } else {
-                              setSelectedItems(
-                                selectedItems.filter((id) => id !== item.cartId)
-                              );
-                            }
-                          }}
-                        />
+<input
+  type="checkbox"
+  className="mr-3 mt-2 w-4 h-4 custom-checkbox"
+  checked={selectedItems.includes(item.cartId)}
+  onChange={(e) => {
+    if (e.target.checked) {
+      setSelectedItems([...selectedItems, item.cartId]);
+    } else {
+      setSelectedItems(
+        selectedItems.filter((id) => id !== item.cartId)
+      );
+    }
+  }}
+/>
                         <div className="flex-1">
                           <div className="flex items-start gap-3">
                             <ProductImage src={item.imageUrl || item.image} alt={item.name} />
                             <div className="flex-1 min-w-0">
                               <ProductName name={item.name} />
                               <div className="mt-1">
-                                {item.name.toLowerCase().includes("ongkir") || 
-                                 item.name.toLowerCase().includes("shipping") ? (
-                                  <ShippingCostInput
-                                    item={item}
-                                    updateShippingCost={updateShippingCost}
-                                  />
-                                ) : (
-                                  <FrameVariantDropdown
-                                    item={item}
-                                    updateItemVariant={updateItemVariant}
-                                  />
-                                )}
+                                <FrameVariantDropdown
+                                  item={item}
+                                  updateItemVariant={updateItemVariant}
+                                />
                               </div>
                             </div>
                           </div>
@@ -459,65 +555,23 @@ const addShippingItem = () => {
                           <div className="flex items-center justify-between mt-2">
                             <ProductPrice price={item.price} />
                             <div className="flex items-center gap-2">
-                              {item.name.toLowerCase().includes("ongkir") || 
-                               item.name.toLowerCase().includes("shipping") ? (
-                                editingShippingCost === item.cartId ? (
-                                  <div className="relative">
-                                    <div className="flex items-center rounded-[20px] border border-black overflow-hidden w-[90px]">
-                                      <input
-                                        type="number"
-                                        value={tempShippingCost}
-                                        onChange={handleShippingCostChange}
-                                        className="px-2 py-1 text-xs w-full text-center font-poppinsRegular outline-none"
-                                        placeholder="0"
-                                        min="0"
-                                        autoFocus
-                                      />
-                                    </div>
-                                    <div className="absolute top-full left-0 right-0 mt-1 flex items-center gap-2 justify-center">
-                                      <button
-                                        onClick={() => handleSaveShippingCost(item.cartId)}
-                                        className="bg-[#dcbec1] text-black font-poppinsSemiBold text-[10px] px-2 py-1 rounded-full hover:opacity-90 transition shadow-sm"
-                                      >
-                                        {currentLang === "id" ? "Simpan" : "Save"}
-                                      </button>
-                                      <button
-                                        onClick={handleCancelShippingEdit}
-                                        className="bg-[#dcbec1] text-black font-poppinsSemiBold text-[10px] px-2 py-1 rounded-full hover:opacity-90 transition shadow-sm"
-                                      >
-                                        {currentLang === "id" ? "Batal" : "Cancel"}
-                                      </button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div 
-                                    className="flex items-center rounded-[20px] border border-black overflow-hidden cursor-pointer hover:bg-gray-50 w-[90px]"
-                                    onClick={() => handleEditShippingClick(item)}
-                                  >
-                                    <span className="px-2 py-1 text-xs font-poppinsRegular w-full text-center">
-                                      {item.price > 0 ? `Rp${item.price.toLocaleString("id-ID")}` : "Rp0"}
-                                    </span>
-                                  </div>
-                                )
-                              ) : (
-                                <div className="flex items-center rounded-[20px] border border-black overflow-hidden">
-                                  <button
-                                    className="px-2 py-1 border-r border-black text-xs"
-                                    onClick={() => updateQuantity(item.cartId, -1)}
-                                  >
-                                    -
-                                  </button>
-                                  <span className="px-2 py-1 text-xs">
-                                    {item.quantity}
-                                  </span>
-                                  <button
-                                    className="px-2 py-1 border-l border-black text-xs"
-                                    onClick={() => updateQuantity(item.cartId, 1)}
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              )}
+                              <div className="flex items-center rounded-[20px] border border-black overflow-hidden">
+                                <button
+                                  className="px-2 py-1 border-r border-black text-xs"
+                                  onClick={() => updateQuantity(item.cartId, -1)}
+                                >
+                                  -
+                                </button>
+                                <span className="px-2 py-1 text-xs">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  className="px-2 py-1 border-l border-black text-xs"
+                                  onClick={() => updateQuantity(item.cartId, 1)}
+                                >
+                                  +
+                                </button>
+                              </div>
                               <p className="text-sm font-bold text-red-600">
                                 Rp{(item.price * item.quantity).toLocaleString("id-ID")}
                               </p>
@@ -534,18 +588,35 @@ const addShippingItem = () => {
                     ))}
                   </div>
                 ))}
+                
+                {/* Shipping Cost Section - Mobile */}
+                {shippingItems.map((item) => (
+                  <ShippingCostItem
+                    key={item.cartId}
+                    item={item}
+                    updateShippingCost={updateShippingCost}
+                    editingShippingCost={editingShippingCost}
+                    tempShippingCost={tempShippingCost}
+                    handleEditShippingClick={handleEditShippingClick}
+                    handleSaveShippingCost={handleSaveShippingCost}
+                    handleCancelShippingEdit={handleCancelShippingEdit}
+                    handleShippingCostChange={handleShippingCostChange}
+                    deleteItem={deleteItem}
+                  />
+                ))}
+                
                 <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={toggleSelectAll}
-                      className="w-4 h-4"
-                    />
-                    <span className="font-poppinsSemiBold text-sm">
-                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
-                    </span>
-                  </label>
+<label className="flex items-center gap-2 cursor-pointer">
+  <input
+    type="checkbox"
+    checked={allSelected}
+    onChange={toggleSelectAll}
+    className="w-4 h-4 custom-checkbox"
+  />
+  <span className="font-poppinsSemiBold text-sm">
+    {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
+  </span>
+</label>
                   <div className="text-right">
                     <p className="font-poppinsSemiBold text-sm">
                       {currentLang === "id" ? "Total" : "Total"} ({selectedItems.length} {currentLang === "id" ? "item" : "items"}):{" "}
@@ -553,6 +624,11 @@ const addShippingItem = () => {
                         Rp {totalPrice.toLocaleString("id-ID")}
                       </span>
                     </p>
+                    {shippingItems.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {currentLang === "id" ? "Termasuk biaya pengiriman" : "Includes shipping cost"}
+                      </p>
+                    )}
                   </div>
                 </div>
               </>
@@ -775,133 +851,85 @@ const addShippingItem = () => {
           
           {/* Box Cart */}
           <div className="rounded-[30px] border border-black p-6 bg-white shadow-sm">
-            {cart.length === 0 ? (
+            {productItems.length === 0 ? (
               <p className="text-center text-gray-500">
                 {currentLang === "id" ? "Keranjang kosong" : "Cart is empty"}
               </p>
             ) : (
               <>
-                {/* Select All Atas */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="mr-2"
-                      checked={allSelected}
-                      onChange={toggleSelectAll}
-                    />
-                    <span className="font-poppinsSemiBold">
-                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
-                    </span>
-                  </div>
-                  <button
-                    onClick={addShippingItem}
-                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-sm px-4 py-1 rounded-full shadow-sm hover:opacity-90 transition"
-                  >
-                    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
-                  </button>
-                </div>
+{/* Select All Atas */}
+<div className="flex items-center justify-between mb-4">
+  <div className="flex items-center">
+    <input
+      type="checkbox"
+      className="mr-2 custom-checkbox"
+      style={{ width: '16px', height: '16px' }}
+      checked={allSelected}
+      onChange={toggleSelectAll}
+    />
+    <span className="font-poppinsSemiBold">
+      {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
+    </span>
+  </div>
+  <button
+    onClick={addShippingItem}
+    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-sm px-4 py-1 rounded-full shadow-sm hover:opacity-90 transition"
+  >
+    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
+  </button>
+</div>
                 
-                {Object.values(groupedItems).map((group: any[], idx) => (
+                {Object.values(groupedProductItems).map((group: any[], idx) => (
                   <div key={idx} className="mb-6 pb-6 last:pb-0">
                     {group.map((item) => (
                       <div
                         key={item.cartId}
                         className="flex items-center justify-between py-3"
                       >
-                        <input
-                          type="checkbox"
-                          className="mr-3"
-                          checked={selectedItems.includes(item.cartId)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedItems([...selectedItems, item.cartId]);
-                            } else {
-                              setSelectedItems(
-                                selectedItems.filter((id) => id !== item.cartId)
-                              );
-                            }
-                          }}
-                        />
+<input
+  type="checkbox"
+  className="mr-3 custom-checkbox"
+  style={{ width: '16px', height: '16px' }}
+  checked={selectedItems.includes(item.cartId)}
+  onChange={(e) => {
+    if (e.target.checked) {
+      setSelectedItems([...selectedItems, item.cartId]);
+    } else {
+      setSelectedItems(
+        selectedItems.filter((id) => id !== item.cartId)
+      );
+    }
+  }}
+/>
                         <div className="flex items-center gap-3 flex-1">
                           <ProductImage src={item.imageUrl} alt={item.name} />
                           <ProductName name={item.name} />
-                          {item.name.toLowerCase().includes("ongkir") || 
-                           item.name.toLowerCase().includes("shipping") ? (
-                            <ShippingCostInput
-                              item={item}
-                              updateShippingCost={updateShippingCost}
-                            />
-                          ) : (
-                            <FrameVariantDropdown
-                              item={item}
-                              updateItemVariant={updateItemVariant}
-                            />
-                          )}
+                          <FrameVariantDropdown
+                            item={item}
+                            updateItemVariant={updateItemVariant}
+                          />
                           <div className="flex-shrink-0 -translate-x-7">
                             <ProductPrice price={item.price} />
                           </div>
                         </div>
                         <div className="flex items-center gap-3 mt-2">
-                          {item.name.toLowerCase().includes("ongkir") || 
-                           item.name.toLowerCase().includes("shipping") ? (
-                            editingShippingCost === item.cartId ? (
-                              <div className="relative">
-                                <div className="flex items-center rounded-[30px] border border-black overflow-hidden w-[108px]">
-                                  <input
-                                    type="number"
-                                    value={tempShippingCost}
-                                    onChange={handleShippingCostChange}
-                                    className="px-4 py-1 text-sm w-full text-center font-poppinsRegular outline-none"
-                                    placeholder="0"
-                                    min="0"
-                                    autoFocus
-                                  />
-                                </div>
-                                <div className="absolute top-full left-0 right-0 mt-1 flex items-center gap-2 justify-center">
-                                  <button
-                                    onClick={() => handleSaveShippingCost(item.cartId)}
-                                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
-                                  >
-                                    {currentLang === "id" ? "Simpan" : "Save"}
-                                  </button>
-                                  <button
-                                    onClick={handleCancelShippingEdit}
-                                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
-                                  >
-                                    {currentLang === "id" ? "Batal" : "Cancel"}
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div 
-                                className="flex items-center rounded-[30px] border border-black overflow-hidden cursor-pointer hover:bg-gray-50 w-[108px]"
-                                onClick={() => handleEditShippingClick(item)}
-                              >
-                                <span className="px-4 py-1 text-sm font-poppinsRegular w-full text-center">
-                                  {item.price > 0 ? `Rp${item.price.toLocaleString("id-ID")}` : "Rp0"}
-                                </span>
-                              </div>
-                            )
-                          ) : (
-                            <div className="flex items-center rounded-[30px] border border-black overflow-hidden">
-                              <button
-                                className="px-3 py-[0.1rem] border-r border-black"
-                                onClick={() => updateQuantity(item.cartId, -1)}
-                              >
-                                -
-                              </button>
-                              <span className="px-4 py-[0.1rem]">
-                                {item.quantity}
-                              </span>
-                              <button
-                                className="px-3 py-[0.1rem] border-l border-black"
-                                onClick={() => updateQuantity(item.cartId, 1)}
-                              >
-                                +
-                              </button>
-                            </div>
-                          )}
+                          <div className="flex items-center rounded-[30px] border border-black overflow-hidden">
+                            <button
+                              className="px-3 py-[0.1rem] border-r border-black"
+                              onClick={() => updateQuantity(item.cartId, -1)}
+                            >
+                              -
+                            </button>
+                            <span className="px-4 py-[0.1rem]">
+                              {item.quantity}
+                            </span>
+                            <button
+                              className="px-3 py-[0.1rem] border-l border-black"
+                              onClick={() => updateQuantity(item.cartId, 1)}
+                            >
+                              +
+                            </button>
+                          </div>
                           <p className="w-28 text-right font-bold text-red-600">
                             Rp{(item.price * item.quantity).toLocaleString("id-ID")}
                           </p>
@@ -916,18 +944,35 @@ const addShippingItem = () => {
                     ))}
                   </div>
                 ))}
+                
+                {/* Shipping Cost Section - Desktop */}
+                {shippingItems.map((item) => (
+                  <ShippingCostItem
+                    key={item.cartId}
+                    item={item}
+                    updateShippingCost={updateShippingCost}
+                    editingShippingCost={editingShippingCost}
+                    tempShippingCost={tempShippingCost}
+                    handleEditShippingClick={handleEditShippingClick}
+                    handleSaveShippingCost={handleSaveShippingCost}
+                    handleCancelShippingEdit={handleCancelShippingEdit}
+                    handleShippingCostChange={handleShippingCostChange}
+                    deleteItem={deleteItem}
+                  />
+                ))}
+                
                 <div className="flex items-center justify-between pt-4 mt-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={toggleSelectAll}
-                      className="w-4 h-4"
-                    />
-                    <span className="font-poppinsSemiBold">
-                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
-                    </span>
-                  </label>
+<label className="flex items-center gap-2 cursor-pointer">
+  <input
+    type="checkbox"
+    checked={allSelected}
+    onChange={toggleSelectAll}
+    className="w-4 h-4 custom-checkbox"
+  />
+  <span className="font-poppinsSemiBold">
+    {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
+  </span>
+</label>
                   <div className="text-right">
                     <p className="font-poppinsSemiBold">
                       {currentLang === "id" ? "Total" : "Total"} ({selectedItems.length} {currentLang === "id" ? "item" : "items"}):{" "}
@@ -935,6 +980,11 @@ const addShippingItem = () => {
                         Rp {totalPrice.toLocaleString("id-ID")}
                       </span>
                     </p>
+                    {shippingItems.length > 0 && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        {currentLang === "id" ? "Termasuk biaya pengiriman" : "Includes shipping cost"}
+                      </p>
+                    )}
                   </div>
                 </div>
               </>

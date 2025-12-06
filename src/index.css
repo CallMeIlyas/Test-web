@@ -77,3 +77,32 @@ input[type="date"]::-ms-clear {
   display: none;
 }
 
+/* Custom checkbox styling untuk centang hitam */
+input[type="checkbox"].custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #a0a0a0;
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+input[type="checkbox"].custom-checkbox:checked {
+  background-color: #dcbec1 !important;
+  border-color: #dcbec1 !important;
+}
+
+input[type="checkbox"].custom-checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: black !important;
+  font-weight: 1000;
+  font-size: 11px;
+  line-height: 1;
+}
