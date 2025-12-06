@@ -356,30 +356,25 @@ const specialVariations =
     }
   }, [selectedProductVariation, product, selectedSizeFrame, selectedVariation]);
   
-useEffect(() => {
-  const isManyFaceProduct = product.name
-    ?.toLowerCase()
-    .includes("biaya tambahan wajah banyak (design dari customer)");
-
-  if (!isManyFaceProduct) return;
-
-  // Gunakan faceOptions[0] dan faceOptions[1]
-  if (selectedFaceOptionCustom === faceOptions[0]) { // "1–9 Wajah" atau "1–9 Faces"
-    setDisplayedPrice(
-      priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
-    );
-  } else if (selectedFaceOptionCustom === faceOptions[1]) { // "Di atas 10 Wajah" atau "Above 10 Faces"
-    setDisplayedPrice(
-      priceList.Additional["Biaya Tambahan Wajah Banyak diatas 10 wajah"] || product.price
-    );
-  } else {
-    // Set default ke option pertama
-    setSelectedFaceOptionCustom(faceOptions[0]);
-    setDisplayedPrice(
-      priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
-    );
-  }
-}, [selectedFaceOptionCustom, product, faceOptions]);
+  useEffect(() => {
+    const isManyFaceProduct = product.name
+      ?.toLowerCase()
+      .includes("biaya tambahan wajah banyak (design dari customer)");
+  
+    if (!isManyFaceProduct) return;
+  
+    if (selectedFaceOptionCustom === "1–9 Wajah") {
+      setDisplayedPrice(
+        priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
+      );
+    } else if (selectedFaceOptionCustom === "Di atas 10 Wajah") {
+      setDisplayedPrice(
+        priceList.Additional["Biaya Tambahan Wajah Banyak diatas 10 wajah"] || product.price
+      );
+    } else {
+      setDisplayedPrice(product.price);
+    }
+  }, [selectedFaceOptionCustom, product]);
   
   useEffect(() => {
     const isExpressProduct = product.name
@@ -489,30 +484,25 @@ useEffect(() => {
     setDisplayedPrice(newPrice);
   }, [selectedAcrylicOption, product]);
   
-useEffect(() => {
+  useEffect(() => {
   const isKarikaturProduct = product.name
     ?.toLowerCase()
     .includes("biaya tambahan wajah karikatur");
 
   if (!isKarikaturProduct) return;
 
-  // Gunakan faceOptions[0] dan faceOptions[1]
-  if (selectedKarikaturOption === faceOptions[0]) {
+  if (selectedKarikaturOption === "1–9 Wajah") {
     setDisplayedPrice(
       priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || product.price
     );
-  } else if (selectedKarikaturOption === faceOptions[1]) {
+  } else if (selectedKarikaturOption === "Di atas 10 Wajah") {
     setDisplayedPrice(
       priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"] || product.price
     );
   } else {
-    // Set default ke option pertama
-    setSelectedKarikaturOption(faceOptions[0]);
-    setDisplayedPrice(
-      priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || product.price
-    );
+    setDisplayedPrice(product.price);
   }
-}, [selectedKarikaturOption, product, faceOptions]);
+}, [selectedKarikaturOption, product]);
 
 
 const handleAddToCart = () => {
@@ -521,76 +511,25 @@ const handleAddToCart = () => {
 
   let productName = "";
   
-  // 🎯 DETEKSI JENIS PRODUK
-  const isKarikaturProduct = product.name
-    ?.toLowerCase()
-    .includes("biaya tambahan wajah karikatur");
-    
-  const isManyFacesProduct = product.name
-    ?.toLowerCase()
-    .includes("biaya tambahan wajah banyak (design dari customer)");
-    
-  const isExpressProduct = product.name
-    ?.toLowerCase()
-    .includes("biaya ekspress general");
-    
-  const isAcrylicChangeProduct = product.name
-    ?.toLowerCase()
-    .includes("biaya tambahan ganti frame kaca ke acrylic");
-    
-  const isAcrylicStand = product.category === "Acrylic Stand" || 
-                        product.name?.toLowerCase().includes("acrylic stand");
-  
+  // 🆕 DETEKSI PRODUK 8R DAN SET PACKAGING OPTIONS
   const is8RProduct = product.name?.toLowerCase().includes("8r") || 
                      selectedSizeFrame?.toLowerCase().includes("8r");
   
-  // 🎯 GUNAKAN productVariations DARI getProductVariations
-  const productVariations = getProductVariations(product.category, product.name);
-  
-  let variationOptions: string[] = [];
-  
-  if (isKarikaturProduct || isManyFacesProduct) {
-    variationOptions = ["1–9 Wajah", "Di atas 10 Wajah"];
-  } else if (isExpressProduct) {
-    variationOptions = ["Option 1", "Option 2", "Option 3"];
-  } else if (isAcrylicChangeProduct) {
-    variationOptions = ["A2", "A1", "A0"];
-  } else if (isAcrylicStand) {
-    variationOptions = ["15x15cm 1 sisi", "A4 2 sisi", "A3 2 sisi"];
-  } else if (is8RProduct) {
-    variationOptions = ["Dus Kraft + Paperbag", "Black Hardbox + Paperbag"];
-  } else if (productVariations.length > 0) {
-    // 🎯 GUNAKAN productVariations DARI getProductVariations
-    variationOptions = productVariations;
-  } else {
-    // Default untuk produk frame biasa
-    variationOptions = ["Frame Kaca", "Frame Acrylic"];
-  }
-  
-  // 🎯 TENTUKAN SELECTED OPTION
-  let selectedOption = "";
-  
-  if (isKarikaturProduct) {
-    selectedOption = selectedKarikaturOption || "1–9 Wajah";
-  } else if (isManyFacesProduct) {
-    selectedOption = selectedFaceOptionCustom || "1–9 Wajah";
-  } else if (isExpressProduct) {
-    selectedOption = selectedExpressOption || "Option 1";
-  } else if (isAcrylicChangeProduct) {
-    selectedOption = selectedSizeFrame || "A2";
-  } else if (isAcrylicStand) {
-    selectedOption = selectedAcrylicOption || "15x15cm 1 sisi";
-  } else if (is8RProduct) {
-    selectedOption = "Dus Kraft + Paperbag";
-  } else if (productVariations.length > 0) {
-    // 🎯 GUNAKAN selectedVariation (yang dipilih di halaman produk)
-    selectedOption = selectedVariation || productVariations[0];
-  } else {
-    selectedOption = "Frame Kaca";
+  let packagingPriceMap: Record<string, number> = {};
+  let packagingVariations: string[] = [];
+  let selectedPackagingVariation = "";
+
+  if (is8RProduct) {
+    // 🆕 SET HARGA UNTUK SETIAP PACKAGING OPTION
+    packagingPriceMap = {
+      "Dus Kraft + Paperbag": priceList["3D frame"]?.["8R duskraft"] || 0,
+      "Black Hardbox + Paperbag": priceList["3D frame"]?.["8R hardbox"] || 0,
+    };
+    packagingVariations = Object.keys(packagingPriceMap);
+    selectedPackagingVariation = "Dus Kraft + Paperbag"; // default value
   }
 
-  
-  // 🎯 TENTUKAN NAMA PRODUK
+  // 🆕 TAMBAHKAN PENANGANAN KHUSUS UNTUK ACRYLIC STAND
   if (isAcrylicStand) {
     productName = `Acrylic Stand ${product.name}`;
   } 
@@ -608,30 +547,28 @@ const handleAddToCart = () => {
     productName = `Softcopy Design ${product.name}`;
   }
   else if (product.category === "Additional") {
-    productName = product.name;
+    productName = `Additional ${product.name}`;
   }
   else {
+    // Fallback untuk kategori lainnya
     productName = product.name || "Default Product Name";
   }
-  
-  // 🎯 SET PACKAGING PRICE MAP UNTUK 8R
-  let packagingPriceMap: Record<string, number> = {};
+
+  // 🆕 TENTUKAN VARIATION DEFAULT
+  let defaultVariation = selectedVariation;
   if (is8RProduct) {
-    packagingPriceMap = {
-      "Dus Kraft + Paperbag": priceList["3D frame"]?.["8R duskraft"] || 0,
-      "Black Hardbox + Paperbag": priceList["3D frame"]?.["8R hardbox"] || 0,
-    };
+    // Untuk produk 8R, gunakan packaging variation sebagai default
+    defaultVariation = selectedPackagingVariation;
   }
 
   addToCart({
     id: product.id || "p1",
-    name: productName,
+    name: productName, // ← NAMA TETAP: "3D Frame 8R / 20x25cm"
     price: displayedPrice,
     quantity: finalQty,
     imageUrl: product.imageUrl,
-    variation: selectedOption, // 🎯 GUNAKAN selectedOption SEBAGAI VARIATION
-    variationOptions: variationOptions, // 🎯 KIRIM VARIATION OPTIONS
-    productType: "frame",
+    variation: defaultVariation, // ← VARIATION: "Dus Kraft + Paperbag" atau "Black Hardbox + Paperbag"
+    productType: product.category.toLowerCase(),
     attributes: {
       faceCount: faceCountLabel,
       backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
@@ -639,15 +576,11 @@ const handleAddToCart = () => {
       frameSize: selectedSizeFrame,
       shadingStyle: selectedShading,
       isAcrylicStand: isAcrylicStand,
-      // 🎯 KIRIM SELECTED OPTION DAN ATRIBUT LAINNYA
-      selectedOption: selectedOption, // INI YANG PENTING!
-      isAdditionalProduct: isKarikaturProduct || isManyFacesProduct || 
-                          isExpressProduct || isAcrylicChangeProduct || isAcrylicStand,
+      // 🆕 TAMBAHKAN PACKAGING ATTRIBUTES UNTUK PRODUK 8R
       ...(is8RProduct && {
-        is8RProduct: true,
         packagingPriceMap,
-        packagingVariations: ["Dus Kraft + Paperbag", "Black Hardbox + Paperbag"],
-        selectedPackagingVariation: selectedOption
+        packagingVariations,
+        selectedPackagingVariation
       })
     }
   });
@@ -1000,26 +933,19 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                               {t("product.variation")}
                           </label>
                           <div className="flex flex-row flex-wrap gap-2 md:-translate-x-[165px] md:translate-y-2 font-poppinsRegular">
-                            {product.variations.map((variation) => {
-                              // Terjemahkan di sini saja
-                              let displayText = variation;
-                              if (variation === "Frame Kaca") displayText = t("product.frameGlass");
-                              if (variation === "Frame Acrylic") displayText = t("product.frameAcrylic");
-                              
-                              return (
-                                <button
-                                  key={variation}
-                                  onClick={() => setSelectedVariation(variation)}
-                                  className={`px-4 md:px-6 py-2 border rounded-md text-[13px] md:text-sm transition-colors ${
-                                    selectedVariation === variation
-                                      ? "bg-[#dcbec1] border-[#bfa4a6]"
-                                      : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-                                  }`}
-                                >
-                                  {displayText}
-                                </button>
-                              );
-                            })}
+                            {product.variations.map((variation) => (
+                              <button
+                                key={variation}
+                                onClick={() => setSelectedVariation(variation)}
+                                className={`px-4 md:px-6 py-2 border rounded-md text-[13px] md:text-sm transition-colors ${
+                                  selectedVariation === variation
+                                    ? "bg-[#dcbec1] border-[#bfa4a6]"
+                                    : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                                }`}
+                              >
+                                {variation}
+                              </button>
+                            ))}
                           </div>
                         </div>
                       )}

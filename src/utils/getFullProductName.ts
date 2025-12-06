@@ -1,4 +1,3 @@
-// utils/getFullProductName.ts
 export const getFullProductName = (category: string, size?: string, name?: string): string => {
   const sizeMap: Record<string, string> = {
     "4R": "10x15cm",

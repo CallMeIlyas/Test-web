@@ -6,7 +6,7 @@ import type { FilterOptions } from "../../types/types";
 import { useTranslation } from "react-i18next";
 
 interface SidebarFiltersProps {
-  onFilterChange: React.Dispatch<React.SetStateAction<FilterOptions>>;
+  onFilterChange: React.Dispatch<React.SetAction<FilterOptions>>;
   onMobileCategoryClick?: () => void;
 }
 
@@ -22,20 +22,23 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
   const [selectedShippedFrom, setSelectedShippedFrom] = useState<Set<string>>(new Set());
   const [selectedShippedTo, setSelectedShippedTo] = useState<Set<string>>(new Set());
 
-  const categoryFolderMap: Record<string, string> = {
-    [t("side.categories.3d")]: "3D",
-    [t("side.categories.2d")]: "2D",
-    [t("side.categories.additional")]: "ADDITIONAL",
-    [t("side.categories.acrylic")]: "ACRYLIC STAND",
-    [t("side.categories.softcopy")]: "SOFTCOPY DESIGN",
+  // ===== MAPPING UNTUK FILTER =====
+  // Mapping UI → Category (sesuai dengan product data loader)
+  const uiToCategoryMap: Record<string, string> = {
+    [t("side.categories.3d")]: "3D Frame",
+    [t("side.categories.2d")]: "2D Frame", 
+    [t("side.categories.additional")]: "Additional",
+    [t("side.categories.acrylic")]: "Acrylic Stand",
+    [t("side.categories.softcopy")]: "Softcopy Design",
   };
 
-  const threeDSizeMap: Record<string, string> = {
+  // 3D subcategories → Product name
+  const threeDSizeToNameMap: Record<string, string> = {
     "12R": "12R",
     "10R": "10R", 
     "8R": "8R",
     "20x20cm": "20X20CM",
-    "6R": "6R",
+    "6R": "6R", 
     "15x15cm": "15X15CM",
     "4R": "4R",
     "A2": "A2-40X55CM",
@@ -43,7 +46,17 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
     "A0": "A0-80X110CM"
   };
 
-  const subcategoryFolderMap: Record<string, Record<string, string>> = {
+  // 2D subcategories → Product name
+  const twoDSizeToNameMap: Record<string, string> = {
+    "12R": "12R",
+    "15cm": "15cm",
+    "4R": "4R", 
+    "6R": "6R",
+    "8R": "8R"
+  };
+
+  // Other subcategories → Product name
+  const otherSubcategoryToNameMap: Record<string, Record<string, string>> = {
     [t("side.categories.additional")]: {
       [t("side.subcategories.backgroundCustom") || "Background Custom"]: "BACKGROUND CUSTOM",
       [t("side.subcategories.additionalFaces") || "Additional Faces"]: "BIAYA TAMBAHAN WAJAH KARIKATUR",
@@ -59,6 +72,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
     }
   };
 
+  // ===== UI CONFIGURATION =====
   const customCategories = {
     [t("side.categories.3d")]: [
       "12R",
@@ -72,7 +86,9 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
       "A1",
       "A0"
     ],
-    [t("side.categories.2d")]: [],
+    [t("side.categories.2d")]: [
+    ],
+    
     [t("side.categories.additional")]: [
       t("side.subcategories.backgroundCustom") || "Background Custom",
       t("side.subcategories.additionalFaces") || "Additional Faces"
@@ -96,75 +112,65 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
     });
   };
 
+  // ===== FILTER LOGIC =====
   const handleMainCategoryChange = (category: string, isChecked: boolean) => {
-    const folderName = categoryFolderMap[category] || category;
-  
+    const mappedCategory = uiToCategoryMap[category];
+    
     setSelectedMainCategories((prev) => {
       const newSet = new Set(prev);
       isChecked ? newSet.add(category) : newSet.delete(category);
       return newSet;
     });
-  
+    
     onFilterChange((prev) => {
       const newCategories = isChecked
-        ? [...prev.categories, folderName]
-        : prev.categories.filter((cat) => cat !== folderName);
+        ? [...prev.categories, mappedCategory]
+        : prev.categories.filter((cat) => cat !== mappedCategory);
       return { ...prev, categories: newCategories };
     });
   };
 
-const handleMainCategoryChangeMobile = (category: string, isChecked: boolean) => {
-  handleMainCategoryChange(category, isChecked);
-  
-  // Auto-close baik ketika select maupun deselect
-  if (onMobileCategoryClick) {
-    setTimeout(() => onMobileCategoryClick(), 100);
-  }
-};
-
-const handleShippedToChangeMobile = (destination: string, isChecked: boolean) => {
-  handleShippedToChange(destination, isChecked);
-  
-  // Auto-close baik ketika select maupun deselect
-  if (onMobileCategoryClick) {
-    setTimeout(() => onMobileCategoryClick(), 100);
-  }
-};
+  const handleMainCategoryChangeMobile = (category: string, isChecked: boolean) => {
+    handleMainCategoryChange(category, isChecked);
+    
+    if (onMobileCategoryClick) {
+      setTimeout(() => onMobileCategoryClick(), 100);
+    }
+  };
 
   const handleSubcategoryChange = (
     mainCategory: string,
     subcategory: string,
     isChecked: boolean
   ) => {
-    const mainFolderName = categoryFolderMap[mainCategory] || mainCategory;
+    const mappedCategory = uiToCategoryMap[mainCategory];
+    let productName: string;
     
-    let subFolderName: string;
-    
-    if (mainFolderName === "3D") {
-      subFolderName = threeDSizeMap[subcategory] || subcategory;
-    } else if (mainFolderName === "2D") {
-      subFolderName = subcategory;
-    } else {
-      const categoryMap = subcategoryFolderMap[mainCategory];
-      if (categoryMap) {
-        subFolderName = categoryMap[subcategory] || subcategory;
-      } else {
-        subFolderName = subcategory;
-      }
+    if (mappedCategory === "3D Frame") {
+      productName = threeDSizeToNameMap[subcategory] || subcategory;
+    } 
+    else if (mappedCategory === "2D Frame") {
+      productName = twoDSizeToNameMap[subcategory] || subcategory;
+    }
+    else {
+      const map = otherSubcategoryToNameMap[mainCategory];
+      productName = map ? map[subcategory] || subcategory : subcategory;
     }
     
-    const fullKey = `${mainFolderName}/${subFolderName}`;
+    // Format: "Category/ProductName" untuk filter
+    const filterKey = `${mappedCategory}/${productName}`;
+    const displayKey = `${mainCategory}/${subcategory}`;
 
     setSelectedSubcategories((prev) => {
       const newSet = new Set(prev);
-      isChecked ? newSet.add(fullKey) : newSet.delete(fullKey);
+      isChecked ? newSet.add(displayKey) : newSet.delete(displayKey);
       return newSet;
     });
 
     onFilterChange((prev) => {
       const newCategories = isChecked
-        ? [...prev.categories, fullKey]
-        : prev.categories.filter((cat) => cat !== fullKey);
+        ? [...prev.categories, filterKey]
+        : prev.categories.filter((cat) => cat !== filterKey);
       return { ...prev, categories: newCategories };
     });
   };
@@ -199,6 +205,15 @@ const handleShippedToChangeMobile = (destination: string, isChecked: boolean) =>
     });
   };
 
+  const handleShippedToChangeMobile = (destination: string, isChecked: boolean) => {
+    handleShippedToChange(destination, isChecked);
+    
+    if (onMobileCategoryClick) {
+      setTimeout(() => onMobileCategoryClick(), 100);
+    }
+  };
+
+  // ===== COMPONENT RENDERING =====
   const DesktopLayout = () => (
     <aside className="hidden md:block w-64 p-6 bg-white rounded-xl">
       <SplitBorder />
@@ -208,8 +223,8 @@ const handleShippedToChangeMobile = (destination: string, isChecked: boolean) =>
         </h3>
 
         {Object.entries(customCategories).map(([mainCategory, subcategories]) => {
-          const is2D = mainCategory === t("side.categories.2d");
-          const isExpanded = expandedCategories.has(mainCategory) || is2D;
+          const isExpanded = expandedCategories.has(mainCategory);
+          const hasSubcategories = subcategories.length > 0;
 
           return (
             <div key={mainCategory} className="mb-2">
@@ -240,7 +255,7 @@ const handleShippedToChangeMobile = (destination: string, isChecked: boolean) =>
                   {mainCategory}
                 </div>
 
-                {!is2D && subcategories.length > 0 && (
+                {hasSubcategories && (
                   <button
                     onClick={() => toggleCategory(mainCategory)}
                     className="text-gray-500 hover:text-primary"
@@ -248,39 +263,24 @@ const handleShippedToChangeMobile = (destination: string, isChecked: boolean) =>
                     <FaChevronDown
                       size={12}
                       className={`transition-transform duration-300 ${
-                        expandedCategories.has(mainCategory) ? "rotate-180" : ""
+                        isExpanded ? "rotate-180" : ""
                       }`}
                     />
                   </button>
                 )}
               </div>
 
-              {isExpanded && subcategories.length > 0 && (
+              {isExpanded && hasSubcategories && (
                 <div className="ml-10 space-y-2">
                   {subcategories.map((subcat) => {
-                    const mainFolderName = categoryFolderMap[mainCategory] || mainCategory;
-                    
-                    let subFolderName: string;
-                    
-                    if (mainFolderName === "3D") {
-                      subFolderName = threeDSizeMap[subcat] || subcat;
-                    } else {
-                      const categoryMap = subcategoryFolderMap[mainCategory];
-                      if (categoryMap) {
-                        subFolderName = categoryMap[subcat] || subcat;
-                      } else {
-                        subFolderName = subcat;
-                      }
-                    }
-                    
-                    const fullKey = `${mainFolderName}/${subFolderName}`;
-                    const isChecked = selectedSubcategories.has(fullKey);
+                    const displayKey = `${mainCategory}/${subcat}`;
+                    const isChecked = selectedSubcategories.has(displayKey);
 
                     return (
-                      <div key={fullKey} className="font-poppinsRegular flex items-center gap-2">
+                      <div key={displayKey} className="font-poppinsRegular flex items-center gap-2">
                         <input
                           type="checkbox"
-                          id={`desktop-${fullKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
+                          id={`desktop-${displayKey.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-")}`}
                           checked={isChecked}
                           onChange={(e) =>
                             handleSubcategoryChange(mainCategory, subcat, e.target.checked)
