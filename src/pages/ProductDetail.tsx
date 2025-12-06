@@ -1300,7 +1300,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
             "../assets/list-products/3D/A0-80X110CM/PACKING AIR COLUMN BAGS.jpg",
             import.meta.url
           ).href,
-          price: `Rp ${priceList.Additional["Biaya Tambahan Packing untuk Order Banyak via Kargo"].toLocaleString("id-ID")}`
+          price: `Rp ${priceList.Additional["Biaya Tambahan Packing"].toLocaleString("id-ID")}`
         },
       ];
 
