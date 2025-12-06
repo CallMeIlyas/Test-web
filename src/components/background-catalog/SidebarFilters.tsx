@@ -6,9 +6,13 @@ import { useTranslation } from "react-i18next";
 
 interface SidebarFiltersProps {
   onFilterChange: React.Dispatch<React.SetStateAction<FilterOptions>>;
+  onMobileCategoryClick?: () => void; // Tambah prop ini
 }
 
-const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
+const SidebarFilters: FC<SidebarFiltersProps> = ({ 
+  onFilterChange, 
+  onMobileCategoryClick 
+}) => {
   const { t } = useTranslation();
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
@@ -37,6 +41,11 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
 
       return newFilters;
     });
+
+    // Auto-close untuk mobile
+    if (onMobileCategoryClick) {
+      setTimeout(() => onMobileCategoryClick(), 100);
+    }
   };
 
   const categories = [
@@ -66,31 +75,32 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
           {categories.map((item) => {
             const isChecked = selectedCategories.has(item);
             return (
-              <div key={item} className="font-poppinsRegular flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id={`mobile-${item.toLowerCase().replace(/\s+/g, "-")}`}
-                  checked={isChecked}
-                  onChange={(e) =>
-                    handleCheckboxChange(item, e.target.checked)
-                  }
-                  className="
-                    shrink-0 w-4 h-4 border border-black rounded-sm
-                    appearance-none cursor-pointer
-                    checked:bg-white checked:border-black
-                    relative transition-all duration-200
-                    after:hidden checked:after:block
-                    after:w-[6px] after:h-[10px]
-                    after:border-r-[2px] after:border-b-[2px]
-                    after:border-black after:absolute
-                    after:top-[0px] after:left-[5px]
-                    after:rotate-45
-                  "
-                />
-                <div
-                  onClick={() => handleCheckboxChange(item, !isChecked)}
-                  className="text-sm cursor-pointer hover:text-primary flex-1 leading-tight"
-                >
+              <div 
+                key={item} 
+                className="font-poppinsRegular flex items-start gap-2 cursor-pointer hover:text-primary transition-colors"
+                onClick={() => handleCheckboxChange(item, !isChecked)}
+              >
+                <div className="relative shrink-0">
+                  <input
+                    type="checkbox"
+                    id={`mobile-${item.toLowerCase().replace(/\s+/g, "-")}`}
+                    checked={isChecked}
+                    onChange={() => {}} // Handled by parent div
+                    className="
+                      w-4 h-4 border border-black rounded-sm
+                      appearance-none cursor-pointer
+                      checked:bg-white checked:border-black
+                      relative transition-all duration-200
+                      after:hidden checked:after:block
+                      after:w-[6px] after:h-[10px]
+                      after:border-r-[2px] after:border-b-[2px]
+                      after:border-black after:absolute
+                      after:top-[0px] after:left-[5px]
+                      after:rotate-45
+                    "
+                  />
+                </div>
+                <div className="text-sm flex-1 leading-tight py-0.5">
                   {item}
                 </div>
               </div>
@@ -103,31 +113,32 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
           {categories.map((item) => {
             const isChecked = selectedCategories.has(item);
             return (
-              <div key={item} className="font-poppinsRegular flex items-start gap-2 mb-3 ml-6">
-                <input
-                  type="checkbox"
-                  id={`desktop-${item.toLowerCase().replace(/\s+/g, "-")}`}
-                  checked={isChecked}
-                  onChange={(e) =>
-                    handleCheckboxChange(item, e.target.checked)
-                  }
-                  className="
-                    shrink-0 w-4 h-4 border border-black rounded-sm
-                    appearance-none cursor-pointer
-                    checked:bg-white checked:border-black
-                    relative transition-all duration-200
-                    after:hidden checked:after:block
-                    after:w-[6px] after:h-[10px]
-                    after:border-r-[2px] after:border-b-[2px]
-                    after:border-black after:absolute
-                    after:top-[0px] after:left-[5px]
-                    after:rotate-45
-                  "
-                />
-                <div
-                  onClick={() => handleCheckboxChange(item, !isChecked)}
-                  className="text-sm cursor-pointer hover:text-primary flex-1 leading-tight"
-                >
+              <div 
+                key={item} 
+                className="font-poppinsRegular flex items-start gap-2 mb-3 ml-6 cursor-pointer hover:text-primary"
+                onClick={() => handleCheckboxChange(item, !isChecked)}
+              >
+                <div className="relative shrink-0">
+                  <input
+                    type="checkbox"
+                    id={`desktop-${item.toLowerCase().replace(/\s+/g, "-")}`}
+                    checked={isChecked}
+                    onChange={() => {}} // Handled by parent div
+                    className="
+                      w-4 h-4 border border-black rounded-sm
+                      appearance-none cursor-pointer
+                      checked:bg-white checked:border-black
+                      relative transition-all duration-200
+                      after:hidden checked:after:block
+                      after:w-[6px] after:h-[10px]
+                      after:border-r-[2px] after:border-b-[2px]
+                      after:border-black after:absolute
+                      after:top-[0px] after:left-[5px]
+                      after:rotate-45
+                    "
+                  />
+                </div>
+                <div className="text-sm flex-1 leading-tight py-0.5">
                   {item}
                 </div>
               </div>

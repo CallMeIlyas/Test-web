@@ -7,9 +7,13 @@ import { useTranslation } from "react-i18next";
 
 interface SidebarFiltersProps {
   onFilterChange: React.Dispatch<React.SetStateAction<FilterOptions>>;
+  onMobileCategoryClick?: () => void;
 }
 
-const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
+const SidebarFilters: FC<SidebarFiltersProps> = ({ 
+  onFilterChange, 
+  onMobileCategoryClick 
+}) => {
   const { t } = useTranslation();
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
@@ -18,7 +22,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
   const [selectedShippedFrom, setSelectedShippedFrom] = useState<Set<string>>(new Set());
   const [selectedShippedTo, setSelectedShippedTo] = useState<Set<string>>(new Set());
 
-  // Map kategori UI → nama folder backend
   const categoryFolderMap: Record<string, string> = {
     [t("side.categories.3d")]: "3D",
     [t("side.categories.2d")]: "2D",
@@ -27,7 +30,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     [t("side.categories.softcopy")]: "SOFTCOPY DESIGN",
   };
 
-  // Map ukuran 3D UI → nama folder backend (untuk 3D)
   const threeDSizeMap: Record<string, string> = {
     "12R": "12R",
     "10R": "10R", 
@@ -41,24 +43,15 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     "A0": "A0-80X110CM"
   };
 
-  // Map subkategori UI → nama folder backend BERDASARKAN STRUKTUR FOLDER
   const subcategoryFolderMap: Record<string, Record<string, string>> = {
-    // ADDITIONAL subcategories
     [t("side.categories.additional")]: {
       [t("side.subcategories.backgroundCustom") || "Background Custom"]: "BACKGROUND CUSTOM",
       [t("side.subcategories.additionalFaces") || "Additional Faces"]: "BIAYA TAMBAHAN WAJAH KARIKATUR",
-      // Jika ada lebih banyak jenis Additional Faces, bisa ditambahkan:
-      // "Additional Face (by AI)": "BIAYA TAMBAHAN WAJAH by AI",
-      // "Additional Face (Caricature)": "BIAYA TAMBAHAN WAJAH KARIKATUR",
     },
-    
-    // ACRYLIC STAND subcategories
     [t("side.categories.acrylic")]: {
       [t("side.subcategories.2cm") || "2CM"]: "2CM",
       [t("side.subcategories.3mm") || "3MM"]: "3MM",
     },
-    
-    // SOFTCOPY DESIGN subcategories
     [t("side.categories.softcopy")]: {
       [t("side.subcategories.backgroundCatalog") || "With Background Catalog"]: "WITH BACKGROUND CATALOG",
       [t("side.subcategories.backgroundCustomSoftcopy") || "With Background Custom"]: "WITH BACKGROUND CUSTOM", 
@@ -66,7 +59,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     }
   };
 
-  // Struktur kategori sesuai gambar
   const customCategories = {
     [t("side.categories.3d")]: [
       "12R",
@@ -80,7 +72,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
       "A1",
       "A0"
     ],
-    [t("side.categories.2d")]: [], // 2D Frame tidak ada subkategori di UI
+    [t("side.categories.2d")]: [],
     [t("side.categories.additional")]: [
       t("side.subcategories.backgroundCustom") || "Background Custom",
       t("side.subcategories.additionalFaces") || "Additional Faces"
@@ -96,7 +88,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     ]
   };
 
-  // Toggle buka/tutup kategori
   const toggleCategory = (category: string) => {
     setExpandedCategories((prev) => {
       const newSet = new Set(prev);
@@ -105,7 +96,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Handle kategori utama (checkbox di kategori utama)
   const handleMainCategoryChange = (category: string, isChecked: boolean) => {
     const folderName = categoryFolderMap[category] || category;
   
@@ -123,7 +113,24 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Handle subkategori
+const handleMainCategoryChangeMobile = (category: string, isChecked: boolean) => {
+  handleMainCategoryChange(category, isChecked);
+  
+  // Auto-close baik ketika select maupun deselect
+  if (onMobileCategoryClick) {
+    setTimeout(() => onMobileCategoryClick(), 100);
+  }
+};
+
+const handleShippedToChangeMobile = (destination: string, isChecked: boolean) => {
+  handleShippedToChange(destination, isChecked);
+  
+  // Auto-close baik ketika select maupun deselect
+  if (onMobileCategoryClick) {
+    setTimeout(() => onMobileCategoryClick(), 100);
+  }
+};
+
   const handleSubcategoryChange = (
     mainCategory: string,
     subcategory: string,
@@ -131,17 +138,13 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
   ) => {
     const mainFolderName = categoryFolderMap[mainCategory] || mainCategory;
     
-    // Tentukan nama folder untuk subkategori
     let subFolderName: string;
     
     if (mainFolderName === "3D") {
-      // Untuk 3D, gunakan mapping ukuran
       subFolderName = threeDSizeMap[subcategory] || subcategory;
     } else if (mainFolderName === "2D") {
-      // Untuk 2D, saat ini tidak ada subkategori di UI
       subFolderName = subcategory;
     } else {
-      // Untuk kategori lain, gunakan mapping berdasarkan kategori utama
       const categoryMap = subcategoryFolderMap[mainCategory];
       if (categoryMap) {
         subFolderName = categoryMap[subcategory] || subcategory;
@@ -166,7 +169,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Handle Shipped From
   const handleShippedFromChange = (location: string, isChecked: boolean) => {
     setSelectedShippedFrom((prev) => {
       const newSet = new Set(prev);
@@ -182,7 +184,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Handle Shipped To
   const handleShippedToChange = (destination: string, isChecked: boolean) => {
     setSelectedShippedTo((prev) => {
       const newSet = new Set(prev);
@@ -198,10 +199,8 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     });
   };
 
-  // Layout Desktop
   const DesktopLayout = () => (
     <aside className="hidden md:block w-64 p-6 bg-white rounded-xl">
-      {/* Category */}
       <SplitBorder />
       <div className="mb-8">
         <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
@@ -214,7 +213,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
 
           return (
             <div key={mainCategory} className="mb-2">
-              {/* Kategori utama */}
               <div className="font-poppinsRegular flex items-center gap-2 mb-2 ml-6">
                 <input
                   type="checkbox"
@@ -232,7 +230,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                              after:border-black after:top-[0px] after:left-[5px]
                              after:rotate-45"
                 />
-                {/* Label dengan event click langsung */}
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
@@ -258,13 +255,11 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                 )}
               </div>
 
-              {/* Subkategori */}
               {isExpanded && subcategories.length > 0 && (
                 <div className="ml-10 space-y-2">
                   {subcategories.map((subcat) => {
                     const mainFolderName = categoryFolderMap[mainCategory] || mainCategory;
                     
-                    // Tentukan nama folder untuk subkategori
                     let subFolderName: string;
                     
                     if (mainFolderName === "3D") {
@@ -298,7 +293,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                                      after:border-r-[2px] after:border-b-[2px]
                                      after:border-black after:top-[1px] after:left-[4px] after:rotate-45"
                         />
-                        {/* Label subkategori dengan event click langsung */}
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
@@ -318,7 +312,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
         })}
       </div>
 
-      {/* Shipped From */}
       <SplitBorder />
       <div className="mb-8">
         <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
@@ -343,7 +336,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                          after:border-black after:top-[0px] after:left-[5px]
                          after:rotate-45"
             />
-            {/* Label Shipped From dengan event click langsung */}
             <div
               onClick={(e) => {
                 e.stopPropagation();
@@ -357,7 +349,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
         ))}
       </div>
 
-      {/* Shipped To */}
       <SplitBorder />
       <div className="mb-8">
         <h3 className="font-nataliecaydence text-xl font-light mb-4 ml-4">
@@ -382,7 +373,6 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                          after:border-black after:top-[0px] after:left-[5px]
                          after:rotate-45"
             />
-            {/* Label Shipped To dengan event click langsung */}
             <div
               onClick={(e) => {
                 e.stopPropagation();
@@ -398,28 +388,67 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
     </aside>
   );
 
-  // Layout Mobile (tidak berubah)
   const MobileLayout = () => (
     <aside className="block md:hidden w-full p-4 bg-white rounded-xl">
-      {/* Category - Mobile */}
       <SplitBorder />
       <div className="mb-6">
         <h3 className="font-nataliecaydence text-lg font-light mb-4 ml-2">
           {t("side.category")}
         </h3>
-
+  
         {Object.entries(customCategories).map(([mainCategory, subcategories]) => {
+          const isMainCategorySelected = selectedMainCategories.has(mainCategory);
+          
           return (
             <div key={mainCategory} className="mb-2">
-              {/* Kategori utama - Mobile: tanpa panah dan subkategori */}
-              <div className="font-poppinsRegular flex items-center gap-2 mb-2 ml-4">
+              <div 
+                className="font-poppinsRegular flex items-center gap-2 mb-2 ml-4 cursor-pointer hover:text-primary transition-colors"
+                onClick={() => handleMainCategoryChangeMobile(mainCategory, !isMainCategorySelected)}
+              >
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id={`mobile-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
+                    checked={isMainCategorySelected}
+                    onChange={() => {}}
+                    className="appearance-none w-4 h-4 border border-black rounded-sm
+                               cursor-pointer transition-all duration-200 relative
+                               checked:bg-white checked:border-black
+                               after:content-[''] after:absolute after:hidden checked:after:block
+                               after:w-[6px] after:h-[10px]
+                               after:border-r-[2px] after:border-b-[2px]
+                               after:border-black after:top-[0px] after:left-[5px]
+                               after:rotate-45"
+                  />
+                </div>
+                <div className="text-sm cursor-pointer hover:text-primary flex-1 py-1">
+                  {mainCategory}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+  
+      <SplitBorder />
+      <div className="mb-6">
+        <h3 className="font-nataliecaydence text-lg font-light mb-4 ml-2">
+          {t("side.shippedTo")}
+        </h3>
+        {["Worldwide"].map((dest) => {
+          const isSelected = selectedShippedTo.has(dest);
+          return (
+            <div
+              key={dest}
+              className="font-poppinsRegular flex items-center gap-2 mb-3 ml-4 cursor-pointer hover:text-primary transition-colors"
+              onClick={() => handleShippedToChangeMobile(dest, !isSelected)}
+            >
+              <div className="relative">
                 <input
                   type="checkbox"
-                  id={`mobile-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
-                  checked={selectedMainCategories.has(mainCategory)}
-                  onChange={(e) =>
-                    handleMainCategoryChange(mainCategory, e.target.checked)
-                  }
+                  id={`mobile-to-${dest.toLowerCase()}`}
+                  checked={isSelected}
+                  onChange={() => {}}
                   className="appearance-none w-4 h-4 border border-black rounded-sm
                              cursor-pointer transition-all duration-200 relative
                              checked:bg-white checked:border-black
@@ -429,51 +458,13 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({ onFilterChange }) => {
                              after:border-black after:top-[0px] after:left-[5px]
                              after:rotate-45"
                 />
-                <label
-                  htmlFor={`mobile-${mainCategory.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="text-sm cursor-pointer hover:text-primary flex-1"
-                >
-                  {mainCategory}
-                </label>
+              </div>
+              <div className="text-sm cursor-pointer hover:text-primary py-1">
+                {t(`side.to.${dest.toLowerCase()}`)}
               </div>
             </div>
           );
         })}
-      </div>
-
-      {/* Shipped To - Mobile */}
-      <SplitBorder />
-      <div className="mb-6">
-        <h3 className="font-nataliecaydence text-lg font-light mb-4 ml-2">
-          {t("side.shippedTo")}
-        </h3>
-        {["Worldwide"].map((dest) => (
-          <div
-            key={dest}
-            className="font-poppinsRegular flex items-center gap-2 mb-3 ml-4"
-          >
-            <input
-              type="checkbox"
-              id={`mobile-to-${dest.toLowerCase()}`}
-              checked={selectedShippedTo.has(dest)}
-              onChange={(e) => handleShippedToChange(dest, e.target.checked)}
-              className="appearance-none w-4 h-4 border border-black rounded-sm
-                         cursor-pointer transition-all duration-200 relative
-                         checked:bg-white checked:border-black
-                         after:content-[''] after:absolute after:hidden checked:after:block
-                         after:w-[6px] after:h-[10px]
-                         after:border-r-[2px] after:border-b-[2px]
-                         after:border-black after:top-[0px] after:left-[5px]
-                         after:rotate-45"
-            />
-            <label
-              htmlFor={`mobile-to-${dest.toLowerCase()}`}
-              className="text-sm cursor-pointer hover:text-primary"
-            >
-              {t(`side.to.${dest.toLowerCase()}`)}
-            </label>
-          </div>
-        ))}
       </div>
     </aside>
   );

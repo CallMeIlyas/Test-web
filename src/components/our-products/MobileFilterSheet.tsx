@@ -7,6 +7,30 @@ export default function MobileFilterSheet({ isOpen, onClose, onFilterChange }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language;
   
+  // State lokal untuk filter di mobile
+  const [mobileFilters, setMobileFilters] = useState({
+    categories: [],
+    shippedFrom: [],
+    shippedTo: [],
+  });
+
+  // Kirim filter ke parent ketika berubah
+  const handleMobileFilterChange = (filters) => {
+    setMobileFilters(filters);
+    onFilterChange(filters);
+  };
+
+  // Reset filters ketika modal ditutup
+  useEffect(() => {
+    if (!isOpen) {
+      setMobileFilters({
+        categories: [],
+        shippedFrom: [],
+        shippedTo: [],
+      });
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "auto";
   }, [isOpen]);
@@ -40,8 +64,12 @@ export default function MobileFilterSheet({ isOpen, onClose, onFilterChange }) {
           </button>
         </div>
 
-        <div className="overflow-y-auto p-4">
-          <SidebarFilters onFilterChange={onFilterChange} />
+        <div className="overflow-y-auto p-4 max-h-[calc(80vh-80px)]">
+          {/* Kirim callback untuk auto-close */}
+          <SidebarFilters 
+            onFilterChange={handleMobileFilterChange}
+            onMobileCategoryClick={onClose} // Callback untuk auto-close
+          />
         </div>
 
       </div>
