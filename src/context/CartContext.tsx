@@ -12,18 +12,18 @@ export interface CartItem {
   quantity: number;
   imageUrl: string;
   image: string;
-  productType: "frame" | "face" | "background" | "packing" | "additional" | "shipping";
+  productType: "frame";
   parentCartId?: string;
   attributes?: {
-    isFace?: boolean;
-    isBackground?: boolean;
-    isPacking?: boolean;
-    isShipping?: boolean;
-    backgroundType?: string;
-    // 🆕 TAMBAHKAN ATTRIBUTES BARU
     is8RProduct?: boolean;
     packagingPriceMap?: Record<string, number>;
     packagingType?: string;
+    frameSize?: string;
+    shadingStyle?: string;
+    isAcrylicStand?: boolean;
+    selectedAcrylicOption?: string;
+    isAdditionalProduct?: boolean;
+    additionalType?: string;
   };
 }
 
@@ -31,20 +31,16 @@ interface CartContextType {
   cart: CartItem[];
   addToCart: (
     item: Omit<CartItem, "cartId"> & {
-      attributes?: { 
-        faceCount?: string; 
-        backgroundType?: string; 
-        includePacking?: boolean;
+      attributes?: {
         frameSize?: string;
         shadingStyle?: string;
         isAcrylicStand?: boolean;
         selectedAcrylicOption?: string;
-        isShipping?: boolean;
-        shippingCost?: number;
-        // 🆕 UPDATE DENGAN ATTRIBUTES BARU
         packagingPriceMap?: Record<string, number>;
         packagingVariations?: string[];
         selectedPackagingVariation?: string;
+        isAdditionalProduct?: boolean;
+        additionalType?: string;
       };
     }
   ) => void;
@@ -78,280 +74,235 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 const addToCart = (
   item: Omit<CartItem, "cartId"> & {
-    attributes?: { 
-      faceCount?: string; 
-      backgroundType?: string; 
-      includePacking?: boolean;
+    attributes?: {
       frameSize?: string;
       shadingStyle?: string;
       isAcrylicStand?: boolean;
       selectedAcrylicOption?: string;
-      isShipping?: boolean;
-      shippingCost?: number;
       packagingPriceMap?: Record<string, number>;
       packagingVariations?: string[];
       selectedPackagingVariation?: string;
+      isAdditionalProduct?: boolean;
+      additionalType?: string;
+      selectedOption?: string;
     };
   }
 ) => {
   const { attributes, ...rest } = item;
-  
-  // 🚚 Handle shipping cost item
-  if (attributes?.isShipping) {
-    const shippingItem: CartItem = {
-      ...rest,
-      cartId: uuidv4(),
-      name: "Shipping Cost",
-      productType: "shipping",
-      price: attributes.shippingCost || 0,
-      quantity: 1,
-      variation: "Shipping",
-      attributes: { isShipping: true }
-    };
-    
-    setCart((prev) => [...prev, shippingItem]);
-    return;
-  }
 
-  const faceCountLabel = attributes?.faceCount || "";
-  const bgSelected = attributes?.backgroundType || "BG Default";
-  const includePacking = attributes?.includePacking || false;
+  const frameSize = attributes?.frameSize?.toLowerCase() || "";
+  const shadingStyle = attributes?.shadingStyle?.toLowerCase() || "";
+  const is2DFrame = rest.name?.toLowerCase().includes("2d");
   const isAcrylicStand = attributes?.isAcrylicStand || false;
   const selectedAcrylicOption = attributes?.selectedAcrylicOption || "";
   
-  // 🆕 DETEKSI APAKAH INI PRODUK 8R DAN ADA PACKAGING VARIATIONS
-  const is8RProduct = rest.name?.toLowerCase().includes("8r") || 
-                     attributes?.frameSize?.toLowerCase().includes("8r");
+  const selectedOption = attributes?.selectedOption || "";
+  
+  // Deteksi Jenis Produk
+  const isKarikaturProduct = rest.name?.toLowerCase().includes("wajah karikatur");
+  const isManyFacesProduct = rest.name?.toLowerCase().includes("wajah banyak");
+  const isExpressProduct = rest.name?.toLowerCase().includes("ekspress general");
+  const isAcrylicChangeProduct = rest.name?.toLowerCase().includes("ganti frame kaca ke acrylic");
+  
+  const isAdditionalProduct = isKarikaturProduct || isManyFacesProduct || 
+                             isExpressProduct || isAcrylicChangeProduct ||
+                             attributes?.isAdditionalProduct || false;
+  
+  const is8RProduct = attributes?.is8RProduct || rest.name?.toLowerCase().includes("8r") || false;
   const packagingPriceMap = attributes?.packagingPriceMap || {};
   const packagingVariations = attributes?.packagingVariations || [];
   const selectedPackagingVariation = attributes?.selectedPackagingVariation || "";
-
-  // === Deteksi kategori produk ===
-  const isAdditionalOrSoftcopy =
-    rest.name?.toLowerCase().includes("additional") ||
-    rest.name?.toLowerCase().includes("softcopy");
-
-  const isStandaloneProduct = isAdditionalOrSoftcopy;
-
-  // === AUTO DETECT VARIANT untuk produk Additional tertentu ===
-  let detectedVariants: string[] = [];
-
-  if (isStandaloneProduct) {
-    const name = rest.name.toLowerCase();
-
-    // BIAYA TAMBAHAN GANTI FRAME KACA KE ACRYLIC
-    if (name.includes("ganti frame kaca ke acrylic")) {
-      detectedVariants = ["A2", "A1", "A0"];
-    }
-
-    // BIAYA EKSPRESS GENERAL
-    else if (name.includes("ekspress general")) {
-      detectedVariants = ["Option 1", "Option 2", "Option 3"];
-    }
-
-    // BIAYA TAMBAHAN WAJAH BANYAK (DESIGN DARI CUSTOMER)
-    else if (name.includes("wajah banyak")) {
-      detectedVariants = ["1–9 Wajah", "Di atas 10 Wajah"];
-    }
-    // BIAYA TAMBAHAN WAJAH KARIKATUR
-    else if (name.includes("wajah karikatur")) {
-      detectedVariants = ["1–9 Wajah", "Di atas 10 Wajah"];
-    }
-  }
   
-  // DETECT VARIANT UNTUK ACRYLIC STAND
-  else if (isAcrylicStand) {
-    detectedVariants = ["15x15cm 1 sisi", "A4 2 sisi", "A3 2 sisi"];
-  }
-
-  // 🆕 DETECT VARIANT UNTUK PACKAGING 8R
-  else if (is8RProduct && packagingVariations.length > 0) {
-    detectedVariants = packagingVariations;
-  }
-
-  // Bersihkan nama produk
-  const rawName = (rest.name || "").toString().trim();
-  const cleanProductName = rawName
-    .replace(/\s{2,}/g, " ")
-    .replace(/\s\/\s/g, " / ")
-    .trim();
-
-  // === Produk utama (otomatis untuk 2D Frame) ===
-  const is2DFrame = rest.name?.toLowerCase().includes("2d");
-  const frameSize = attributes?.frameSize?.toLowerCase() || "";
-  const shadingStyle = attributes?.shadingStyle?.toLowerCase() || "";
-
-  const twoDPrices = Object.fromEntries(
-    Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
-  );
-
-  let priceKey = `${frameSize} ${shadingStyle}`.trim();
-  if (!twoDPrices[priceKey] && frameSize) {
-    priceKey = `${frameSize} simple shading`;
-  }
-
+  let finalProductName = rest.name?.trim() || "";
   let finalPrice = rest.price;
-  
-  if (is2DFrame) {
-    finalPrice = twoDPrices[priceKey] || rest.price || 0;
-  } 
-  else if (isAcrylicStand && selectedAcrylicOption) {
-    const acrylicPriceMap: Record<string, number> = {
-      "15x15cm 1 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size 15x15cm 1 sisi"] || 324800,
-      "A4 2 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size A4 2 sisi"] || 455800,
-      "A3 2 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size A3 2 sisi"] || 595800,
-    };
-    
-    finalPrice = acrylicPriceMap[selectedAcrylicOption] || rest.price;
-  }
-  // 🆕 UPDATE HARGA BERDASARKAN PACKAGING VARIATION UNTUK 8R
-  else if (is8RProduct && selectedPackagingVariation && packagingPriceMap[selectedPackagingVariation]) {
-    finalPrice = packagingPriceMap[selectedPackagingVariation] || rest.price;
-  }
 
-  let productType: CartItem["productType"] = "frame";
-  if (isStandaloneProduct) {
-    productType = "additional";
-  } else if (isAcrylicStand) {
-    productType = "frame";
-  }
-
-  let finalProductName = cleanProductName;
-  
+  // Logika Harga 2D Frame
   if (is2DFrame) {
+    const twoDPrices = Object.fromEntries(
+      Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
+    );
+
+    let key = `${frameSize} ${shadingStyle}`.trim();
+    if (!twoDPrices[key] && frameSize) {
+      key = `${frameSize} simple shading`;
+    }
+
+    finalPrice = twoDPrices[key] || rest.price;
+
     finalProductName = `2D Frame ${frameSize.toUpperCase()} ${shadingStyle
       .replace(/^2d\s+/i, "")
       .replace(/\b\w/g, (c) => c.toUpperCase())
       .replace("Ai", "AI")
       .trim()}`;
   }
-  else if (isAcrylicStand) {
-    finalProductName = rest.name || "Acrylic Stand";
+
+  // Logika Harga Acrylic Stand
+  if (isAcrylicStand) {
+    const acrylicPriceMap: Record<string, number> = {
+      "15x15cm 1 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size 15x15cm 1 sisi"] || 324800,
+      "A4 2 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size A4 2 sisi"] || 455800,
+      "A3 2 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size A3 2 sisi"] || 595800,
+    };
+
+    finalPrice = acrylicPriceMap[selectedAcrylicOption] || rest.price;
+    finalProductName = rest.name;
   }
 
-  let defaultVariation = "Frame Kaca";
-  if (isStandaloneProduct && detectedVariants.length > 0) {
-    defaultVariation = detectedVariants[0];
-  } else if (isStandaloneProduct) {
-    defaultVariation = "Default";
-  } else if (isAcrylicStand && detectedVariants.length > 0) {
-    defaultVariation = selectedAcrylicOption || detectedVariants[0];
-  }
-  // 🆕 SET DEFAULT VARIATION UNTUK PACKAGING 8R
-  else if (is8RProduct && detectedVariants.length > 0) {
-    defaultVariation = selectedPackagingVariation || detectedVariants[0];
+  // Logika Harga Produk 8R dengan Packaging
+  if (is8RProduct && selectedPackagingVariation && packagingPriceMap[selectedPackagingVariation]) {
+    finalPrice = packagingPriceMap[selectedPackagingVariation] || rest.price;
   }
 
-  // 🆕 BUAT PRODUK UTAMA DENGAN PACKAGING VARIATIONS
+  // Logika Harga untuk Produk Additional
+  if (isKarikaturProduct) {
+    if (selectedOption.includes("10") || selectedOption.toLowerCase().includes("above")) {
+      finalPrice = priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"] || rest.price;
+    } else {
+      finalPrice = priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || rest.price;
+    }
+  }
+  
+  if (isManyFacesProduct) {
+    if (selectedOption.includes("10") || selectedOption.toLowerCase().includes("above")) {
+      finalPrice = priceList.Additional["Biaya Tambahan Wajah Banyak diatas 10 wajah"] || rest.price;
+    } else {
+      finalPrice = priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || rest.price;
+    }
+  }
+  
+  if (isExpressProduct) {
+    if (selectedOption === "Option 1") {
+      finalPrice = priceList.Additional["Biaya Ekspress General"] || rest.price;
+    } else if (selectedOption === "Option 2") {
+      finalPrice = priceList.Additional["Biaya Ekspress General 2"] || rest.price;
+    } else if (selectedOption === "Option 3") {
+      finalPrice = priceList.Additional["Biaya Ekspress General 3"] || rest.price;
+    }
+  }
+  
+  if (isAcrylicChangeProduct && selectedOption) {
+    const priceKey = `Biaya Tambahan Ganti Frame Kaca ke Acrylic ${selectedOption}`;
+    finalPrice = priceList.Additional[priceKey] || rest.price;
+  }
+
+  // Logika Utama untuk Deteksi Variation
+  let finalVariationOptions: string[] = [];
+  let defaultVariation = "";
+
+  // Kategori 1: Produk yang Pasti Memiliki Variation
+  const hasVariations = () => {
+    const nameLower = rest.name?.toLowerCase() || "";
+    
+    // 1. Produk 2D Frame - selalu punya variant shading
+    if (is2DFrame) return true;
+    
+    // 2. Produk Additional tertentu - punya variant
+    if (isAdditionalProduct && 
+        (isKarikaturProduct || isManyFacesProduct || isExpressProduct || isAcrylicChangeProduct)) {
+      return true;
+    }
+    
+    // 3. Acrylic Stand - punya variant size
+    if (isAcrylicStand) return true;
+    
+    // 4. Produk 8R dengan packaging - punya variant
+    if (is8RProduct && packagingVariations.length > 0) return true;
+    
+    // 5. Produk Frame Kaca/Acrylic reguler (bukan 2D, bukan additional)
+    // Hanya jika nama mengandung "frame" dan bukan produk tanpa variant
+    if (nameLower.includes("frame") && 
+        !nameLower.includes("stand") &&
+        !is2DFrame &&
+        !isAdditionalProduct) {
+      const smallSizes = ["4r", "6r", "8r", "10r", "12r", "15cm", "20cm"];
+      const largeSizes = ["a0", "a1", "a2", "a3", "a4"];
+      
+      const isSmallFrame = smallSizes.some(size => nameLower.includes(size));
+      const isLargeFrame = largeSizes.some(size => nameLower.includes(size));
+      
+      return isSmallFrame || isLargeFrame;
+    }
+    
+    return false;
+  };
+
+  // Tentukan Variation Options Berdasarkan Jenis Produk
+  if (hasVariations()) {
+    if (is2DFrame) {
+      finalVariationOptions = ["Simple Shading", "AI Shading"];
+      defaultVariation = shadingStyle 
+        ? shadingStyle.charAt(0).toUpperCase() + shadingStyle.slice(1)
+        : "Simple Shading";
+    }
+    else if (isKarikaturProduct || isManyFacesProduct) {
+      finalVariationOptions = ["1–9 Wajah", "Di atas 10 Wajah"];
+      defaultVariation = selectedOption || "1–9 Wajah";
+    }
+    else if (isExpressProduct) {
+      finalVariationOptions = ["Option 1", "Option 2", "Option 3"];
+      defaultVariation = selectedOption || "Option 1";
+    }
+    else if (isAcrylicChangeProduct) {
+      finalVariationOptions = ["A2", "A1", "A0"];
+      defaultVariation = selectedOption || "A2";
+    }
+    else if (isAcrylicStand) {
+      finalVariationOptions = ["15x15cm 1 sisi", "A4 2 sisi", "A3 2 sisi"];
+      defaultVariation = selectedAcrylicOption || "15x15cm 1 sisi";
+    }
+    else if (is8RProduct && packagingVariations.length > 0) {
+      finalVariationOptions = packagingVariations;
+      defaultVariation = selectedPackagingVariation || packagingVariations[0] || "";
+    }
+    else {
+      const nameLower = rest.name?.toLowerCase() || "";
+      const smallSizes = ["4r", "6r", "8r", "10r", "12r", "15cm", "20cm"];
+      const largeSizes = ["a0", "a1", "a2", "a3", "a4"];
+      
+      const isSmallFrame = smallSizes.some(size => nameLower.includes(size));
+      const isLargeFrame = largeSizes.some(size => nameLower.includes(size));
+      
+      if (isSmallFrame) {
+        finalVariationOptions = ["Frame Kaca"];
+        defaultVariation = "Frame Kaca";
+      } 
+      else if (isLargeFrame) {
+        finalVariationOptions = ["Frame Acrylic"];
+        defaultVariation = "Frame Acrylic";
+      }
+    }
+  } else {
+    finalVariationOptions = [];
+    defaultVariation = "";
+  }
+
   const mainCartItem: CartItem = {
     ...rest,
-    name: finalProductName,
     cartId: uuidv4(),
-    quantity: rest.quantity || 1,
+    name: finalProductName,
     price: finalPrice,
-    productType: productType,
-    variationOptions:
-      (isStandaloneProduct || isAcrylicStand || is8RProduct) && detectedVariants.length > 0
-        ? detectedVariants
-        : isStandaloneProduct
-        ? ["Default"]
-        : ["Frame Kaca", "Frame Acrylic"],
+    quantity: rest.quantity || 1,
+    productType: "frame",
     variation: defaultVariation,
+    variationOptions: finalVariationOptions,
     image: rest.imageUrl,
-    // 🆕 SIMPAN PACKAGING PRICE MAP DI ATTRIBUTES UNTUK UPDATE HARGA
     attributes: {
-      ...rest.attributes,
-      ...(is8RProduct && packagingPriceMap && { packagingPriceMap }),
-      ...(is8RProduct && { is8RProduct: true })
+      frameSize: frameSize,
+      shadingStyle: shadingStyle,
+      isAcrylicStand: isAcrylicStand,
+      selectedAcrylicOption: selectedAcrylicOption,
+      is8RProduct: is8RProduct,
+      packagingPriceMap: packagingPriceMap,
+      isAdditionalProduct: isAdditionalProduct,
+      additionalType: isKarikaturProduct ? "wajah_karikatur" :
+                    isManyFacesProduct ? "wajah_banyak" :
+                    isExpressProduct ? "ekspress" :
+                    isAcrylicChangeProduct ? "acrylic_change" :
+                    isAcrylicStand ? "acrylic_stand" : ""
     }
   };
 
-  if (isStandaloneProduct) {
-    setCart((prev) => [...prev, mainCartItem]);
-    return;
-  }
-
-  // === UNTUK SEMUA PRODUK YANG BUKAN ADDITIONAL/SOFTCOPY ===
-  const newItems: CartItem[] = [mainCartItem];
-
-  // 👤 Additional Face
-  if (faceCountLabel) {
-    const isAbove10 = faceCountLabel.includes("10");
-    newItems.push({
-      cartId: uuidv4(),
-      parentCartId: mainCartItem.cartId,
-      id: `${rest.id}-face`,
-      name: "Additional Faces",
-      price: isAbove10 ? 62800 : 52800,
-      quantity: 1,
-      imageUrl: rest.imageUrl,
-      image: rest.imageUrl,
-      productType: "face",
-      variation: isAbove10 ? "Di atas 10 wajah" : "1–9 wajah",
-      variationOptions: ["1–9 wajah", "Di atas 10 wajah"],
-      attributes: { isFace: true },
-    });
-  }
-
-  // 🎨 Background
-  const bgName =
-    bgSelected === "BG Custom" ? "Background Custom" : "Background Default";
-
-  const bgPrice =
-    bgSelected === "BG Custom"
-      ? priceList.Additional["Background Custom"] || 62800
-      : priceList.Additional["Background Default"] || 52800;
-
-  newItems.push({
-    cartId: uuidv4(),
-    parentCartId: mainCartItem.cartId,
-    id: `${rest.id}-bg`,
-    name: bgName,
-    price: bgPrice,
-    quantity: 1,
-    imageUrl: rest.imageUrl,
-    image: rest.imageUrl,
-    productType: "background",
-    attributes: { isBackground: true, backgroundType: bgSelected },
-    variation: bgSelected,
-    variationOptions: ["BG Default", "BG Custom"],
-  });
-
-  // 📦 Additional Packing (opsional) - HANYA UNTUK PRODUK 8R
-  if (includePacking && is8RProduct) {
-    newItems.push({
-      cartId: uuidv4(),
-      parentCartId: mainCartItem.cartId,
-      id: `${rest.id}-packing`,
-      name: "Additional Packing",
-      price: priceList.Additional["Biaya Tambahan Packing untuk Order Banyak via Kargo"] || 52800,
-      quantity: 1,
-      imageUrl: rest.imageUrl,
-      image: rest.imageUrl,
-      productType: "packing",
-      attributes: { isPacking: true },
-      variation: "Additional Packing",
-      variationOptions: ["Additional Packing"],
-    });
-  }
-
-  // 🚚 Shipping Cost - tambahkan otomatis untuk setiap produk utama
-  newItems.push({
-    cartId: uuidv4(),
-    parentCartId: mainCartItem.cartId,
-    id: `${rest.id}-shipping`,
-    name: "Shipping Cost",
-    price: 0, // Default 0, bisa diubah manual
-    quantity: 1,
-    imageUrl: rest.imageUrl,
-    image: rest.imageUrl,
-    productType: "shipping",
-    attributes: { isShipping: true },
-    variation: "Shipping",
-    variationOptions: ["Shipping"],
-  });
-
-  setCart((prev) => [...prev, ...newItems]);
+  setCart((prev) => [...prev, mainCartItem]);
 };
 
   const updateQuantity = (cartId: string, delta: number) => {
@@ -367,9 +318,7 @@ const addToCart = (
   };
 
   const deleteItem = (cartId: string) => {
-    setCart((prev) =>
-      prev.filter((p) => p.cartId !== cartId && p.parentCartId !== cartId)
-    );
+    setCart((prev) => prev.filter((p) => p.cartId !== cartId));
   };
 
   const clearCart = () => setCart([]);
@@ -380,93 +329,143 @@ const addToCart = (
   const updateShippingCost = (cartId: string, cost: number) => {
     setCart((prev) =>
       prev.map((p) =>
-        p.cartId === cartId && p.attributes?.isShipping
-          ? { ...p, price: cost }
-          : p
+        p.cartId === cartId ? { ...p, price: cost } : p
       )
     );
   };
 
-// Update harga otomatis saat variant diubah
 const updateItemVariant = (cartId: string, newVariation: string) => {
   setCart((prev) =>
     prev.map((p) => {
-      if (p.cartId === cartId) {
-        const updated = { ...p, variation: newVariation };
+      if (p.cartId !== cartId) return p;
+      
+      if (!p.variationOptions || p.variationOptions.length === 0) {
+        return p;
+      }
+      
+      const updated = { ...p, variation: newVariation };
 
-        if (p.attributes?.isBackground) {
-          updated.name =
-            newVariation === "BG Default"
-              ? "Background Default"
-              : "Background Custom";
-        
-          updated.price =
-            newVariation === "BG Default"
-              ? priceList.Additional["Background Default"] || 52800
-              : priceList.Additional["Background Custom"] || 62800;
-        }
-
-        if (p.attributes?.isFace) {
-          updated.price = newVariation.includes("10")
-            ? priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"] || 62800
-            : priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || 52800;
-        }
-
-        // 🆕 UPDATE HARGA PACKAGING 8R BERDASARKAN VARIATION
-        if (p.attributes?.is8RProduct && p.attributes?.packagingPriceMap) {
-          updated.price = p.attributes.packagingPriceMap[newVariation] || p.price;
-          // ❌ TIDAK UPDATE NAMA - NAMA TETAP SAMA
-        }
-
-        // Additional Wajah Karikatur
-        if (p.name.toLowerCase().includes("wajah karikatur")) {
-          const key = newVariation.includes("10")
-            ? "Tambahan Wajah Karikatur diatas 10 wajah"
-            : "Tambahan Wajah Karikatur 1-9 wajah";
-        
-          updated.price = priceList.Additional[key] || updated.price;
-        }
-
-        // Additional Acrylic
-        if (p.name.toLowerCase().includes("ganti frame kaca ke acrylic")) {
-          const key = `Biaya Tambahan Ganti Frame Kaca ke Acrylic ${newVariation}`;
-          updated.price = priceList.Additional[key] || p.price;
-        }
-
-        // Additional Ekspress
-        if (p.name.toLowerCase().includes("ekspress general")) {
-          const key =
-            newVariation === "Option 1"
-              ? "Biaya Ekspress General"
-              : newVariation === "Option 2"
-              ? "Biaya Ekspress General 2"
-              : "Biaya Ekspress General 3";
-          updated.price = priceList.Additional[key] || p.price;
-        }
-
-        // Additional Wajah Banyak
-        if (p.name.toLowerCase().includes("wajah banyak")) {
-          const key =
-            newVariation.includes("10")
-              ? "Biaya Tambahan Wajah Banyak diatas 10 wajah"
-              : "Biaya Tambahan Wajah Banyak 1-9 wajah";
-          updated.price = priceList.Additional[key] || p.price;
-        }
-
-        // ACRYLIC STAND 3MM VARIATION PRICE UPDATE
-        if (p.name.toLowerCase().includes("acrylic stand")) {
-          const acrylicPriceMap: Record<string, number> = {
-            "15x15cm 1 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size 15x15cm 1 sisi"] || 324800,
-            "A4 2 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size A4 2 sisi"] || 455800,
-            "A3 2 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size A3 2 sisi"] || 595800,
-          };
-          
-          updated.price = acrylicPriceMap[newVariation] || p.price;
-        }
-
+      // 1. Produk 8R dengan Packaging
+      if (p.attributes?.is8RProduct && p.attributes?.packagingPriceMap) {
+        updated.price = p.attributes.packagingPriceMap[newVariation] || p.price;
         return updated;
       }
-      return p;
+      
+      // 2. Additional Wajah Karikatur
+      if (p.name.toLowerCase().includes("wajah karikatur")) {
+        const key = newVariation.includes("10") || newVariation.toLowerCase().includes("atas")
+          ? "Tambahan Wajah Karikatur diatas 10 wajah"
+          : "Tambahan Wajah Karikatur 1-9 wajah";
+        updated.price = priceList.Additional[key] || p.price;
+        return updated;
+      }
+      
+      // 3. Additional Ganti Frame Kaca ke Acrylic
+      if (p.name.toLowerCase().includes("ganti frame kaca ke acrylic")) {
+        const key = `Biaya Tambahan Ganti Frame Kaca ke Acrylic ${newVariation}`;
+        updated.price = priceList.Additional[key] || p.price;
+        return updated;
+      }
+      
+      // 4. Additional Ekspress General
+      if (p.name.toLowerCase().includes("ekspress general")) {
+        let key = "Biaya Ekspress General";
+        if (newVariation === "Option 2") key = "Biaya Ekspress General 2";
+        if (newVariation === "Option 3") key = "Biaya Ekspress General 3";
+        
+        updated.price = priceList.Additional[key] || p.price;
+        return updated;
+      }
+      
+      // 5. Additional Wajah Banyak
+      if (p.name.toLowerCase().includes("wajah banyak")) {
+        const key = newVariation.includes("10") || newVariation.toLowerCase().includes("atas")
+          ? "Biaya Tambahan Wajah Banyak diatas 10 wajah"
+          : "Biaya Tambahan Wajah Banyak 1-9 wajah";
+        updated.price = priceList.Additional[key] || p.price;
+        return updated;
+      }
+      
+      // 6. Acrylic Stand
+      if (p.attributes?.isAcrylicStand) {
+        const acrylicPriceMap: Record<string, number> = {
+          "15x15cm 1 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size 15x15cm 1 sisi"] || 324800,
+          "A4 2 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size A4 2 sisi"] || 455800,
+          "A3 2 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size A3 2 sisi"] || 595800,
+        };
+        
+        updated.price = acrylicPriceMap[newVariation] || p.price;
+        return updated;
+      }
+      
+      // 7. 2D Frame
+      if (p.attributes?.frameSize && p.name.toLowerCase().includes("2d")) {
+        const twoDPrices = Object.fromEntries(
+          Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
+        );
+        
+        const frameSize = p.attributes.frameSize.toLowerCase();
+        const shadingStyle = newVariation.toLowerCase().includes("simple") 
+          ? "simple shading" 
+          : newVariation.toLowerCase().includes("ai") 
+            ? "ai shading" 
+            : newVariation.toLowerCase();
+        
+        let key = `${frameSize} ${shadingStyle}`.trim();
+        if (!twoDPrices[key] && frameSize) {
+          key = `${frameSize} simple shading`;
+        }
+        
+        updated.price = twoDPrices[key] || p.price;
+        
+        updated.name = `2D Frame ${frameSize.toUpperCase()} ${shadingStyle
+          .replace(/^2d\s+/i, "")
+          .replace(/\b\w/g, (c) => c.toUpperCase())
+          .replace("Ai", "AI")
+          .trim()}`;
+        
+        return updated;
+      }
+      
+      // 8. Frame Kaca/Acrylic Reguler
+      if (p.name.toLowerCase().includes("frame") && !p.attributes?.isAcrylicStand) {
+        const frameType = newVariation.includes("Acrylic") ? "Acrylic" : "Kaca";
+        
+        const baseName = p.name.replace(/Frame\s*(Kaca|Acrylic)?/gi, "").trim();
+        
+        const sizeMatch = p.name.match(/\b(4R|6R|8R|10R|12R|A0|A1|A2|A3|A4|15cm|20cm)\b/i);
+        const size = sizeMatch ? sizeMatch[0].toUpperCase() : "";
+        
+        if (size) {
+          updated.name = `${size} Frame ${frameType}`;
+        } else {
+          updated.name = `${baseName} Frame ${frameType}`;
+        }
+        
+        const productKey = p.name.toLowerCase();
+        const priceKeys = Object.keys(priceList).filter(key => 
+          productKey.includes(key.toLowerCase())
+        );
+        
+        if (priceKeys.length > 0) {
+          const mainKey = priceKeys[0];
+          const variantKey = newVariation.includes("Acrylic") ? "Acrylic" : "Kaca";
+          
+          const priceEntries = Object.entries(priceList[mainKey] || {});
+          
+          const matchingPrice = priceEntries.find(([key]) => 
+            key.toLowerCase().includes(variantKey.toLowerCase())
+          );
+          
+          if (matchingPrice) {
+            updated.price = matchingPrice[1];
+          }
+        }
+        
+        return updated;
+      }
+
+      return updated;
     })
   );
 };

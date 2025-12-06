@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import Footer from "../components/home/Footer";
 import { useCart } from "../context/CartContext";
 import { useTranslation } from "react-i18next";
@@ -12,7 +12,7 @@ import ShopeePayIcon from "../assets/icon-bank/shopeepay.png";
 import { gsap } from "gsap";
 import { generateInvoice } from "../utils/generateInvoice";
 
-
+// Komponen DateInput
 interface DateInputProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -61,26 +61,30 @@ const DateInput: React.FC<DateInputProps> = ({
   );
 };
 
-
-
+// Komponen ProductImage
 const ProductImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
   <img src={src} alt={alt} className="w-16 h-16 rounded-md object-cover" />
 );
 
+// Komponen ProductName
 const ProductName: React.FC<{ name: string }> = ({ name }) => (
   <h3 className="font-poppinsRegular text-[15px] w-[230px] truncate">
     {name}
   </h3>
 );
 
+// Komponen ProductPrice
 const ProductPrice: React.FC<{ price: number }> = ({ price }) => (
   <span className="font-poppinsSemiBold mr-9">
     Rp{price.toLocaleString("id-ID")}
   </span>
 );
 
-// FRAME
-const FrameVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
+// Komponen FrameVariantDropdown
+const FrameVariantDropdown: React.FC<{ 
+  item: any; 
+  updateItemVariant: (cartId: string, newVariation: string) => void 
+}> = ({
   item,
   updateItemVariant,
 }) => {
@@ -90,7 +94,35 @@ const FrameVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(item.variation || item.variationOptions?.[0] || "");
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
+  const toggleDropdown = () => {
+    if (item.variationOptions && item.variationOptions.length > 0) {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  const shouldShowNoVariation = () => {
+    if (!item.variationOptions || item.variationOptions.length === 0) {
+      return true;
+    }
+    
+    if (item.variationOptions.length === 1 && 
+        (item.variationOptions[0] === "" || 
+         item.variationOptions[0] === "No Variation")) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  if (shouldShowNoVariation()) {
+    return (
+      <div className="w-[200px] ml-20">
+        <p className="font-poppinsRegular text-[15px] select-none text-gray-500 italic">
+          {currentLang === "id" ? "Tidak ada variasi" : "No variations"}
+        </p>
+      </div>
+    );
+  }
 
   const handleSelect = (value: string) => {
     setSelected(value);
@@ -98,191 +130,77 @@ const FrameVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
     setIsOpen(false);
   };
 
-  return (
-    <div className="w-[200px] ml-20 relative">
-      {/* Tombol Variations */}
-      <p
-        onClick={toggleDropdown}
-        className="font-poppinsRegular text-[15px] cursor-pointer select-none"
-      >
-        {currentLang === "id" ? "Variasi" : "Variations"}:{" "}
-        <span
-          className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        >
-          ▼
-        </span>
-      </p>
-
-      {/* Label varian terpilih */}
-      <p
-        onClick={toggleDropdown}
-        className="bg-white outline-none font-poppinsRegular text-[15px] cursor-pointer"
-      >
-        {selected}
-      </p>
-
-      {/* Container dropdown */}
-      {isOpen && (
-        <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
-          <div className="max-h-[120px] overflow-y-auto py-1">
-            {item.variationOptions?.map((opt: string) => (
-              <p
-                key={opt}
-                onClick={() => handleSelect(opt)}
-                className={`px-2 py-[2px] cursor-pointer font-poppinsRegular text-[15px] hover:bg-[#f6f6f6] ${
-                  opt === selected ? "text-[#a23728] font-poppinsSemiBold" : ""
-                }`}
-              >
-                {opt}
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// FACES
-const FaceVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
-  item,
-  updateItemVariant,
-}) => {
-  const { i18n } = useTranslation();
-  const currentLang = i18n.language;
-  
-  const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState(item.variation || (currentLang === "id" ? "1–9 wajah" : "1–9 faces"));
-
-  const toggleDropdown = () => setIsOpen(!isOpen);
-
-  const handleSelect = (value: string) => {
-    setSelected(value);
-    updateItemVariant(item.cartId, value);
-    setIsOpen(false);
+  const getDisplayValue = (value: string) => {
+    const valueLower = value.toLowerCase();
+    
+    if (valueLower.includes("kaca") || valueLower.includes("glass")) {
+      return currentLang === "id" ? "Frame Kaca" : "Glass Frame";
+    } 
+    else if (valueLower.includes("acrylic")) {
+      return currentLang === "id" ? "Frame Acrylic" : "Acrylic Frame";
+    }
+    return value;
   };
 
-  const options = currentLang === "id" 
-    ? ["1–9 wajah", "Di atas 10 wajah"]
-    : ["1–9 faces", "Above 10 faces"];
-
   return (
     <div className="w-[200px] ml-20 relative">
-      <p
+      <div 
         onClick={toggleDropdown}
-        className="font-poppinsRegular text-[15px] cursor-pointer select-none"
+        className={`font-poppinsRegular text-[15px] cursor-pointer select-none ${
+          item.variationOptions && item.variationOptions.length > 0 
+            ? '' 
+            : 'text-gray-500 cursor-default'
+        }`}
       >
         {currentLang === "id" ? "Variasi" : "Variations"}:{" "}
-        <span
-          className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        >
-          ▼
-        </span>
-      </p>
+        {item.variationOptions && item.variationOptions.length > 0 && (
+          <span
+            className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </span>
+        )}
+      </div>
 
-      <p
-        onClick={toggleDropdown}
-        className="bg-white outline-none font-poppinsRegular text-[15px] cursor-pointer"
-      >
-        {selected}
-      </p>
+      {item.variationOptions && item.variationOptions.length > 0 ? (
+        <>
+          <p
+            onClick={toggleDropdown}
+            className="bg-white outline-none font-poppinsRegular text-[15px] cursor-pointer mt-1"
+          >
+            {getDisplayValue(selected)}
+          </p>
 
-      {isOpen && (
-        <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
-          <div className="max-h-[120px] overflow-y-auto py-1">
-            {options.map((opt) => (
-              <p
-                key={opt}
-                onClick={() => handleSelect(opt)}
-                className={`px-2 py-[2px] cursor-pointer hover:bg-[#f6f6f6] font-poppinsRegular text-[15px] ${
-                  opt === selected ? "text-[#a23728] font-poppinsSemiBold" : ""
-                }`}
-              >
-                {opt}
-              </p>
-            ))}
-          </div>
-        </div>
+          {isOpen && (
+            <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
+              <div className="max-h-[120px] overflow-y-auto py-1">
+                {item.variationOptions.map((opt: string) => (
+                  <p
+                    key={opt}
+                    onClick={() => handleSelect(opt)}
+                    className={`px-2 py-[2px] cursor-pointer font-poppinsRegular text-[15px] hover:bg-[#f6f6f6] ${
+                      opt === selected ? "text-[#a23728] font-poppinsSemiBold" : ""
+                    }`}
+                  >
+                    {getDisplayValue(opt)}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <p className="text-gray-500 italic mt-1">
+          -
+        </p>
       )}
     </div>
   );
 };
 
-// BACKGROUND
-const BackgroundVariantDropdown: React.FC<{ item: any; updateItemVariant: any }> = ({
-  item,
-  updateItemVariant,
-}) => {
-  const { i18n } = useTranslation();
-  const currentLang = i18n.language;
-  
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const [selected, setSelected] = useState(
-    item.variation || item.attributes?.backgroundType || (currentLang === "id" ? "BG Default" : "BG Default")
-  );
-
-  const toggleDropdown = () => setIsOpen(!isOpen);
-
-  const handleSelect = (value: string) => {
-    setSelected(value);
-    updateItemVariant(item.cartId, value);
-    setIsOpen(false);
-  };
-
-  const options = currentLang === "id" 
-    ? ["BG Default", "BG Custom"]
-    : ["BG Default", "BG Custom"];
-
-  return (
-    <div className="w-[200px] ml-20 relative">
-      <p
-        onClick={toggleDropdown}
-        className="font-poppinsRegular text-[15px] cursor-pointer select-none"
-      >
-        {currentLang === "id" ? "Variasi" : "Variations"}:{" "}
-        <span
-          className={`inline-block text-[12px] transform scale-x-[1.5] transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        >
-          ▼
-        </span>
-      </p>
-
-      <p
-        onClick={toggleDropdown}
-        className="bg-white outline-none font-poppinsRegular text-[15px] cursor-pointer"
-      >
-        {selected}
-      </p>
-
-      {isOpen && (
-        <div className="absolute left-0 top-full w-full mt-1 bg-white rounded-md border border-[#ddd] overflow-hidden z-10">
-          <div className="max-h-[100px] overflow-y-auto py-1">
-            {options.map((opt) => (
-              <p
-                key={opt}
-                onClick={() => handleSelect(opt)}
-                className={`px-2 py-[2px] cursor-pointer hover:bg-[#f6f6f6] font-poppinsRegular text-[15px] ${
-                  opt === selected ? "text-[#a23728] font-poppinsSemiBold" : ""
-                }`}
-              >
-                {opt}
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// SHIPPING COST - VERSI YANG DIMODIFIKASI
+// Komponen ShippingCostInput
 const ShippingCostInput: React.FC<{ 
   item: any; 
   updateShippingCost: (cartId: string, cost: number) => void 
@@ -295,7 +213,6 @@ const ShippingCostInput: React.FC<{
   
   return (
     <div className="w-[200px] ml-20">
-      {/* Hanya menampilkan label Shipping Cost saja */}
       <p className="font-poppinsRegular text-[15px] select-none">
         {currentLang === "id" ? "Biaya Pengiriman" : "Shipping Cost"}
       </p>
@@ -303,8 +220,17 @@ const ShippingCostInput: React.FC<{
   );
 };
 
+// Komponen utama ShoppingCart
 const ShoppingCart: React.FC = () => {
-  const { cart, updateQuantity, deleteItem, updateItemVariant, updateShippingCost } = useCart();
+  const { 
+    cart, 
+    updateQuantity, 
+    deleteItem, 
+    updateItemVariant, 
+    updateShippingCost, 
+    addToCart 
+  } = useCart();
+  
   const { i18n } = useTranslation();
   const currentLang = i18n.language;
   
@@ -312,7 +238,6 @@ const ShoppingCart: React.FC = () => {
   const [editingShippingCost, setEditingShippingCost] = useState<string | null>(null);
   const [tempShippingCost, setTempShippingCost] = useState<string>("");
   
-  // STATE UNTUK MENGELOLA SEMUA DATA FORM INVOICE
   const [invoiceData, setInvoiceData] = useState({
     companyName: "",
     contactPerson: "",
@@ -322,7 +247,71 @@ const ShoppingCart: React.FC = () => {
     paymentMethod: "",
   });
 
-  // Handler generik untuk memperbarui state form
+const addShippingItem = () => {
+  const hasShippingItem = cart.some(item => 
+    item.name.toLowerCase().includes("ongkir") || 
+    item.name.toLowerCase().includes("shipping")
+  );
+  
+  if (hasShippingItem) {
+    // Custom alert modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl animate-fadeIn">
+        <div class="text-center">
+          <div class="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-[#dcbec1] mb-4">
+            <svg class="w-8 h-8 text-[#a23728]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="font-poppinsSemiBold text-xl text-gray-800 mb-2">
+            ${currentLang === "id" ? "Ongkir Sudah Ada" : "Shipping Already Exists"}
+          </h3>
+          <p class="font-poppinsRegular text-gray-600 mb-6">
+            ${currentLang === "id" 
+              ? "Biaya pengiriman sudah ada di keranjang belanja." 
+              : "Shipping cost already exists in the shopping cart."}
+          </p>
+          <button 
+            onclick="this.closest('.fixed').remove()"
+            class="font-poppinsSemiBold bg-[#dcbec1] hover:bg-[#c7a9ac] text-gray-800 px-6 py-3 rounded-full transition-colors w-full"
+          >
+            ${currentLang === "id" ? "Mengerti" : "Got it"}
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Auto close after 3 seconds
+    setTimeout(() => {
+      if (document.body.contains(modal)) {
+        modal.remove();
+      }
+    }, 3000);
+    
+    return;
+  }
+  
+  const firstProductImage = cart.length > 0 ? cart[0].imageUrl : "/default-image.jpg";
+  
+  addToCart({
+    id: "shipping-cost-001",
+    name: currentLang === "id" ? "Biaya Pengiriman (Ongkir)" : "Shipping Cost",
+    price: 0,
+    quantity: 1,
+    imageUrl: firstProductImage,
+    image: firstProductImage,
+    productType: "frame",
+    variation: "",
+    variationOptions: [],
+    attributes: {}
+  });
+};
+
   const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setInvoiceData(prevData => ({
@@ -331,7 +320,11 @@ const ShoppingCart: React.FC = () => {
     }));
   };
 
-  // Handler untuk update shipping cost
+  const handleSubmitInvoice = (e: React.FormEvent) => {
+    e.preventDefault();
+    generateInvoice(cart, invoiceData);
+  };
+
   const handleEditShippingClick = (item: any) => {
     setEditingShippingCost(item.cartId);
     setTempShippingCost(item.price > 0 ? item.price.toString() : "");
@@ -349,12 +342,6 @@ const ShoppingCart: React.FC = () => {
 
   const handleShippingCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTempShippingCost(e.target.value);
-  };
-
-  const handleSubmitInvoice = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Invoice data submitted:", invoiceData);
-    alert(currentLang === "id" ? "Data invoice telah dikirim! (Lihat console)" : "Invoice data has been submitted! (Check console)");
   };
 
   const groupedItems = useMemo(() => {
@@ -392,7 +379,7 @@ const ShoppingCart: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* MOBILE LAYOUT - hanya tampil di mobile */}
+      {/* MOBILE LAYOUT */}
       <div className="block md:hidden flex-1">
         <main className="px-4 py-6 space-y-6">
           
@@ -405,17 +392,27 @@ const ShoppingCart: React.FC = () => {
             ) : (
               <>
                 {/* Select All Atas - Mobile */}
-                <div className="flex items-center mb-3">
-                  <input
-                    type="checkbox"
-                    className="mr-2 w-4 h-4"
-                    checked={allSelected}
-                    onChange={toggleSelectAll}
-                  />
-                  <span className="font-poppinsSemiBold text-sm">
-                    {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
-                  </span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="mr-2 w-4 h-4"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                    />
+                    <span className="font-poppinsSemiBold text-sm">
+                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
+                    </span>
+                  </div>
+                  
+                  <button
+                    onClick={addShippingItem}
+                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full shadow-sm hover:opacity-90 transition"
+                  >
+                    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
+                  </button>
                 </div>
+                
                 {Object.values(groupedItems).map((group: any[], idx) => (
                   <div key={idx} className="mb-4 pb-4 last:pb-0 border-b border-gray-200 last:border-b-0">
                     {group.map((item) => (
@@ -443,20 +440,11 @@ const ShoppingCart: React.FC = () => {
                             <div className="flex-1 min-w-0">
                               <ProductName name={item.name} />
                               <div className="mt-1">
-                                {item.attributes?.isShipping ? (
+                                {item.name.toLowerCase().includes("ongkir") || 
+                                 item.name.toLowerCase().includes("shipping") ? (
                                   <ShippingCostInput
                                     item={item}
                                     updateShippingCost={updateShippingCost}
-                                  />
-                                ) : item.attributes?.isFace ? (
-                                  <FaceVariantDropdown
-                                    item={item}
-                                    updateItemVariant={updateItemVariant}
-                                  />
-                                ) : item.attributes?.isBackground ? (
-                                  <BackgroundVariantDropdown
-                                    item={item}
-                                    updateItemVariant={updateItemVariant}
                                   />
                                 ) : (
                                   <FrameVariantDropdown
@@ -471,8 +459,8 @@ const ShoppingCart: React.FC = () => {
                           <div className="flex items-center justify-between mt-2">
                             <ProductPrice price={item.price} />
                             <div className="flex items-center gap-2">
-                              {/* Input Shipping Cost untuk mobile */}
-                              {item.attributes?.isShipping ? (
+                              {item.name.toLowerCase().includes("ongkir") || 
+                               item.name.toLowerCase().includes("shipping") ? (
                                 editingShippingCost === item.cartId ? (
                                   <div className="relative">
                                     <div className="flex items-center rounded-[20px] border border-black overflow-hidden w-[90px]">
@@ -486,7 +474,6 @@ const ShoppingCart: React.FC = () => {
                                         autoFocus
                                       />
                                     </div>
-                                    {/* Tombol muncul di bawah input tanpa menggeser layout */}
                                     <div className="absolute top-full left-0 right-0 mt-1 flex items-center gap-2 justify-center">
                                       <button
                                         onClick={() => handleSaveShippingCost(item.cartId)}
@@ -714,7 +701,6 @@ const ShoppingCart: React.FC = () => {
                       className="border border-black rounded-full px-3 py-2 text-sm"
                     />
                   </div>
-                  {/*kalender*/}
                   <div className="flex flex-col gap-1">
                     <label className="font-poppinsSemiBold">
                       {currentLang === "id" ? "Tanggal bayar" : "Payment date"}
@@ -727,7 +713,6 @@ const ShoppingCart: React.FC = () => {
                       className="border border-black rounded-full px-3 py-2 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center text-sm"
                     />
                   </div>
-
                   <div className="flex flex-col gap-1">
                     <label className="font-poppinsSemiBold">
                       {currentLang === "id" ? "Estimasi barang sampai" : "Estimated Product Arrival"}
@@ -752,16 +737,14 @@ const ShoppingCart: React.FC = () => {
                       className="border border-black rounded-full px-3 py-2 text-sm"
                     />
                   </div>
-
                   <button
-                    type="button"
+                    type="submit"
                     className="mt-4 w-full text-sm font-poppinsSemiBold px-6 py-3 bg-[#dcbec1] rounded-full"
-                    onClick={() => generateInvoice(cart, invoiceData)} 
                   >
                     {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
                   </button>
                 </form>
-                <p className="mt-12 font-poppinsRegular">
+                <p className="mt-12 font-poppinsRegular text-sm">
                   {currentLang === "id" ? (
                     <>
                       Jika <span className="font-poppinsSemiBold">MAU BAYAR</span> atau <span className="font-poppinsSemiBold">SUDAH BAYAR</span>, bisa konfirmasi dahulu ke tim Little Amora.
@@ -773,7 +756,6 @@ const ShoppingCart: React.FC = () => {
                   ) : (
                     <>
                       If you <span className="font-poppinsSemiBold">WANT TO PAY</span> or <span className="font-poppinsSemiBold">ALREADY PAID</span>, you can confirm first with Little Amora team.
-                      <br />
                       <br />
                       1. To check order details (shipping fee, meeting deadline, glass/acrylic, etc)
                       <br />
@@ -787,7 +769,7 @@ const ShoppingCart: React.FC = () => {
         </main>
       </div>
 
-      {/* DESKTOP LAYOUT - hanya tampil di desktop */}
+      {/* DESKTOP LAYOUT */}
       <div className="hidden md:block flex-1">
         <main className="px-6 md:px-16 py-10 space-y-10">
           
@@ -800,17 +782,26 @@ const ShoppingCart: React.FC = () => {
             ) : (
               <>
                 {/* Select All Atas */}
-                <div className="flex items-center mb-4">
-                  <input
-                    type="checkbox"
-                    className="mr-2"
-                    checked={allSelected}
-                    onChange={toggleSelectAll}
-                  />
-                  <span className="font-poppinsSemiBold">
-                    {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
-                  </span>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                    />
+                    <span className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({cart.length})
+                    </span>
+                  </div>
+                  <button
+                    onClick={addShippingItem}
+                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-sm px-4 py-1 rounded-full shadow-sm hover:opacity-90 transition"
+                  >
+                    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
+                  </button>
                 </div>
+                
                 {Object.values(groupedItems).map((group: any[], idx) => (
                   <div key={idx} className="mb-6 pb-6 last:pb-0">
                     {group.map((item) => (
@@ -835,20 +826,11 @@ const ShoppingCart: React.FC = () => {
                         <div className="flex items-center gap-3 flex-1">
                           <ProductImage src={item.imageUrl} alt={item.name} />
                           <ProductName name={item.name} />
-                          {item.attributes?.isShipping ? (
+                          {item.name.toLowerCase().includes("ongkir") || 
+                           item.name.toLowerCase().includes("shipping") ? (
                             <ShippingCostInput
                               item={item}
                               updateShippingCost={updateShippingCost}
-                            />
-                          ) : item.attributes?.isFace ? (
-                            <FaceVariantDropdown
-                              item={item}
-                              updateItemVariant={updateItemVariant}
-                            />
-                          ) : item.attributes?.isBackground ? (
-                            <BackgroundVariantDropdown
-                              item={item}
-                              updateItemVariant={updateItemVariant}
                             />
                           ) : (
                             <FrameVariantDropdown
@@ -861,66 +843,65 @@ const ShoppingCart: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3 mt-2">
-                        {/* Input Shipping Cost untuk desktop */}
-                        {item.attributes?.isShipping ? (
-                          editingShippingCost === item.cartId ? (
-                            <div className="relative">
-                              <div className="flex items-center rounded-[30px] border border-black overflow-hidden w-[108px]">
-                                <input
-                                  type="number"
-                                  value={tempShippingCost}
-                                  onChange={handleShippingCostChange}
-                                  className="px-4 py-1 text-sm w-full text-center font-poppinsRegular outline-none"
-                                  placeholder="0"
-                                  min="0"
-                                  autoFocus
-                                />
+                          {item.name.toLowerCase().includes("ongkir") || 
+                           item.name.toLowerCase().includes("shipping") ? (
+                            editingShippingCost === item.cartId ? (
+                              <div className="relative">
+                                <div className="flex items-center rounded-[30px] border border-black overflow-hidden w-[108px]">
+                                  <input
+                                    type="number"
+                                    value={tempShippingCost}
+                                    onChange={handleShippingCostChange}
+                                    className="px-4 py-1 text-sm w-full text-center font-poppinsRegular outline-none"
+                                    placeholder="0"
+                                    min="0"
+                                    autoFocus
+                                  />
+                                </div>
+                                <div className="absolute top-full left-0 right-0 mt-1 flex items-center gap-2 justify-center">
+                                  <button
+                                    onClick={() => handleSaveShippingCost(item.cartId)}
+                                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
+                                  >
+                                    {currentLang === "id" ? "Simpan" : "Save"}
+                                  </button>
+                                  <button
+                                    onClick={handleCancelShippingEdit}
+                                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
+                                  >
+                                    {currentLang === "id" ? "Batal" : "Cancel"}
+                                  </button>
+                                </div>
                               </div>
-                              {/* Tombol muncul di bawah input tanpa menggeser layout */}
-                              <div className="absolute top-full left-0 right-0 mt-1 flex items-center gap-2 justify-center">
-                                <button
-                                  onClick={() => handleSaveShippingCost(item.cartId)}
-                                  className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
-                                >
-                                  {currentLang === "id" ? "Simpan" : "Save"}
-                                </button>
-                                <button
-                                  onClick={handleCancelShippingEdit}
-                                  className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full hover:opacity-90 transition shadow-sm"
-                                >
-                                  {currentLang === "id" ? "Batal" : "Cancel"}
-                                </button>
+                            ) : (
+                              <div 
+                                className="flex items-center rounded-[30px] border border-black overflow-hidden cursor-pointer hover:bg-gray-50 w-[108px]"
+                                onClick={() => handleEditShippingClick(item)}
+                              >
+                                <span className="px-4 py-1 text-sm font-poppinsRegular w-full text-center">
+                                  {item.price > 0 ? `Rp${item.price.toLocaleString("id-ID")}` : "Rp0"}
+                                </span>
                               </div>
-                            </div>
+                            )
                           ) : (
-                            <div 
-                              className="flex items-center rounded-[30px] border border-black overflow-hidden cursor-pointer hover:bg-gray-50 w-[108px]"
-                              onClick={() => handleEditShippingClick(item)}
-                            >
-                              <span className="px-4 py-1 text-sm font-poppinsRegular w-full text-center">
-                                {item.price > 0 ? `Rp${item.price.toLocaleString("id-ID")}` : "Rp0"}
+                            <div className="flex items-center rounded-[30px] border border-black overflow-hidden">
+                              <button
+                                className="px-3 py-[0.1rem] border-r border-black"
+                                onClick={() => updateQuantity(item.cartId, -1)}
+                              >
+                                -
+                              </button>
+                              <span className="px-4 py-[0.1rem]">
+                                {item.quantity}
                               </span>
+                              <button
+                                className="px-3 py-[0.1rem] border-l border-black"
+                                onClick={() => updateQuantity(item.cartId, 1)}
+                              >
+                                +
+                              </button>
                             </div>
-                          )
-                        ) : (
-                          <div className="flex items-center rounded-[30px] border border-black overflow-hidden">
-                            <button
-                              className="px-3 py-[0.1rem] border-r border-black"
-                              onClick={() => updateQuantity(item.cartId, -1)}
-                            >
-                              -
-                            </button>
-                            <span className="px-4 py-[0.1rem]">
-                              {item.quantity}
-                            </span>
-                            <button
-                              className="px-3 py-[0.1rem] border-l border-black"
-                              onClick={() => updateQuantity(item.cartId, 1)}
-                            >
-                              +
-                            </button>
-                          </div>
-                        )}
+                          )}
                           <p className="w-28 text-right font-bold text-red-600">
                             Rp{(item.price * item.quantity).toLocaleString("id-ID")}
                           </p>
@@ -960,7 +941,6 @@ const ShoppingCart: React.FC = () => {
             )}
           </div>
 
-          {/* Section Payment & Invoice */}
           {/* Checkout Section */}
           {!showCheckout ? (
             <div className="flex justify-end mt-6">
@@ -1106,7 +1086,6 @@ const ShoppingCart: React.FC = () => {
                       className="border border-black rounded-full px-4 py-1 flex-1"
                     />
                   </div>
-                  {/*kalender*/}
                   <div className="flex items-center gap-2">
                     <label className="w-48">
                       {currentLang === "id" ? "Tanggal bayar" : "Payment date"}
@@ -1120,7 +1099,6 @@ const ShoppingCart: React.FC = () => {
                       className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
                     />
                   </div>
-
                   <div className="flex items-center gap-2">
                     <label className="w-48">
                       {currentLang === "id" ? "Estimasi barang sampai" : "Estimated Product Arrival"}
@@ -1147,11 +1125,9 @@ const ShoppingCart: React.FC = () => {
                       className="border border-black rounded-full px-4 py-1 flex-1"
                     />
                   </div>
-
                   <button
-                    type="button"
+                    type="submit"
                     className="mt-4 translate-x-[-26px] translate-y-7 text-[15px] font-poppinsSemiBold px-6 py-2 bg-[#dcbec1] rounded-full"
-                    onClick={() => generateInvoice(cart, invoiceData)} 
                   >
                     {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
                   </button>
@@ -1168,7 +1144,6 @@ const ShoppingCart: React.FC = () => {
                   ) : (
                     <>
                       If you <span className="font-poppinsSemiBold">WANT TO PAY</span> or <span className="font-poppinsSemiBold">ALREADY PAID</span>, you can confirm first with Little Amora team.
-                      <br />
                       <br />
                       1. To check order details (shipping fee, meeting deadline, glass/acrylic, etc)
                       <br />
