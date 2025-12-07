@@ -103,6 +103,22 @@ const getAdditionalPrice = (name: string): number | string => {
   }
 };
 
+
+const formatProductName = (name: string): string => {
+  if (!name) return name;
+  
+  // Format khusus untuk pola A2-40X55CM, A1-55X80CM, A0-80X110CM
+  const sizePattern = /(A\d+)-(\d+)X(\d+)CM/i;
+  const match = name.match(sizePattern);
+  
+  if (match) {
+    const [, size, width, height] = match;
+    return `${size} / ${width}x${height}cm`;
+  }
+  
+  return name;
+};
+
 // Mock fallback data
 const MOCK_PRODUCT_DATA = {
   shipped: "Jakarta",
@@ -356,25 +372,30 @@ const specialVariations =
     }
   }, [selectedProductVariation, product, selectedSizeFrame, selectedVariation]);
   
-  useEffect(() => {
-    const isManyFaceProduct = product.name
-      ?.toLowerCase()
-      .includes("biaya tambahan wajah banyak (design dari customer)");
-  
-    if (!isManyFaceProduct) return;
-  
-    if (selectedFaceOptionCustom === "1–9 Wajah") {
-      setDisplayedPrice(
-        priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
-      );
-    } else if (selectedFaceOptionCustom === "Di atas 10 Wajah") {
-      setDisplayedPrice(
-        priceList.Additional["Biaya Tambahan Wajah Banyak diatas 10 wajah"] || product.price
-      );
-    } else {
-      setDisplayedPrice(product.price);
-    }
-  }, [selectedFaceOptionCustom, product]);
+useEffect(() => {
+  const isManyFaceProduct = product.name
+    ?.toLowerCase()
+    .includes("biaya tambahan wajah banyak (design dari customer)");
+
+  if (!isManyFaceProduct) return;
+
+  // Gunakan faceOptions[0] dan faceOptions[1]
+  if (selectedFaceOptionCustom === faceOptions[0]) { // "1–9 Wajah" atau "1–9 Faces"
+    setDisplayedPrice(
+      priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
+    );
+  } else if (selectedFaceOptionCustom === faceOptions[1]) { // "Di atas 10 Wajah" atau "Above 10 Faces"
+    setDisplayedPrice(
+      priceList.Additional["Biaya Tambahan Wajah Banyak diatas 10 wajah"] || product.price
+    );
+  } else {
+    // Set default ke option pertama
+    setSelectedFaceOptionCustom(faceOptions[0]);
+    setDisplayedPrice(
+      priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
+    );
+  }
+}, [selectedFaceOptionCustom, product, faceOptions]);
   
   useEffect(() => {
     const isExpressProduct = product.name
@@ -484,25 +505,30 @@ const specialVariations =
     setDisplayedPrice(newPrice);
   }, [selectedAcrylicOption, product]);
   
-  useEffect(() => {
+useEffect(() => {
   const isKarikaturProduct = product.name
     ?.toLowerCase()
     .includes("biaya tambahan wajah karikatur");
 
   if (!isKarikaturProduct) return;
 
-  if (selectedKarikaturOption === "1–9 Wajah") {
+  // Gunakan faceOptions[0] dan faceOptions[1]
+  if (selectedKarikaturOption === faceOptions[0]) {
     setDisplayedPrice(
       priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || product.price
     );
-  } else if (selectedKarikaturOption === "Di atas 10 Wajah") {
+  } else if (selectedKarikaturOption === faceOptions[1]) {
     setDisplayedPrice(
       priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"] || product.price
     );
   } else {
-    setDisplayedPrice(product.price);
+    // Set default ke option pertama
+    setSelectedKarikaturOption(faceOptions[0]);
+    setDisplayedPrice(
+      priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || product.price
+    );
   }
-}, [selectedKarikaturOption, product]);
+}, [selectedKarikaturOption, product, faceOptions]);
 
 
 const handleAddToCart = () => {
@@ -511,25 +537,88 @@ const handleAddToCart = () => {
 
   let productName = "";
   
-  // 🆕 DETEKSI PRODUK 8R DAN SET PACKAGING OPTIONS
+  // 🎯 DETEKSI JENIS PRODUK
+  const isKarikaturProduct = product.name
+    ?.toLowerCase()
+    .includes("biaya tambahan wajah karikatur");
+    
+  const isManyFacesProduct = product.name
+    ?.toLowerCase()
+    .includes("biaya tambahan wajah banyak (design dari customer)");
+    
+  const isExpressProduct = product.name
+    ?.toLowerCase()
+    .includes("biaya ekspress general");
+    
+  const isAcrylicChangeProduct = product.name
+    ?.toLowerCase()
+    .includes("biaya tambahan ganti frame kaca ke acrylic");
+    
+  const isAcrylicStand = product.category === "Acrylic Stand" || 
+                        product.name?.toLowerCase().includes("acrylic stand");
+  
   const is8RProduct = product.name?.toLowerCase().includes("8r") || 
                      selectedSizeFrame?.toLowerCase().includes("8r");
   
-  let packagingPriceMap: Record<string, number> = {};
-  let packagingVariations: string[] = [];
-  let selectedPackagingVariation = "";
-
-  if (is8RProduct) {
-    // 🆕 SET HARGA UNTUK SETIAP PACKAGING OPTION
-    packagingPriceMap = {
-      "Dus Kraft + Paperbag": priceList["3D frame"]?.["8R duskraft"] || 0,
-      "Black Hardbox + Paperbag": priceList["3D frame"]?.["8R hardbox"] || 0,
-    };
-    packagingVariations = Object.keys(packagingPriceMap);
-    selectedPackagingVariation = "Dus Kraft + Paperbag"; // default value
+  // 🎯 GUNAKAN productVariations DARI getProductVariations
+  const productVariations = getProductVariations(product.category, product.name);
+  
+  let variationOptions: string[] = [];
+  
+  if (isKarikaturProduct || isManyFacesProduct) {
+    variationOptions = ["1–9 Wajah", "Di atas 10 Wajah"];
+  } else if (isExpressProduct) {
+    variationOptions = ["Option 1", "Option 2", "Option 3"];
+  } else if (isAcrylicChangeProduct) {
+    variationOptions = ["A2", "A1", "A0"];
+  } else if (isAcrylicStand) {
+    variationOptions = ["15x15cm 1 sisi", "A4 2 sisi", "A3 2 sisi"];
+  } else if (is8RProduct) {
+    variationOptions = ["Dus Kraft + Paperbag", "Black Hardbox + Paperbag"];
+  } else if (productVariations.length > 0) {
+    // 🎯 GUNAKAN productVariations DARI getProductVariations
+    variationOptions = productVariations;
+  } else {
+    // Default untuk produk frame biasa
+    variationOptions = ["Frame Kaca", "Frame Acrylic"];
+  }
+  
+  // 🎯 PERBAIKAN: BERSIHKAN selectedShading DARI "2D" SEBELUM DIKIRIM
+  const cleanShadingStyle = (shading: string): string => {
+    if (!shading) return "";
+    return shading
+      .replace(/^2d\s+/i, "") // hapus "2d" di awal
+      .replace(/\s*2d\s*/gi, " ") // hapus "2d" di tengah
+      .replace(/\s+/g, " ") // hapus spasi berlebih
+      .trim();
+  };
+  
+  const cleanedShadingStyle = cleanShadingStyle(selectedShading);
+  
+  // 🎯 TENTUKAN SELECTED OPTION
+  let selectedOption = "";
+  
+  if (isKarikaturProduct) {
+    selectedOption = selectedKarikaturOption || "1–9 Wajah";
+  } else if (isManyFacesProduct) {
+    selectedOption = selectedFaceOptionCustom || "1–9 Wajah";
+  } else if (isExpressProduct) {
+    selectedOption = selectedExpressOption || "Option 1";
+  } else if (isAcrylicChangeProduct) {
+    selectedOption = selectedSizeFrame || "A2";
+  } else if (isAcrylicStand) {
+    selectedOption = selectedAcrylicOption || "15x15cm 1 sisi";
+  } else if (is8RProduct) {
+    selectedOption = "Dus Kraft + Paperbag";
+  } else if (productVariations.length > 0) {
+    // 🎯 GUNAKAN selectedVariation (yang dipilih di halaman produk)
+    selectedOption = selectedVariation || productVariations[0];
+  } else {
+    selectedOption = "Frame Kaca";
   }
 
-  // 🆕 TAMBAHKAN PENANGANAN KHUSUS UNTUK ACRYLIC STAND
+  
+  // 🎯 TENTUKAN NAMA PRODUK
   if (isAcrylicStand) {
     productName = `Acrylic Stand ${product.name}`;
   } 
@@ -547,40 +636,45 @@ const handleAddToCart = () => {
     productName = `Softcopy Design ${product.name}`;
   }
   else if (product.category === "Additional") {
-    productName = `Additional ${product.name}`;
+    productName = product.name;
   }
   else {
-    // Fallback untuk kategori lainnya
     productName = product.name || "Default Product Name";
   }
-
-  // 🆕 TENTUKAN VARIATION DEFAULT
-  let defaultVariation = selectedVariation;
+  
+  // 🎯 SET PACKAGING PRICE MAP UNTUK 8R
+  let packagingPriceMap: Record<string, number> = {};
   if (is8RProduct) {
-    // Untuk produk 8R, gunakan packaging variation sebagai default
-    defaultVariation = selectedPackagingVariation;
+    packagingPriceMap = {
+      "Dus Kraft + Paperbag": priceList["3D frame"]?.["8R duskraft"] || 0,
+      "Black Hardbox + Paperbag": priceList["3D frame"]?.["8R hardbox"] || 0,
+    };
   }
 
   addToCart({
     id: product.id || "p1",
-    name: productName, // ← NAMA TETAP: "3D Frame 8R / 20x25cm"
+    name: productName,
     price: displayedPrice,
     quantity: finalQty,
     imageUrl: product.imageUrl,
-    variation: defaultVariation, // ← VARIATION: "Dus Kraft + Paperbag" atau "Black Hardbox + Paperbag"
-    productType: product.category.toLowerCase(),
+    variation: selectedOption,
+    variationOptions: variationOptions,
+    productType: "frame",
     attributes: {
       faceCount: faceCountLabel,
       backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
       includePacking,
       frameSize: selectedSizeFrame,
-      shadingStyle: selectedShading,
+      shadingStyle: cleanedShadingStyle, // 🎯 GUNAKAN cleanedShadingStyle YANG SUDAH DIBERSIHKAN
       isAcrylicStand: isAcrylicStand,
-      // 🆕 TAMBAHKAN PACKAGING ATTRIBUTES UNTUK PRODUK 8R
+      selectedOption: selectedOption,
+      isAdditionalProduct: isKarikaturProduct || isManyFacesProduct || 
+                          isExpressProduct || isAcrylicChangeProduct || isAcrylicStand,
       ...(is8RProduct && {
+        is8RProduct: true,
         packagingPriceMap,
-        packagingVariations,
-        selectedPackagingVariation
+        packagingVariations: ["Dus Kraft + Paperbag", "Black Hardbox + Paperbag"],
+        selectedPackagingVariation: selectedOption
       })
     }
   });
@@ -774,11 +868,15 @@ const previewRef = useRef<HTMLDivElement | null>(null);
           
           {/* Right: Info - Mobile optimized */}
           <div className="flex flex-col">
-            <h1 className="text-[18px] md:text-[25px] font-poppinsMedium leading-tight">
-              {[product.category, defaultSize, product.type, product.name]
-                .filter(Boolean)
-                .join(" ")}
-            </h1>
+          <h1 className="text-[18px] md:text-[25px] font-poppinsMedium leading-tight">
+            {[product.category, 
+              // Hanya tampilkan defaultSize jika bukan "Custom" atau produk tidak punya ukuran spesifik
+              (defaultSize !== "Custom" || !product.name?.match(/(A\d+-\d+X\d+CM|\d+R)/i)) ? defaultSize : "",
+              product.type, 
+              formatProductName(product.name)]
+              .filter(Boolean)
+              .join(" ")}
+          </h1>
           
             {/* ⭐ Best Selling label - Mobile optimized */}
             {(() => {
@@ -933,19 +1031,26 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                               {t("product.variation")}
                           </label>
                           <div className="flex flex-row flex-wrap gap-2 md:-translate-x-[165px] md:translate-y-2 font-poppinsRegular">
-                            {product.variations.map((variation) => (
-                              <button
-                                key={variation}
-                                onClick={() => setSelectedVariation(variation)}
-                                className={`px-4 md:px-6 py-2 border rounded-md text-[13px] md:text-sm transition-colors ${
-                                  selectedVariation === variation
-                                    ? "bg-[#dcbec1] border-[#bfa4a6]"
-                                    : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-                                }`}
-                              >
-                                {variation}
-                              </button>
-                            ))}
+                            {product.variations.map((variation) => {
+                              // Terjemahkan di sini saja
+                              let displayText = variation;
+                              if (variation === "Frame Kaca") displayText = t("product.frameGlass");
+                              if (variation === "Frame Acrylic") displayText = t("product.frameAcrylic");
+                              
+                              return (
+                                <button
+                                  key={variation}
+                                  onClick={() => setSelectedVariation(variation)}
+                                  className={`px-4 md:px-6 py-2 border rounded-md text-[13px] md:text-sm transition-colors ${
+                                    selectedVariation === variation
+                                      ? "bg-[#dcbec1] border-[#bfa4a6]"
+                                      : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                                  }`}
+                                >
+                                  {displayText}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -1300,7 +1405,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
             "../assets/list-products/3D/A0-80X110CM/PACKING AIR COLUMN BAGS.jpg",
             import.meta.url
           ).href,
-          price: `Rp ${priceList.Additional["Biaya Tambahan Packing untuk Order Banyak via Kargo"].toLocaleString("id-ID")}`
+          price: `Rp ${priceList.Additional["Biaya Tambahan Packing"].toLocaleString("id-ID")}`
         },
       ];
 

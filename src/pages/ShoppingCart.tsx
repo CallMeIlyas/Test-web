@@ -12,6 +12,30 @@ import ShopeePayIcon from "../assets/icon-bank/shopeepay.png";
 import { gsap } from "gsap";
 import { generateInvoice } from "../utils/generateInvoice";
 
+// ShoppingCart.tsx - perbarui fungsi formatProductName:
+const formatProductName = (name: string): string => {
+  if (!name) return name;
+  
+  // Format khusus untuk pola A2-40X55CM, A1-55X80CM, A0-80X110CM
+  const sizePattern = /(A\d+)-(\d+)X(\d+)CM/i;
+  const match = name.match(sizePattern);
+  
+  if (match) {
+    const [, size, width, height] = match;
+    const formattedSize = `${size} / ${width}x${height}cm`;
+    
+    // Jika nama sudah mengandung "3D Frame" atau "Frame", pertahankan itu
+    if (name.toLowerCase().includes("frame")) {
+      return name.replace(sizePattern, formattedSize);
+    }
+    
+    // Jika tidak, tambahkan "Frame" di depan
+    return `Frame ${formattedSize}`;
+  }
+  
+  return name;
+};
+
 // Komponen DateInput
 interface DateInputProps {
   value: string;
@@ -69,7 +93,7 @@ const ProductImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
 // Komponen ProductName
 const ProductName: React.FC<{ name: string }> = ({ name }) => (
   <h3 className="font-poppinsRegular text-[15px] w-[230px] truncate">
-    {name}
+    {formatProductName(name)}
   </h3>
 );
 

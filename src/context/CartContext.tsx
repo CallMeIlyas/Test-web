@@ -116,25 +116,31 @@ const addToCart = (
   let finalProductName = rest.name?.trim() || "";
   let finalPrice = rest.price;
 
-  // Logika Harga 2D Frame
-  if (is2DFrame) {
-    const twoDPrices = Object.fromEntries(
-      Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
-    );
+// Logika Harga 2D Frame
+if (is2DFrame) {
+  const twoDPrices = Object.fromEntries(
+    Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
+  );
 
-    let key = `${frameSize} ${shadingStyle}`.trim();
-    if (!twoDPrices[key] && frameSize) {
-      key = `${frameSize} simple shading`;
-    }
-
-    finalPrice = twoDPrices[key] || rest.price;
-
-    finalProductName = `2D Frame ${frameSize.toUpperCase()} ${shadingStyle
-      .replace(/^2d\s+/i, "")
-      .replace(/\b\w/g, (c) => c.toUpperCase())
-      .replace("Ai", "AI")
-      .trim()}`;
+  let key = `${frameSize} ${shadingStyle}`.trim();
+  if (!twoDPrices[key] && frameSize) {
+    key = `${frameSize} simple shading`;
   }
+
+  finalPrice = twoDPrices[key] || rest.price;
+
+  // PERBAIKAN: Format nama tanpa "2d" di shading style
+  let displayShading = shadingStyle
+    .replace(/^2d\s+/i, "")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace("Ai", "AI")
+    .trim();
+  
+  // Pastikan tidak ada "2D" di shading style
+  displayShading = displayShading.replace(/2d/gi, "").trim();
+  
+  finalProductName = `2D Frame ${frameSize.toUpperCase()} ${displayShading}`;
+}
 
   // Logika Harga Acrylic Stand
   if (isAcrylicStand) {
@@ -226,14 +232,15 @@ const addToCart = (
     return false;
   };
 
-  // Tentukan Variation Options Berdasarkan Jenis Produk
-  if (hasVariations()) {
-    if (is2DFrame) {
-      finalVariationOptions = ["Simple Shading", "AI Shading"];
-      defaultVariation = shadingStyle 
-        ? shadingStyle.charAt(0).toUpperCase() + shadingStyle.slice(1)
-        : "Simple Shading";
-    }
+// Tentukan Variation Options Berdasarkan Jenis Produk
+if (hasVariations()) {
+  if (is2DFrame) {
+    // PERBAIKAN: Tambahkan semua variasi shading yang tersedia
+    finalVariationOptions = ["Simple Shading", "Bold Shading", "Background Catalog", "BY AI"];
+    defaultVariation = shadingStyle 
+      ? shadingStyle.charAt(0).toUpperCase() + shadingStyle.slice(1)
+      : "Simple Shading";
+  }
     else if (isKarikaturProduct || isManyFacesProduct) {
       finalVariationOptions = ["1–9 Wajah", "Di atas 10 Wajah"];
       defaultVariation = selectedOption || "1–9 Wajah";
@@ -345,13 +352,16 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
       
       const updated = { ...p, variation: newVariation };
 
-      // 1. Produk 8R dengan Packaging
+      // 1. Produk 8R dengan Packaging - NAMA BERUBAH
       if (p.attributes?.is8RProduct && p.attributes?.packagingPriceMap) {
         updated.price = p.attributes.packagingPriceMap[newVariation] || p.price;
+        // Untuk 8R, update nama berdasarkan variasi
+        const baseName = p.name.replace(/\(.*\)/g, "").trim(); // Hapus keterangan sebelumnya
+        updated.name = `${baseName} (${newVariation})`;
         return updated;
       }
       
-      // 2. Additional Wajah Karikatur
+      // 2. Additional Wajah Karikatur - NAMA TIDAK BERUBAH
       if (p.name.toLowerCase().includes("wajah karikatur")) {
         const key = newVariation.includes("10") || newVariation.toLowerCase().includes("atas")
           ? "Tambahan Wajah Karikatur diatas 10 wajah"
@@ -360,14 +370,14 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
         return updated;
       }
       
-      // 3. Additional Ganti Frame Kaca ke Acrylic
+      // 3. Additional Ganti Frame Kaca ke Acrylic - NAMA TIDAK BERUBAH
       if (p.name.toLowerCase().includes("ganti frame kaca ke acrylic")) {
         const key = `Biaya Tambahan Ganti Frame Kaca ke Acrylic ${newVariation}`;
         updated.price = priceList.Additional[key] || p.price;
         return updated;
       }
       
-      // 4. Additional Ekspress General
+      // 4. Additional Ekspress General - NAMA TIDAK BERUBAH
       if (p.name.toLowerCase().includes("ekspress general")) {
         let key = "Biaya Ekspress General";
         if (newVariation === "Option 2") key = "Biaya Ekspress General 2";
@@ -377,7 +387,7 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
         return updated;
       }
       
-      // 5. Additional Wajah Banyak
+      // 5. Additional Wajah Banyak - NAMA TIDAK BERUBAH
       if (p.name.toLowerCase().includes("wajah banyak")) {
         const key = newVariation.includes("10") || newVariation.toLowerCase().includes("atas")
           ? "Biaya Tambahan Wajah Banyak diatas 10 wajah"
@@ -386,7 +396,7 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
         return updated;
       }
       
-      // 6. Acrylic Stand
+      // 6. Acrylic Stand - NAMA TIDAK BERUBAH
       if (p.attributes?.isAcrylicStand) {
         const acrylicPriceMap: Record<string, number> = {
           "15x15cm 1 sisi": priceList["Acrylic Stand"]?.["Acrylic Stand 3mm size 15x15cm 1 sisi"] || 324800,
@@ -398,50 +408,48 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
         return updated;
       }
       
-      // 7. 2D Frame
-      if (p.attributes?.frameSize && p.name.toLowerCase().includes("2d")) {
-        const twoDPrices = Object.fromEntries(
-          Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
-        );
-        
-        const frameSize = p.attributes.frameSize.toLowerCase();
-        const shadingStyle = newVariation.toLowerCase().includes("simple") 
-          ? "simple shading" 
-          : newVariation.toLowerCase().includes("ai") 
-            ? "ai shading" 
-            : newVariation.toLowerCase();
-        
-        let key = `${frameSize} ${shadingStyle}`.trim();
-        if (!twoDPrices[key] && frameSize) {
-          key = `${frameSize} simple shading`;
-        }
-        
-        updated.price = twoDPrices[key] || p.price;
-        
-        updated.name = `2D Frame ${frameSize.toUpperCase()} ${shadingStyle
-          .replace(/^2d\s+/i, "")
-          .replace(/\b\w/g, (c) => c.toUpperCase())
-          .replace("Ai", "AI")
-          .trim()}`;
-        
-        return updated;
-      }
+// 7. 2D Frame - NAMA BERUBAH (sesuai kebutuhan shading)
+if (p.attributes?.frameSize && p.name.toLowerCase().includes("2d")) {
+  const twoDPrices = Object.fromEntries(
+    Object.entries(priceList["2D frame"]).map(([k, v]) => [k.toLowerCase(), v])
+  );
+  
+  const frameSize = p.attributes.frameSize.toLowerCase();
+  
+  // PERBAIKAN: Handle semua jenis shading style
+  let shadingStyle = newVariation.toLowerCase();
+  if (shadingStyle.includes("simple")) {
+    shadingStyle = "simple shading";
+  } else if (shadingStyle.includes("bold")) {
+    shadingStyle = "bold shading";
+  } else if (shadingStyle.includes("background")) {
+    shadingStyle = "background catalog";
+  } else if (shadingStyle.includes("ai") || shadingStyle.includes("by ai")) {
+    shadingStyle = "by ai";
+  } else {
+    shadingStyle = "simple shading";
+  }
+  
+  let key = `${frameSize} ${shadingStyle}`.trim();
+  if (!twoDPrices[key] && frameSize) {
+    key = `${frameSize} simple shading`;
+  }
+  
+  updated.price = twoDPrices[key] || p.price;
+  
+  // PERBAIKAN: Format nama tanpa "2d" di shading style
+  let displayShading = newVariation
+    .replace(/^2d\s+/i, "")
+    .replace(/2d/gi, "")
+    .trim();
+  
+  updated.name = `2D Frame ${frameSize.toUpperCase()} ${displayShading}`;
+  
+  return updated;
+}
       
-      // 8. Frame Kaca/Acrylic Reguler
+      // 8. Frame Kaca/Acrylic Reguler - NAMA TIDAK BERUBAH
       if (p.name.toLowerCase().includes("frame") && !p.attributes?.isAcrylicStand) {
-        const frameType = newVariation.includes("Acrylic") ? "Acrylic" : "Kaca";
-        
-        const baseName = p.name.replace(/Frame\s*(Kaca|Acrylic)?/gi, "").trim();
-        
-        const sizeMatch = p.name.match(/\b(4R|6R|8R|10R|12R|A0|A1|A2|A3|A4|15cm|20cm)\b/i);
-        const size = sizeMatch ? sizeMatch[0].toUpperCase() : "";
-        
-        if (size) {
-          updated.name = `${size} Frame ${frameType}`;
-        } else {
-          updated.name = `${baseName} Frame ${frameType}`;
-        }
-        
         const productKey = p.name.toLowerCase();
         const priceKeys = Object.keys(priceList).filter(key => 
           productKey.includes(key.toLowerCase())
@@ -462,6 +470,7 @@ const updateItemVariant = (cartId: string, newVariation: string) => {
           }
         }
         
+        // NAMA TIDAK DIRUBAH! Hanya update variasi dan harga
         return updated;
       }
 
