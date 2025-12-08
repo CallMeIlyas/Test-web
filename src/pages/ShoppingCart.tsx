@@ -223,8 +223,8 @@ const FrameVariantDropdown: React.FC<{
   );
 };
 
-// Komponen ShippingCostItem
-const ShippingCostItem: React.FC<{ 
+// Komponen ShippingCostItemDesktop
+const ShippingCostItemDesktop: React.FC<{ 
   item: any;
   updateShippingCost: (cartId: string, cost: number) => void;
   editingShippingCost: string | null;
@@ -302,6 +302,7 @@ const ShippingCostItem: React.FC<{
           ) : (
             <>
               <div className="text-right">
+                {/* Desktop: text-lg (besar) */}
                 <p className="font-poppinsBold text-red-600 text-lg">
                   Rp{item.price > 0 ? item.price.toLocaleString("id-ID") : "0"}
                 </p>
@@ -316,6 +317,112 @@ const ShippingCostItem: React.FC<{
                 <button
                   onClick={() => deleteItem(item.cartId)}
                   className="text-red-500 font-poppinsRegular text-sm"
+                >
+                  {currentLang === "id" ? "Hapus" : "Delete"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Komponen ShippingCostItemMobile
+const ShippingCostItemMobile: React.FC<{ 
+  item: any;
+  updateShippingCost: (cartId: string, cost: number) => void;
+  editingShippingCost: string | null;
+  tempShippingCost: string;
+  handleEditShippingClick: (item: any) => void;
+  handleSaveShippingCost: (cartId: string) => void;
+  handleCancelShippingEdit: () => void;
+  handleShippingCostChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  deleteItem: (cartId: string) => void;
+}> = ({
+  item,
+  updateShippingCost,
+  editingShippingCost,
+  tempShippingCost,
+  handleEditShippingClick,
+  handleSaveShippingCost,
+  handleCancelShippingEdit,
+  handleShippingCostChange,
+  deleteItem
+}) => {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
+
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-300">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full mr-3">
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <p className="font-poppinsSemiBold text-[13px]">
+              {item.name}
+            </p>
+            <p className="font-poppinsRegular text-[10px] text-gray-500">
+              {currentLang === "id" ? "Biaya pengiriman untuk pesanan Anda" : "Shipping cost for your order"}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          {editingShippingCost === item.cartId ? (
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="flex items-center rounded-[20px] border border-black overflow-hidden w-[100px]">
+                  <span className="px-2 py-1 bg-gray-100 font-poppinsSemiBold text-xs">Rp</span>
+                  <input
+                    type="number"
+                    value={tempShippingCost}
+                    onChange={handleShippingCostChange}
+                    className="px-2 py-1 text-xs w-full text-center font-poppinsRegular outline-none"
+                    placeholder="0"
+                    min="0"
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleSaveShippingCost(item.cartId)}
+                  className="bg-[#dcbec1] text-black font-poppinsSemiBold text-[10px] px-2 py-1 rounded-full hover:opacity-90 transition shadow-sm"
+                >
+                  {currentLang === "id" ? "Simpan" : "Save"}
+                </button>
+                <button
+                  onClick={handleCancelShippingEdit}
+                  className="bg-gray-300 text-black font-poppinsSemiBold text-[10px] px-2 py-1 rounded-full hover:opacity-90 transition shadow-sm"
+                >
+                  {currentLang === "id" ? "Batal" : "Cancel"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-right">
+                {/* Mobile: text-sm (kecil) */}
+                <p className="font-poppinsBold text-red-600 text-sm">
+                  Rp{item.price > 0 ? item.price.toLocaleString("id-ID") : "0"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleEditShippingClick(item)}
+                  className="bg-[#dcbec1] text-black font-poppinsSemiBold text-[10px] px-2 py-1 rounded-full hover:opacity-90 transition shadow-sm"
+                >
+                  {currentLang === "id" ? "Edit" : "Edit"}
+                </button>
+                <button
+                  onClick={() => deleteItem(item.cartId)}
+                  className="text-red-500 font-poppinsRegular text-xs"
                 >
                   {currentLang === "id" ? "Hapus" : "Delete"}
                 </button>
@@ -756,7 +863,7 @@ const handleSendToWhatsApp = () => {
                 
                 {/* Shipping Cost Section - Mobile */}
                 {shippingItems.map((item) => (
-                  <ShippingCostItem
+                  <ShippingCostItemMobile
                     key={item.cartId}
                     item={item}
                     updateShippingCost={updateShippingCost}
@@ -1034,7 +1141,7 @@ const handleSendToWhatsApp = () => {
                 
                 {/* Shipping Cost Section - Desktop */}
                 {shippingItems.map((item) => (
-                  <ShippingCostItem
+                  <ShippingCostItemDesktop
                     key={item.cartId}
                     item={item}
                     updateShippingCost={updateShippingCost}
