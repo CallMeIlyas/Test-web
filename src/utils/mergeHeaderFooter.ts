@@ -1,7 +1,7 @@
 import { PDFDocument, rgb } from "pdf-lib";
 
 /**
- * 🔗 Merge Header PDF + Products + Footer PDF
+ * Merge Header PDF + Products + Footer PDF
  * 
  * @param pdfDoc - PDF Document yang sudah ada header & products
  * @param currentPage - Halaman terakhir dengan produk
@@ -22,7 +22,7 @@ export const mergeFooterPdf = async (
   productCount: number = 0
 ) => {
   try {
-    // 🔥 Load footer PDF
+    // Load footer PDF
     const footerBytes = await fetch(footerPdfPath).then((res) => {
       if (!res.ok) throw new Error(`Footer PDF not found: ${footerPdfPath}`);
       return res.arrayBuffer();
@@ -30,40 +30,34 @@ export const mergeFooterPdf = async (
     
     const footerPdf = await PDFDocument.load(footerBytes);
     
-    // 📄 Embed footer page
+    // Embed footer page
     const [footerPage] = await pdfDoc.embedPdf(footerPdf, [0]);
     const { width: footerWidth, height: footerHeight } = footerPage.scale(1);
 
     let targetPage = currentPage;
     let footerY;
 
-    // ⚙️ KONFIGURASI MARGIN FOOTER
+    // KONFIGURASI MARGIN FOOTER
     const FOOTER_CONFIG = {
-      newPageTopMargin: 0,  // 🔝 Jarak dari atas halaman BARU (0 = paling atas, tanpa jeda)
-      samePageMarginTop: -10, // 📍 Jarak dari produk terakhir di halaman SAMA
+      newPageTopMargin: 0,      // Jarak dari atas halaman BARU (0 = paling atas)
+      samePageBottomMargin: 0,  // Jarak footer dari bawah halaman (0 = menempel di bawah)
     };
 
-    // 🎯 LOGIKA: Jika produk >= 3, PASTI buat halaman baru untuk footer
-    if (productCount >= 3) {
-      // 📄 Buat halaman baru untuk footer
+    // LOGIKA: Jika produk >= 4, PASTI buat halaman baru untuk footer
+    if (productCount >= 4) {
+      // Buat halaman baru untuk footer
       targetPage = pdfDoc.addPage([595.28, 841.89]);
       
-      // 🔝 Posisi footer di atas halaman baru
-      // Untuk TANPA JEDA gunakan: 841.89 - FOOTER_CONFIG.newPageTopMargin
+      // Posisi footer di atas halaman baru (tanpa jeda)
       footerY = 841.89 - FOOTER_CONFIG.newPageTopMargin;
       
     } else {
-      // 📍 Footer tetap di halaman yang sama (untuk produk < 8)
-      footerY = lastProductY - FOOTER_CONFIG.samePageMarginTop;
-      const footerBottom = footerY - footerHeight;
-
-      // Jika tidak muat, adjust ke atas
-      if (footerBottom < FOOTER_CONFIG.absoluteMinY) {
-        footerY = FOOTER_CONFIG.absoluteMinY + footerHeight;
-      }
+      // Footer MENEMPEL DI BAWAH HALAMAN (same page)
+      // Posisi footer di bagian paling bawah tanpa celah kosong
+      footerY = FOOTER_CONFIG.samePageBottomMargin + footerHeight;
     }
 
-    // 🖼️ Stamp footer page
+    // Stamp footer page
     const footerX = (595.28 - footerWidth) / 2;
     targetPage.drawPage(footerPage, {
       x: footerX,
@@ -72,9 +66,9 @@ export const mergeFooterPdf = async (
       height: footerHeight,
     });
 
-    // 💰 Tulis total di atas footer
+    // Tulis total di atas footer
     const totalX = 405;
-    const totalY = footerY - 70;
+    const totalY = footerY - 68;
 
     targetPage.drawText(`Rp${total.toLocaleString("id-ID")}`, {
       x: totalX,
@@ -88,15 +82,13 @@ export const mergeFooterPdf = async (
       finalPage: targetPage,
       finalY: footerY - footerHeight,
     };
-
   } catch (error) {
-    console.error("Error merging footer PDF:", error);
-    throw new Error(`Failed to merge footer PDF: ${error.message}`);
+    throw error;
   }
 };
 
 /**
- * 📄 Copy header template ke halaman baru (untuk multiple pages)
+ * Copy header template ke halaman baru (untuk multiple pages)
  */
 export const addPageWithHeader = async (
   pdfDoc: PDFDocument,
@@ -112,15 +104,13 @@ export const addPageWithHeader = async (
     const [headerTemplate] = await pdfDoc.copyPages(headerPdf, [0]);
     
     return pdfDoc.addPage(headerTemplate);
-    
   } catch (error) {
-    console.error("Error adding header page:", error);
-    return pdfDoc.addPage([595.28, 841.89]);
+    throw error;
   }
 };
 
 /**
- * 📝 Cek apakah footer akan muat di halaman
+ * Cek apakah footer akan muat di halaman
  */
 export const needsNewPageForFooter = (
   currentY: number,

@@ -10,9 +10,8 @@ import GopayIcon from "../assets/icon-bank/gopay.png";
 import OVOIcon from "../assets/icon-bank/ovo.png";
 import ShopeePayIcon from "../assets/icon-bank/shopeepay.png";
 import { gsap } from "gsap";
-import { generateInvoice } from "../utils/generateInvoice";
 
-// ShoppingCart.tsx - perbarui fungsi formatProductName:
+// fungsi formatProductName:
 const formatProductName = (name: string): string => {
   if (!name) return name;
   
@@ -24,7 +23,7 @@ const formatProductName = (name: string): string => {
     const [, size, width, height] = match;
     const formattedSize = `${size} / ${width}x${height}cm`;
     
-    // Jika nama sudah mengandung "3D Frame" atau "Frame", pertahankan itu
+    // Jika nama sudah mengandung "3D Frame" atau "Frame", pertahankan
     if (name.toLowerCase().includes("frame")) {
       return name.replace(sizePattern, formattedSize);
     }
@@ -224,7 +223,7 @@ const FrameVariantDropdown: React.FC<{
   );
 };
 
-// Komponen ShippingCostItem - Baru: Tampilan khusus untuk shipping cost
+// Komponen ShippingCostItem
 const ShippingCostItem: React.FC<{ 
   item: any;
   updateShippingCost: (cartId: string, cost: number) => void;
@@ -346,15 +345,9 @@ const ShoppingCart: React.FC = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [editingShippingCost, setEditingShippingCost] = useState<string | null>(null);
   const [tempShippingCost, setTempShippingCost] = useState<string>("");
-  
-  const [invoiceData, setInvoiceData] = useState({
-    companyName: "",
-    contactPerson: "",
-    orderVia: "",
-    paymentDate: "",
-    estimatedArrival: "",
-    paymentMethod: "",
-  });
+    
+  const [showCheckout, setShowCheckout] = useState(false);
+  const checkoutRef = useRef<HTMLDivElement | null>(null);
 
   // Filter cart untuk memisahkan produk dan shipping
   const productItems = useMemo(() => 
@@ -433,19 +426,6 @@ const ShoppingCart: React.FC = () => {
     });
   };
 
-  const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setInvoiceData(prevData => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmitInvoice = (e: React.FormEvent) => {
-    e.preventDefault();
-    generateInvoice(cart, invoiceData);
-  };
-
   const handleEditShippingClick = (item: any) => {
     setEditingShippingCost(item.cartId);
     setTempShippingCost(item.price > 0 ? item.price.toString() : "");
@@ -491,9 +471,170 @@ const ShoppingCart: React.FC = () => {
     .reduce((total, item) => total + item.price * item.quantity, 0);
 
   const totalPrice = totalProductPrice + totalShippingPrice;
+
+// function untuk send massage ke wa
+const handleSendToWhatsApp = () => {
+  // Validasi: minimal harus ada produk yang dipilih
+  if (selectedItems.length === 0) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
     
-  const [showCheckout, setShowCheckout] = useState(false);
-  const checkoutRef = useRef<HTMLDivElement | null>(null);
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl animate-fadeIn">
+        <div class="text-center">
+          <div class="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-[#dcbec1] mb-4">
+            <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="font-poppinsSemiBold text-xl text-gray-800 mb-2">
+            ${currentLang === "id" ? "Perhatian" : "Attention"}
+          </h3>
+          <p class="font-poppinsRegular text-gray-600 mb-6">
+            ${currentLang === "id" 
+              ? "Pilih minimal 1 produk untuk checkout." 
+              : "Please select at least 1 product to checkout."}
+          </p>
+          <button 
+            onclick="this.closest('.fixed').remove()"
+            class="font-poppinsSemiBold bg-[#dcbec1] hover:bg-[#c7a9ac] text-black px-6 py-3 rounded-full transition-colors w-full"
+          >
+            ${currentLang === "id" ? "Mengerti" : "Got it"}
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    setTimeout(() => {
+      if (document.body.contains(modal)) {
+        modal.remove();
+      }
+    }, 3000);
+    
+    return;
+  }
+
+  // Buat input modal untuk nama pemesan
+  const nameModal = document.createElement('div');
+  nameModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+  
+  nameModal.innerHTML = `
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl animate-fadeIn">
+      <div class="text-center mb-4">
+        <div class="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-[#dcbec1] mb-3">
+          <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </div>
+        <h3 class="font-poppinsSemiBold text-xl text-gray-800 mb-2">
+          ${currentLang === "id" ? "Masukkan Nama Anda" : "Enter Your Name"}
+        </h3>
+        <p class="font-poppinsRegular text-gray-600 mb-4">
+          ${currentLang === "id" 
+            ? "Masukkan nama Anda untuk membuat invoice." 
+            : "Enter your name to create invoice."}
+        </p>
+      </div>
+      <input
+        type="text"
+        id="customerNameInput"
+        placeholder="${currentLang === "id" ? "Contoh: Budi Santoso" : "Example: John Doe"}"
+        class="w-full border border-black rounded-full px-4 py-3 mb-4 font-poppinsRegular focus:outline-none"
+        autofocus
+      />
+      <div class="flex gap-3">
+        <button 
+          id="cancelNameBtn"
+          class="flex-1 bg-gray-300 text-black font-poppinsSemiBold px-4 py-3 rounded-full hover:bg-gray-400 transition-colors"
+        >
+          ${currentLang === "id" ? "Batal" : "Cancel"}
+        </button>
+        <button 
+          id="confirmNameBtn"
+          class="flex-1 bg-[#dcbec1] hover:bg-[#c7a9ac] text-black font-poppinsSemiBold px-4 py-3 rounded-full transition-colors"
+        >
+          ${currentLang === "id" ? "Kirim ke WhatsApp" : "Send to WhatsApp"}
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(nameModal);
+  
+  // Setup event listeners untuk modal nama
+  const customerNameInput = document.getElementById('customerNameInput') as HTMLInputElement;
+  const cancelNameBtn = document.getElementById('cancelNameBtn');
+  const confirmNameBtn = document.getElementById('confirmNameBtn');
+  
+  const closeNameModal = () => {
+    if (document.body.contains(nameModal)) {
+      nameModal.remove();
+    }
+  };
+  
+  cancelNameBtn?.addEventListener('click', closeNameModal);
+  
+  confirmNameBtn?.addEventListener('click', () => {
+    const customerName = customerNameInput?.value.trim();
+    
+    if (!customerName) {
+      // Tampilkan error jika nama kosong
+      const errorModal = document.createElement('div');
+      errorModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      
+      errorModal.innerHTML = `
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl animate-fadeIn">
+          <div class="text-center">
+            <div class="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-[#dcbec1] mb-4">
+              <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="font-poppinsSemiBold text-xl text-gray-800 mb-2">
+              ${currentLang === "id" ? "Nama Kosong" : "Empty Name"}
+            </h3>
+            <p class="font-poppinsRegular text-gray-600 mb-6">
+              ${currentLang === "id" 
+                ? "Harap masukkan nama Anda terlebih dahulu." 
+                : "Please enter your name first."}
+            </p>
+            <button 
+              onclick="this.closest('.fixed').remove()"
+              class="font-poppinsSemiBold bg-[#dcbec1] hover:bg-[#c7a9ac] text-black px-6 py-3 rounded-full transition-colors w-full"
+            >
+              ${currentLang === "id" ? "Mengerti" : "Got it"}
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(errorModal);
+      
+      setTimeout(() => {
+        if (document.body.contains(errorModal)) {
+          errorModal.remove();
+        }
+      }, 3000);
+      
+      return;
+    }
+    
+    closeNameModal();
+    
+    // Format pesan WhatsApp sesuai permintaan - SANGAT SEDERHANA
+    let message = `Halo, Little Amora\n`;
+    message += `boleh bikinin invoice untuk order atas nama ${customerName}`;
+    
+    // Encode pesan untuk URL
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = "6281380340307"; // Nomor WhatsApp Little Amora
+    
+    // Buka WhatsApp dengan pesan sederhana
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+  });
+};
 
   useEffect(() => {
     if (showCheckout && checkoutRef.current) {
@@ -519,27 +660,27 @@ const ShoppingCart: React.FC = () => {
               </p>
             ) : (
               <>
-{/* Select All Atas - Mobile */}
-<div className="flex items-center justify-between mb-3">
-  <div className="flex items-center">
-    <input
-      type="checkbox"
-      className="mr-2 w-4 h-4 custom-checkbox"
-      checked={allSelected}
-      onChange={toggleSelectAll}
-    />
-    <span className="font-poppinsSemiBold text-sm">
-      {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
-    </span>
-  </div>
-  
-  <button
-    onClick={addShippingItem}
-    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full shadow-sm hover:opacity-90 transition"
-  >
-    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
-  </button>
-</div>
+                {/* Select All Atas - Mobile */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="mr-2 w-4 h-4 custom-checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                    />
+                    <span className="font-poppinsSemiBold text-sm">
+                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
+                    </span>
+                  </div>
+                  
+                  <button
+                    onClick={addShippingItem}
+                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-xs px-3 py-1 rounded-full shadow-sm hover:opacity-90 transition"
+                  >
+                    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
+                  </button>
+                </div>
                 
                 {Object.values(groupedProductItems).map((group: any[], idx) => (
                   <div key={idx} className="mb-4 pb-4 last:pb-0 border-b border-gray-200 last:border-b-0">
@@ -548,20 +689,20 @@ const ShoppingCart: React.FC = () => {
                         key={item.cartId}
                         className="flex items-start py-3 space-y-2"
                       >
-<input
-  type="checkbox"
-  className="mr-3 mt-2 w-4 h-4 custom-checkbox"
-  checked={selectedItems.includes(item.cartId)}
-  onChange={(e) => {
-    if (e.target.checked) {
-      setSelectedItems([...selectedItems, item.cartId]);
-    } else {
-      setSelectedItems(
-        selectedItems.filter((id) => id !== item.cartId)
-      );
-    }
-  }}
-/>
+                        <input
+                          type="checkbox"
+                          className="mr-3 mt-2 w-4 h-4 custom-checkbox"
+                          checked={selectedItems.includes(item.cartId)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedItems([...selectedItems, item.cartId]);
+                            } else {
+                              setSelectedItems(
+                                selectedItems.filter((id) => id !== item.cartId)
+                              );
+                            }
+                          }}
+                        />
                         <div className="flex-1">
                           <div className="flex items-start gap-3">
                             <ProductImage src={item.imageUrl || item.image} alt={item.name} />
@@ -630,17 +771,17 @@ const ShoppingCart: React.FC = () => {
                 ))}
                 
                 <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200">
-<label className="flex items-center gap-2 cursor-pointer">
-  <input
-    type="checkbox"
-    checked={allSelected}
-    onChange={toggleSelectAll}
-    className="w-4 h-4 custom-checkbox"
-  />
-  <span className="font-poppinsSemiBold text-sm">
-    {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
-  </span>
-</label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 custom-checkbox"
+                    />
+                    <span className="font-poppinsSemiBold text-sm">
+                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
+                    </span>
+                  </label>
                   <div className="text-right">
                     <p className="font-poppinsSemiBold text-sm">
                       {currentLang === "id" ? "Total" : "Total"} ({selectedItems.length} {currentLang === "id" ? "item" : "items"}):{" "}
@@ -752,99 +893,12 @@ const ShoppingCart: React.FC = () => {
                 </div>
               </div>
 
-              {/* Invoice Section - Mobile */}
-              <div className="bg-white rounded-2xl border border-black p-4 text-xs">
+              {/* Button Send to WhatsApp - Mobile */}
+              <div className="bg-white rounded-2xl border border-black p-4">
                 <h2 className="font-poppinsSemiBold text-sm mb-3 bg-[#dcbec1] px-3 py-1 rounded-full inline-block">
-                  {currentLang === "id" ? "Isi Kwitansi" : "Get Invoice"}
+                  {currentLang === "id" ? "Lanjutkan Pemesanan" : "Continue Order"}
                 </h2>
-                <p className="mb-3 font-poppinsRegular text-sm">
-                  {currentLang === "id" 
-                    ? "Silahkan isi data berikut untuk mendapatkan kwitansi"
-                    : "Please fill the data to get the order invoice:"
-                  }
-                </p>
-                <form onSubmit={handleSubmitInvoice} className="space-y-2 font-poppinsRegular">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-poppinsSemiBold">
-                      {currentLang === "id" ? "Nama perusahaan" : "Company name"}
-                    </label>
-                    <input
-                      type="text"
-                      name="companyName"
-                      value={invoiceData.companyName}
-                      onChange={handleInvoiceChange}
-                      className="border border-black rounded-full px-3 py-2 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center text-sm"
-                      placeholder={currentLang === "id" ? "Nama perusahaan" : "Company name"}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-poppinsSemiBold">
-                      {currentLang === "id" ? "Nama dan Nomor Kontak" : "Name & Contact Person"}
-                    </label>
-                    <input
-                      type="text"
-                      name="contactPerson"
-                      value={invoiceData.contactPerson}
-                      onChange={handleInvoiceChange}
-                      className="border border-black rounded-full px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-poppinsSemiBold">
-                      {currentLang === "id" ? "Order melalui" : "Order via"}
-                    </label>
-                    <input
-                      type="text"
-                      name="orderVia"
-                      value={invoiceData.orderVia}
-                      onChange={handleInvoiceChange}
-                      className="border border-black rounded-full px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-poppinsSemiBold">
-                      {currentLang === "id" ? "Tanggal bayar" : "Payment date"}
-                    </label>
-                    <DateInput
-                      name="paymentDate"
-                      value={invoiceData.paymentDate}
-                      onChange={handleInvoiceChange}
-                      placeholder={currentLang === "id" ? "BCA / Gopay / ..." : "BCA / Gopay / ..."}
-                      className="border border-black rounded-full px-3 py-2 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center text-sm"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-poppinsSemiBold">
-                      {currentLang === "id" ? "Estimasi barang sampai" : "Estimated Product Arrival"}
-                    </label>
-                    <DateInput
-                      name="estimatedArrival"
-                      value={invoiceData.estimatedArrival}
-                      onChange={handleInvoiceChange}
-                      placeholder={currentLang === "id" ? "Pilih tanggal estimasi sampai" : "Select estimated arrival date"}
-                      className="border border-black rounded-full px-3 py-2 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center text-sm"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-poppinsSemiBold">
-                      {currentLang === "id" ? "Bayar melalui" : "Payment transfer via Bank"}
-                    </label>
-                    <input
-                      type="text"
-                      name="paymentMethod"
-                      value={invoiceData.paymentMethod}
-                      onChange={handleInvoiceChange}
-                      className="border border-black rounded-full px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="mt-4 w-full text-sm font-poppinsSemiBold px-6 py-3 bg-[#dcbec1] rounded-full"
-                  >
-                    {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
-                  </button>
-                </form>
-                <p className="mt-12 font-poppinsRegular text-sm">
+                <p className="mb-12 font-poppinsRegular text-sm">
                   {currentLang === "id" ? (
                     <>
                       Jika <span className="font-poppinsSemiBold">MAU BAYAR</span> atau <span className="font-poppinsSemiBold">SUDAH BAYAR</span>, bisa konfirmasi dahulu ke tim Little Amora.
@@ -863,6 +917,15 @@ const ShoppingCart: React.FC = () => {
                     </>
                   )}
                 </p>
+                <button
+                  onClick={handleSendToWhatsApp}
+                  className="w-full bg-[#dcbec1] hover:bg-[#c7a9ac] text-black font-poppinsSemiBold text-sm px-6 py-3 rounded-full shadow-sm transition flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.15-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.76.982.998-3.675-.236-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.9 6.994c-.004 5.45-4.438 9.88-9.888 9.88m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.333.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.333 11.893-11.893 0-3.18-1.24-6.162-3.495-8.411"/>
+                  </svg>
+                  {currentLang === "id" ? "Kirim ke WhatsApp Little Amora" : "Send to Little Amora WhatsApp"}
+                </button>
               </div>
             </div>
           )}
@@ -881,27 +944,27 @@ const ShoppingCart: React.FC = () => {
               </p>
             ) : (
               <>
-{/* Select All Atas */}
-<div className="flex items-center justify-between mb-4">
-  <div className="flex items-center">
-    <input
-      type="checkbox"
-      className="mr-2 custom-checkbox"
-      style={{ width: '16px', height: '16px' }}
-      checked={allSelected}
-      onChange={toggleSelectAll}
-    />
-    <span className="font-poppinsSemiBold">
-      {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
-    </span>
-  </div>
-  <button
-    onClick={addShippingItem}
-    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-sm px-4 py-1 rounded-full shadow-sm hover:opacity-90 transition"
-  >
-    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
-  </button>
-</div>
+                {/* Select All Atas */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="mr-2 custom-checkbox"
+                      style={{ width: '16px', height: '16px' }}
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                    />
+                    <span className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
+                    </span>
+                  </div>
+                  <button
+                    onClick={addShippingItem}
+                    className="bg-[#dcbec1] text-black font-poppinsSemiBold text-sm px-4 py-1 rounded-full shadow-sm hover:opacity-90 transition"
+                  >
+                    {currentLang === "id" ? "Tambah Ongkir" : "Add Shipping"}
+                  </button>
+                </div>
                 
                 {Object.values(groupedProductItems).map((group: any[], idx) => (
                   <div key={idx} className="mb-6 pb-6 last:pb-0">
@@ -910,21 +973,21 @@ const ShoppingCart: React.FC = () => {
                         key={item.cartId}
                         className="flex items-center justify-between py-3"
                       >
-<input
-  type="checkbox"
-  className="mr-3 custom-checkbox"
-  style={{ width: '16px', height: '16px' }}
-  checked={selectedItems.includes(item.cartId)}
-  onChange={(e) => {
-    if (e.target.checked) {
-      setSelectedItems([...selectedItems, item.cartId]);
-    } else {
-      setSelectedItems(
-        selectedItems.filter((id) => id !== item.cartId)
-      );
-    }
-  }}
-/>
+                        <input
+                          type="checkbox"
+                          className="mr-3 custom-checkbox"
+                          style={{ width: '16px', height: '16px' }}
+                          checked={selectedItems.includes(item.cartId)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedItems([...selectedItems, item.cartId]);
+                            } else {
+                              setSelectedItems(
+                                selectedItems.filter((id) => id !== item.cartId)
+                              );
+                            }
+                          }}
+                        />
                         <div className="flex items-center gap-3 flex-1">
                           <ProductImage src={item.imageUrl} alt={item.name} />
                           <ProductName name={item.name} />
@@ -986,17 +1049,17 @@ const ShoppingCart: React.FC = () => {
                 ))}
                 
                 <div className="flex items-center justify-between pt-4 mt-4">
-<label className="flex items-center gap-2 cursor-pointer">
-  <input
-    type="checkbox"
-    checked={allSelected}
-    onChange={toggleSelectAll}
-    className="w-4 h-4 custom-checkbox"
-  />
-  <span className="font-poppinsSemiBold">
-    {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
-  </span>
-</label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 custom-checkbox"
+                    />
+                    <span className="font-poppinsSemiBold">
+                      {currentLang === "id" ? "Pilih semua" : "Select All"} ({productItems.length})
+                    </span>
+                  </label>
                   <div className="text-right">
                     <p className="font-poppinsSemiBold">
                       {currentLang === "id" ? "Total" : "Total"} ({selectedItems.length} {currentLang === "id" ? "item" : "items"}):{" "}
@@ -1108,105 +1171,12 @@ const ShoppingCart: React.FC = () => {
                 </div>
               </div>
 
-              {/* Invoice Section */}
+              {/* Button Send to WhatsApp - Desktop */}
               <div className="text-[13px]">
                 <h2 className="font-poppinsSemiBold text-[15px] mb-4 bg-[#dcbec1] translate-x-[-25px] px-4 py-2 rounded-full inline-block">
-                  {currentLang === "id" ? "Isi Kwitansi" : "Get Invoice"}
+                  {currentLang === "id" ? "Lanjutkan Pemesanan" : "Continue Order"}
                 </h2>
-                <p className="mb-4 font-poppinsRegular">
-                  {currentLang === "id" 
-                    ? "Silahkan isi data berikut untuk mendapatkan kwitansi"
-                    : "Please fill the data to get the order invoice:"
-                  }
-                </p>
-                <form onSubmit={handleSubmitInvoice} className="space-y-1 font-poppinsRegular">
-                  <div className="flex items-center gap-2">
-                    <label className="w-48">
-                      {currentLang === "id" ? "Nama perusahaan" : "Company name"}
-                    </label>
-                    <span>:</span>
-                    <input
-                      type="text"
-                      name="companyName"
-                      value={invoiceData.companyName}
-                      onChange={handleInvoiceChange}
-                      className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-                      placeholder={currentLang === "id" ? "Nama perusahaan" : "Company name"}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="w-48">
-                      {currentLang === "id" ? "Nama dan Nomor Kontak" : "Name & Contact Person"}
-                    </label>
-                    <span>:</span>
-                    <input
-                      type="text"
-                      name="contactPerson"
-                      value={invoiceData.contactPerson}
-                      onChange={handleInvoiceChange}
-                      className="border border-black rounded-full px-4 py-1 flex-1"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="w-48">
-                      {currentLang === "id" ? "Order melalui" : "Order via"}
-                    </label>
-                    <span>:</span>
-                    <input
-                      type="text"
-                      name="orderVia"
-                      value={invoiceData.orderVia}
-                      onChange={handleInvoiceChange}
-                      className="border border-black rounded-full px-4 py-1 flex-1"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="w-48">
-                      {currentLang === "id" ? "Tanggal bayar" : "Payment date"}
-                    </label>
-                    <span>:</span>
-                    <DateInput
-                      name="paymentDate"
-                      value={invoiceData.paymentDate}
-                      onChange={handleInvoiceChange}
-                      placeholder={currentLang === "id" ? "BCA / Gopay / ..." : "BCA / Gopay / ..."}
-                      className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="w-48">
-                      {currentLang === "id" ? "Estimasi barang sampai" : "Estimated Product Arrival"}
-                    </label>
-                    <span>:</span>
-                    <DateInput
-                      name="estimatedArrival"
-                      value={invoiceData.estimatedArrival}
-                      onChange={handleInvoiceChange}
-                      placeholder={currentLang === "id" ? "Pilih tanggal estimasi sampai" : "Select estimated arrival date"}
-                      className="border border-black rounded-full px-4 py-1 flex-1 placeholder-red-500 placeholder:font-poppinsSemiBoldItalic placeholder:text-center"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="w-48">
-                      {currentLang === "id" ? "Bayar melalui" : "Payment transfer via Bank"}
-                    </label>
-                    <span>:</span>
-                    <input
-                      type="text"
-                      name="paymentMethod"
-                      value={invoiceData.paymentMethod}
-                      onChange={handleInvoiceChange}
-                      className="border border-black rounded-full px-4 py-1 flex-1"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="mt-4 translate-x-[-26px] translate-y-7 text-[15px] font-poppinsSemiBold px-6 py-2 bg-[#dcbec1] rounded-full"
-                  >
-                    {currentLang === "id" ? "Kirim untuk mendapatkan kwitansi" : "Submit to get invoice"}
-                  </button>
-                </form>
-                <p className="mt-12 font-poppinsRegular">
+                <p className="font-poppinsRegular text-sm">
                   {currentLang === "id" ? (
                     <>
                       Jika <span className="font-poppinsSemiBold">MAU BAYAR</span> atau <span className="font-poppinsSemiBold">SUDAH BAYAR</span>, bisa konfirmasi dahulu ke tim Little Amora.
@@ -1225,7 +1195,35 @@ const ShoppingCart: React.FC = () => {
                     </>
                   )}
                 </p>
-              </div>
+  
+                  <div className="bg-white rounded-2xl border border-black p-6 mt-4">
+                    <div className="text-center">
+                      <div className="mx-auto flex items-center justify-center w-20 h-20 rounded-full bg-[#dcbec1] mb-4">
+                        <svg className="w-10 h-10 text-black" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.15-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.76.982.998-3.675-.236-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.9 6.994c-.004 5.45-4.438 9.88-9.888 9.88m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.333.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.333 11.893-11.893 0-3.18-1.24-6.162-3.495-8.411"/>
+                        </svg>
+                      </div>
+                      <h3 className="font-poppinsSemiBold text-xl text-gray-800 mb-2">
+                        {currentLang === "id" ? "Hubungi Little Amora" : "Contact Little Amora"}
+                      </h3>
+                      <p className="font-poppinsRegular text-gray-600 mb-6">
+                        {currentLang === "id" 
+                          ? "Kirim detail pesanan Anda ke WhatsApp untuk mendapatkan invoice resmi dan konfirmasi pemesanan."
+                          : "Send your order details to WhatsApp to get official invoice and order confirmation."
+                        }
+                      </p>
+                      <button
+                        onClick={handleSendToWhatsApp}
+                        className="w-full bg-[#dcbec1] hover:bg-[#c7a9ac] text-black font-poppinsSemiBold text-[15px] px-6 py-3 rounded-full shadow-sm transition flex items-center justify-center gap-3"
+                      >
+                        <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.15-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.76.982.998-3.675-.236-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.9 6.994c-.004 5.45-4.438 9.88-9.888 9.88m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.333.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.333 11.893-11.893 0-3.18-1.24-6.162-3.495-8.411"/>
+                        </svg>
+                        {currentLang === "id" ? "Kirim ke WhatsApp Little Amora" : "Send to Little Amora WhatsApp"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
             </div>
           )}
         </main>
