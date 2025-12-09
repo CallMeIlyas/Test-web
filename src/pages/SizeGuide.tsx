@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { allProducts } from "../data/productDataLoader";
 import type { Product } from "../data/productDataLoader";
 
-// 🖼️ Import semua gambar
+// ️ Import semua gambar
 import mainImage1 from "../assets/size-guide/main-image1.png";
 import mainImage2 from "../assets/size-guide/main-image2.png";
 import mainImage3 from "../assets/size-guide/main-image3.png";
@@ -21,8 +21,7 @@ import portofolio from "../assets/size-guide/A.png";
 import cartoon from "../assets/size-guide/B.png"
 import facewithcartoonbody from "../assets/size-guide/C.png"
 
-
-// 🌐 Import gambar berdasarkan bahasa
+// Import gambar berdasarkan bahasa
 // Indonesia
 import size4R_ID from "../assets/size-guide/INDONESIA/4R.png";
 import size6R_ID from "../assets/size-guide/INDONESIA/6R.png";
@@ -54,13 +53,26 @@ const SizeGuide: React.FC = () => {
   const images = [onHand1, onHand2, onHand3, onHand4, onHand5, onHand6];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
 
-  // 🌐 Dapatkan bahasa aktif
+  //  Dapatkan bahasa aktif
   const currentLanguage = i18n.language === "id" || i18n.language === "id-ID" ? "id" : "en";
   
-  // 🗺️ Mapping ukuran ke produk target (sesuaikan dengan produk yang ada)
+  // Check screen size untuk menentukan mobile/desktop
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  //️ Mapping ukuran ke produk target (sesuaikan dengan produk yang ada)
   const sizeToProductMap = [
     { 
       size: "4R", 
@@ -173,7 +185,7 @@ const SizeGuide: React.FC = () => {
     }, 500);
   };
 
-  // ✨ Fade-in observer
+  // Fade-in observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -193,22 +205,22 @@ const SizeGuide: React.FC = () => {
   }, []);
 
   const SectionTitle = ({ title }: { title: string }) => (
-    <div className="relative my-6 mb-8 md:my-8 md:mb-10 text-center w-screen left-1/2 -translate-x-1/2">
-      <h1 className="inline-block px-4 text-4xl font-nataliecaydence relative z-10">
+    <div className={`relative my-6 mb-8 md:my-8 md:mb-10 text-center w-screen left-1/2 -translate-x-1/2 ${isMobile ? 'px-2' : ''}`}>
+      <h1 className={`inline-block px-4 font-nataliecaydence relative z-10 ${isMobile ? 'text-2xl' : 'text-4xl'}`}>
         {title}
       </h1>
-      <div className="absolute top-1/2 left-0 w-[15%] md:w-[20%] border-t-2 md:border-t-4 border-black transform -translate-y-1/2"></div>
-      <div className="absolute top-1/2 right-0 w-[15%] md:w-[20%] border-t-2 md:border-t-4 border-black transform -translate-y-1/2"></div>
+      <div className={`absolute top-1/2 left-0 border-t-2 md:border-t-4 border-black transform -translate-y-1/2 ${isMobile ? 'w-[10%]' : 'w-[15%] md:w-[20%]'}`}></div>
+      <div className={`absolute top-1/2 right-0 border-t-2 md:border-t-4 border-black transform -translate-y-1/2 ${isMobile ? 'w-[10%]' : 'w-[15%] md:w-[20%]'}`}></div>
     </div>
   );
 
-  // 🧭 Navigasi carousel
+  // Navigasi carousel
   const prevImage = () =>
     setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   const nextImage = () =>
     setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
 
-  // 🚫 Nonaktifkan scroll saat fullscreen aktif
+  // Nonaktifkan scroll saat fullscreen aktif
   useEffect(() => {
     if (selectedImage) {
       document.body.style.overflow = "hidden";
@@ -217,6 +229,296 @@ const SizeGuide: React.FC = () => {
     }
   }, [selectedImage]);
 
+  // ========== LAYOUT MOBILE ==========
+  if (isMobile) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-grow">
+          {/* ========== FRAME SIZE ========== */}
+          <section
+            ref={(el) => (sectionsRef.current[0] = el)}
+            className="transition-all duration-700 opacity-0 translate-y-5 px-3"
+          >
+            <SectionTitle title={t("size.frameSize")} />
+            <div className="relative flex justify-center items-center">
+              <img
+                src={mainImage1}
+                alt="Frame Size Base"
+                className="w-full max-w-[95%] object-contain"
+              />
+              <img
+                src={mainImage2}
+                alt="Frame Size Overlay"
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[95%] object-contain pointer-events-none"
+              />
+            </div>
+          </section>
+
+          {/* ========== SIZE COMPARISON ========== */}
+          <section
+            ref={(el) => (sectionsRef.current[1] = el)}
+            className="transition-all duration-700 opacity-0 translate-y-5 px-3 mt-8"
+          >
+            <SectionTitle title={t("size.sizeComparison")} />
+            <div className="flex justify-center">
+              <img
+                src={mainImage3}
+                alt="Size Comparison"
+                className="w-full max-w-[95%] object-contain"
+              />
+            </div>
+          </section>
+
+          {/* ========== SIZE ON HAND (Carousel) ========== */}
+          <section
+            ref={(el) => (sectionsRef.current[2] = el)}
+            className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-6 mb-16 relative"
+          >
+            <SectionTitle title={t("size.sizeOnHand")} />
+          
+          {/* Carousel Mobile */}
+          <div className="relative flex justify-center items-center overflow-visible px-4 py-4">
+            <div className="flex items-center justify-center w-full relative min-h-[160px] mt-2 mb-6">
+              {images.map((img, index) => {
+                const isActive = index === currentIndex;
+                const isNext = index === (currentIndex + 1) % images.length;
+                const isPrev =
+                  index ===
+                  (currentIndex === 0
+                    ? images.length - 1
+                    : currentIndex - 1);
+          
+                const position = isActive
+                  ? "scale-100 opacity-100 z-20"
+                  : isNext
+                  ? "translate-x-[25%] scale-85 opacity-60 z-10"
+                  : isPrev
+                  ? "-translate-x-[25%] scale-85 opacity-60 z-10"
+                  : "opacity-0 pointer-events-none";
+          
+                return (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`On Hand ${index + 1}`}
+                    className={`absolute transition-all duration-500 ease-in-out rounded-md shadow-md cursor-pointer w-[65vw] max-w-[280px] object-cover ${position}`}
+                    onClick={() => setSelectedImage(img)}
+                    style={{
+                      maxHeight: 'calc(100vh - 200px)'
+                    }}
+                  />
+                );
+              })}
+            </div>
+          
+            {/* Tombol navigasi mobile */}
+            <button
+              onClick={prevImage}
+              className="absolute left-2 sm:left-4 bg-white/80 hover:bg-white text-black p-1.5 rounded-full shadow-md z-30"
+              style={{ top: '50%', transform: 'translateY(-50%)' }}
+            >
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-2 sm:right-4 bg-white/80 hover:bg-white text-black p-1.5 rounded-full shadow-md z-30"
+              style={{ top: '50%', transform: 'translateY(-50%)' }}
+            >
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </div>
+          
+            {/* Grid Size Chart Mobile - Sama seperti desktop tapi lebih kecil */}
+            <div className="w-full mt-12 mb-12 px-2">
+              <div className="grid grid-cols-2 gap-2">
+                {sizeToProductMap.map((sizeItem, index) => {
+                  const isLeftColumn = index % 2 === 0;
+                  const isA1orA0 = sizeItem.size === "A1" || sizeItem.size === "A0";
+          
+                  if (isA1orA0) {
+                    return (
+                      <div key={sizeItem.size} className="col-span-2 flex flex-col items-center">
+                        <div
+                          className="relative cursor-pointer hover:opacity-90 transition-opacity duration-300 group w-full"
+                          onClick={() => {
+                            const targetName = sizeItem.target3D.trim().toLowerCase();
+                            const targetProduct = allProducts.find(
+                              (p) => p.category === "3D Frame" && p.name.trim().toLowerCase() === targetName
+                            );
+          
+                            if (targetProduct) {
+                              navigate(`/product/${targetProduct.id}`, {
+                                state: {
+                                  ...targetProduct,
+                                  specialVariations: targetProduct.specialVariations || [],
+                                  details: targetProduct.details || {},
+                                },
+                              });
+                            } else {
+                              navigate("/products?category=3D+Frame");
+                            }
+                          }}
+                        >
+                          <img
+                            src={currentLanguage === "id" ? sizeItem.id : sizeItem.en}
+                            alt={sizeItem.displayName}
+                            className="w-full h-auto object-contain group-hover:scale-[1.02] transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded" />
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  // Untuk ukuran lainnya - layout grid 2 kolom seperti desktop
+                  return (
+                    <div
+                      key={sizeItem.size}
+                      className={`relative cursor-pointer hover:opacity-90 transition-opacity duration-300 group`}
+                      onClick={() => {
+                        const targetName = sizeItem.target3D.trim().toLowerCase();
+                        const targetProduct = allProducts.find(
+                          (p) => p.category === "3D Frame" && p.name.trim().toLowerCase() === targetName
+                        );
+          
+                        if (targetProduct) {
+                          navigate(`/product/${targetProduct.id}`, {
+                            state: {
+                              ...targetProduct,
+                              specialVariations: targetProduct.specialVariations || [],
+                              details: targetProduct.details || {},
+                            },
+                          });
+                        } else {
+                          navigate("/products?category=3D+Frame");
+                        }
+                      }}
+                    >
+                      <img
+                        src={currentLanguage === "id" ? sizeItem.id : sizeItem.en}
+                        alt={sizeItem.displayName}
+                        className="w-full h-auto object-contain group-hover:scale-[1.02] transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded" />
+                      
+                      {/* Tooltip/indikator klik mobile */}
+                      <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[9px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {currentLang === "id" ? "Klik" : "Click"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+          
+          {/*Portofolio Mobile*/}
+          <section
+            ref={(el) => (sectionsRef.current[3] = el)}
+            className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-8 mb-10 relative"
+          >
+            <SectionTitle title={t("size.portofolio")} />
+            <div className="flex justify-center px-3">
+              <img
+                src={portofolio}
+                alt="Portofolio"
+                className="w-full max-w-[95%] object-contain"
+              />
+            </div>
+          </section>
+          
+{/*Badan kartun Mobile*/}
+<section
+  ref={(el) => (sectionsRef.current[4] = el)}
+  className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-8 mb-10 relative"
+>
+  {isMobile ? (
+    <div className="relative my-4 mb-6 text-center w-screen left-1/2 -translate-x-1/2 px-2">
+      <h1 className="inline-block px-4 text-2xl font-nataliecaydence relative z-10 max-w-[70%] mx-auto break-words leading-tight">
+        {t("size.cartoon")}
+      </h1>
+      <div className="absolute top-1/2 left-0 w-[15%] border-t-2 border-black transform -translate-y-1/2"></div>
+      <div className="absolute top-1/2 right-0 w-[15%] border-t-2 border-black transform -translate-y-1/2"></div>
+    </div>
+  ) : (
+    <SectionTitle title={t("size.cartoon")} />
+  )}
+  <div className="flex justify-center px-3">
+    <img
+      src={cartoon}
+      alt="Cartoon Body"
+      className="w-full max-w-[95%] object-contain"
+    />
+  </div>
+</section>
+
+{/*wajah asli dengan badan kartun Mobile*/}
+<section
+  ref={(el) => (sectionsRef.current[5] = el)}
+  className="transition-all duration-700 opacity-0 translate-y-5 w-full mt-8 mb-10 relative"
+>
+  {isMobile ? (
+    <div className="relative my-4 mb-6 text-center w-screen left-1/2 -translate-x-1/2 px-2">
+      <h1 className="inline-block px-4 text-2xl font-nataliecaydence relative z-10 max-w-[60%] mx-auto break-words leading-tight">
+        {t("size.facewithcartoonbody")}
+      </h1>
+      <div className="absolute top-1/2 left-0 w-[10%] border-t-2 border-black transform -translate-y-1/2"></div>
+      <div className="absolute top-1/2 right-0 w-[10%] border-t-2 border-black transform -translate-y-1/2"></div>
+    </div>
+  ) : (
+    <SectionTitle title={t("size.facewithcartoonbody")} />
+  )}
+  <div className="flex justify-center px-3">
+    <img
+      src={facewithcartoonbody}
+      alt="Face with Cartoon Body"
+      className="w-full max-w-[95%] object-contain"
+    />
+  </div>
+</section>
+        </main>
+
+        <Footer />
+
+        {/*  Fullscreen Preview Mobile */}
+        {selectedImage &&
+          ReactDOM.createPortal(
+            <div
+              className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center animate-fadeIn"
+              onClick={() => setSelectedImage(null)}
+            >
+              {/* Tombol close mobile */}
+              <button
+                className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white text-xl font-bold w-7 h-7 rounded-full flex items-center justify-center z-[1000]"
+                onClick={() => setSelectedImage(null)}
+              >
+                ✕
+              </button>
+
+              {/* Gambar tengah mobile */}
+              <div
+                className="relative flex items-center justify-center px-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={selectedImage}
+                  alt="Full view"
+                  className="
+                    object-contain rounded-lg shadow-xl
+                    max-w-[95vw] max-h-[70vh]
+                    transition-transform duration-300 ease-out
+                    scale-100 hover:scale-[1.01]
+                  "
+                />
+              </div>
+            </div>,
+            document.body
+          )}
+      </div>
+    );
+  }
+
+  // ========== LAYOUT DESKTOP ==========
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow">
@@ -446,7 +748,7 @@ const SizeGuide: React.FC = () => {
 
       <Footer />
 
-      {/* ✅ Fullscreen Preview */}
+      {/* Fullscreen Preview */}
       {selectedImage &&
         ReactDOM.createPortal(
           <div

@@ -35,7 +35,7 @@ const Location: React.FC = () => {
       ],
       whatsapp: {
         name: "Claresta",
-        number: "6281373131988",
+        number: "6281380340307",
       },
       address: {
         name: "Little Amora Karikatur Pop Up Frame",
