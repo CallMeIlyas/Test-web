@@ -575,7 +575,7 @@ const SizeGuide: React.FC = () => {
                   (currentIndex === 0
                     ? images.length - 1
                     : currentIndex - 1);
-
+          
                 const position = isActive
                   ? "scale-100 opacity-100 z-20"
                   : isNext
@@ -583,7 +583,7 @@ const SizeGuide: React.FC = () => {
                   : isPrev
                   ? "-translate-x-[20%] md:-translate-x-[15%] scale-90 opacity-70 z-10"
                   : "opacity-0 pointer-events-none";
-
+          
                 return (
                   <img
                     key={index}
@@ -595,19 +595,52 @@ const SizeGuide: React.FC = () => {
                 );
               })}
             </div>
-
-            {/* Tombol navigasi */}
+          
+            {/* Tombol navigasi - responsive dengan media query CSS */}
             <button
               onClick={prevImage}
-              className="absolute left-2 md:left-10 bg-white/70 hover:bg-white text-black p-1 md:p-2 rounded-full shadow-md z-30"
+              className="absolute bg-white/70 hover:bg-white text-black p-2 md:p-3 rounded-full shadow-lg z-30 transition-all hover:scale-110 border border-gray-100 hidden md:block"
+              style={{ 
+                left: 'calc(50% - 20vw - 20px)',
+                top: '50%',
+                transform: 'translateY(-50%)'
+              }}
             >
-              <ChevronLeft className="w-8 h-8 md:w-6 md:h-6" />
+              <ChevronLeft className="w-7 h-7 md:w-8 md:h-8" />
+            </button>
+            <button
+              onClick={prevImage}
+              className="absolute bg-white/70 hover:bg-white text-black p-2 rounded-full shadow-lg z-30 transition-all hover:scale-110 border border-gray-100 md:hidden"
+              style={{ 
+                left: 'calc(50% - 45vw - 20px)',
+                top: '50%',
+                transform: 'translateY(-50%)'
+              }}
+            >
+              <ChevronLeft className="w-7 h-7" />
+            </button>
+          
+            <button
+              onClick={nextImage}
+              className="absolute bg-white/70 hover:bg-white text-black p-2 md:p-3 rounded-full shadow-lg z-30 transition-all hover:scale-110 border border-gray-100 hidden md:block"
+              style={{ 
+                right: 'calc(50% - 20vw - 20px)',
+                top: '50%',
+                transform: 'translateY(-50%)'
+              }}
+            >
+              <ChevronRight className="w-7 h-7 md:w-8 md:h-8" />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-2 md:right-10 bg-white/70 hover:bg-white text-black p-1 md:p-2 rounded-full shadow-md z-30"
+              className="absolute bg-white/70 hover:bg-white text-black p-2 rounded-full shadow-lg z-30 transition-all hover:scale-110 border border-gray-100 md:hidden"
+              style={{ 
+                right: 'calc(50% - 45vw - 20px)',
+                top: '50%',
+                transform: 'translateY(-50%)'
+              }}
             >
-              <ChevronRight className="w-8 h-8 md:w-6 md:h-6" />
+              <ChevronRight className="w-7 h-7" />
             </button>
           </div>
 
