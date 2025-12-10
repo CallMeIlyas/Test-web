@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { useLocation } from "react-router-dom"; 
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagination";
 import type { FilterOptions } from "../../types/types";
@@ -19,10 +20,16 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
   searchQuery,
   sortOption,
 }) => {
+  const location = useLocation(); // Tambahkan ini
   const PRODUCTS_PER_PAGE = 16;
 
-  // ✅ Step 1: Filter products
-  const filteredProducts = useProductFilter(orderedProducts, filters, searchQuery);
+  // ✅ Step 1: Filter products - SEKARANG DENGAN URL PARAMS
+  const filteredProducts = useProductFilter(
+    orderedProducts, 
+    filters, 
+    searchQuery,
+    location.search // Kirim URL search string ke hook
+  );
   
   // ✅ Step 2: Sort products menggunakan useSort yang sudah diperbaiki
   const { sortedProducts } = useSort(filteredProducts);
@@ -73,7 +80,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters, searchQuery, sortOption]);
+  }, [filters, searchQuery, sortOption, location.search]);
 
   return (
     <div className="pb-10 bg-white">

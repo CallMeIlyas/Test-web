@@ -21,17 +21,52 @@ const OurProducts = () => {
     shippedTo: [],
   });
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [sortOption, setSortOption] = useState(""); // State untuk sort
+  const [sortOption, setSortOption] = useState("");
+  
+  // State untuk track apakah ada URL parameters
+  const [hasUrlParams, setHasUrlParams] = useState(false);
 
-  // Apply URL filter
+  // Debug info
+  useEffect(() => {
+    console.log("=== OurProducts Debug ===");
+    console.log("Current URL:", location.search);
+    console.log("SearchQuery from context:", searchQuery);
+    console.log("Current filters:", filters);
+    
+    const params = new URLSearchParams(location.search);
+    console.log("URL params:", {
+      category: params.get("category"),
+      search: params.get("search"),
+      type: params.get("type"),
+      size: params.get("size"),
+      exclude: params.get("exclude")
+    });
+    
+    // Cek apakah ada URL parameters
+    const hasParams = params.toString() !== '';
+    setHasUrlParams(hasParams);
+  }, [location.search, searchQuery, filters]);
+
+  // **PERBAIKAN: HANYA reset filters jika URL berubah dari yang sebelumnya ada parameters**
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const category = params.get("category");
-    if (category) {
-      setFilters(prev => ({
-        ...prev,
-        categories: [category],
-      }));
+    
+    // Jika ada URL parameters, reset UI filters
+    if (params.toString() !== '') {
+      console.log("URL has parameters, resetting UI filters");
+      setFilters({
+        categories: [],
+        shippedFrom: [],
+        shippedTo: [],
+      });
+    }
+  }, [location.search]);
+
+  // Reset sort ketika URL berubah (untuk consistency)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.toString() !== '') {
+      setSortOption("");
     }
   }, [location.search]);
   
@@ -40,7 +75,11 @@ const OurProducts = () => {
       {/* Konten utama */}
       <div className="flex flex-1">
         <div className="hidden md:block">
-          <SidebarFilters onFilterChange={setFilters} />
+          <SidebarFilters 
+            onFilterChange={setFilters} 
+            // Beri tahu SidebarFilters bahwa ada URL params
+            isDisabled={hasUrlParams}
+          />
         </div>
         
         <div className="flex-1">
@@ -50,6 +89,12 @@ const OurProducts = () => {
               sortOption={sortOption}
               onSortChange={setSortOption}
               onOpenFilters={() => setSheetOpen(true)}
+              showReset={hasUrlParams}
+              onReset={() => {
+                // Reset ke URL kosong
+                window.history.pushState({}, '', '/products');
+                setHasUrlParams(false);
+              }}
             />
           </div>
           
@@ -67,6 +112,7 @@ const OurProducts = () => {
         isOpen={sheetOpen}
         onClose={() => setSheetOpen(false)}
         onFilterChange={setFilters}
+        isDisabled={hasUrlParams}
       />
     </div>
   );
