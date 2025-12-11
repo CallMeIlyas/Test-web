@@ -17,7 +17,67 @@ interface Product {
 }
   
 const normalize = (str: string) =>  
-  str.toLowerCase().replace(/[^a-z0-9]/g, "");  
+  str.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+// Daftar kategori yang tersedia di setiap lokasi pengiriman
+const locationCategories: Record<string, string[]> = {
+  "Bogor": ["4R", "15cm", "6R", "20cm", "8R", "10R", "12R", "A2", "A1", "A0"],
+  "Jakarta": ["4R", "15cm", "6R", "8R", "10R", "12R"],
+  "Worldwide": ["4R", "15cm", "6R", "20cm", "8R", "10R", "12R", "A2", "A1", "A0"]
+};
+
+// Mapping dari nama folder ke format yang konsisten
+const categoryMapping: Record<string, string> = {
+  // 2D & 3D Frame digabung
+  "4R": "4R",
+  "15cm": "15cm", 
+  "6R": "6R",
+  "8R": "8R",
+  "10R": "10R",
+  "12R": "12R",
+  "12R by AI": "12R",
+  "15X15CM": "15cm",
+  "20X20CM": "20cm",
+  "A0-80X110CM": "A0",
+  "A1-55X80CM": "A1", 
+  "A2-40X55CM": "A2",
+  "15x15cm": "15cm",
+  "20x20cm": "20cm",
+  "a0-80x110cm": "A0",
+  "a1-55x80cm": "A1",
+  "a2-40x55cm": "A2"
+};
+
+// Normalize category name untuk matching
+const normalizeCategoryForLocation = (subcategory: string | null): string => {
+  if (!subcategory) return "";
+  
+  const mapped = categoryMapping[subcategory];
+  if (mapped) {
+    return mapped.toLowerCase();
+  }
+  
+  const lowerSub = subcategory.toLowerCase();
+  for (const [key, value] of Object.entries(categoryMapping)) {
+    if (key.toLowerCase() === lowerSub) {
+      return value.toLowerCase();
+    }
+  }
+  
+  return lowerSub;
+};
+
+// Cek apakah produk tersedia di lokasi pengiriman yang dipilih
+const isProductAvailableInLocation = (product: Product, location: string): boolean => {
+  const availableCategories = locationCategories[location] || [];
+  const productCategory = normalizeCategoryForLocation(product.subcategory);
+  
+  const isAvailable = availableCategories.some(availableCat => 
+    availableCat.toLowerCase() === productCategory
+  );
+  
+  return isAvailable;
+};  
 
 // Helper untuk parse URL parameters
 const parseUrlParams = (urlParamsString?: string) => {
@@ -29,7 +89,7 @@ const parseUrlParams = (urlParamsString?: string) => {
     size: params.get("size") || "",
     category: params.get("category") || "",
     exclude: params.get("exclude") || "",
-    special_filter: params.get("special_filter") || "" // TAMBAHKAN
+    special_filter: params.get("special_filter") || ""
   };
   
   console.log("=== PARSED URL PARAMS ===");
@@ -66,10 +126,10 @@ const keywordToCategoryMapping: Record<string, string[]> = {
   'tambahan': ['Additional'],
   'additional': ['Additional'],
   
-  // Gift/Hampers
-  'kado': ['2D Frame', '3D Frame'],
-  'hadiah': ['2D Frame', '3D Frame'],
-  'hampers': ['2D Frame', '3D Frame'],
+  // Gift/Hampers - UPDATED: Tambahkan Acrylic Stand
+  'kado': ['2D Frame', '3D Frame', 'Acrylic Stand'],
+  'hadiah': ['2D Frame', '3D Frame', 'Acrylic Stand'],
+  'hampers': ['2D Frame', '3D Frame', 'Acrylic Stand'],
   
   // 2D/3D Type
   '2d': ['2D Frame'],
@@ -91,9 +151,8 @@ const SPECIAL_KEYWORDS = [
   // Acrylic & Plakat
   'acrylic', 'standee', 'acrylic stand', 'plakat',
   
-  // Frame & Size
-  '10r', '12r', '8r', '6r', '4r', '15cm', '20cm', 'a2', 'a1', 'a0',
-  '10', '12', '8', '6', '4', '15', '20',
+  // Frame & Size - hanya yang kategori keyword, bukan nama produk
+  'a2', 'a1', 'a0',
   
   // 2D/3D
   '2d', '2d frame', '3d', '3d frame',
@@ -113,6 +172,48 @@ const SPECIAL_KEYWORDS = [
   // Gift/Hampers
   'kado', 'hadiah', 'hampers',
 ];
+
+// Specific product name keywords - untuk direct product search
+const PRODUCT_NAME_SEARCH: Record<string, { category?: string[], exactMatch?: boolean }> = {
+  // 3D Frame Products
+  '10r': { category: ['3D Frame'] },
+  '12r': { category: ['2D Frame', '3D Frame'] },
+  '12r by ai': { category: ['3D Frame'], exactMatch: true },
+  '15x15cm': { category: ['3D Frame'] },
+  '20x20cm': { category: ['3D Frame'] },
+  '4r': { category: ['2D Frame', '3D Frame'] },
+  '6r': { category: ['2D Frame', '3D Frame'] },
+  '8r': { category: ['2D Frame', '3D Frame'] },
+  'a0-80x110cm': { category: ['3D Frame'] },
+  'a1-55x80cm': { category: ['3D Frame'] },
+  'a2-40x55cm': { category: ['3D Frame'] },
+  
+  // 2D Frame Products
+  '15cm': { category: ['2D Frame'] },
+  
+  // Acrylic Stand Products
+  '2cm': { category: ['Acrylic Stand'] },
+  '3mm': { category: ['Acrylic Stand'] },
+  
+  // Softcopy Design
+  'with background catalog': { category: ['Softcopy Design'], exactMatch: true },
+  'with background custom': { category: ['Softcopy Design'], exactMatch: true },
+  'without background': { category: ['Softcopy Design'], exactMatch: true },
+  
+  // Additional - Biaya Ekspress
+  'biaya ekspress': { category: ['Additional'] },
+  'ekspress': { category: ['Additional'] },
+  
+  // Additional - Biaya Tambahan
+  'background custom': { category: ['Additional'] },
+  'ganti frame': { category: ['Additional'] },
+  'tambahan packing': { category: ['Additional'] },
+  'tambahan lainnya': { category: ['Additional'] },
+  'pose custom': { category: ['Additional'] },
+  'gradasi': { category: ['Additional'] },
+  'foto asli': { category: ['Additional'] },
+  'bold shading': { category: ['Additional'] },
+};
   
 export const useProductFilter = (  
   allProducts: Product[],  
@@ -174,9 +275,6 @@ export const useProductFilter = (
       return result; // RETURN EARLY, skip semua filter lainnya
     }
     
-    // LANJUTKAN DENGAN FILTERING REGULAR...
-    // ... sisa kode yang ada ...
-    
     // 2. Apply URL type filter
     if (urlParams.type) {
       const types = urlParams.type.split(",").map(t => t.trim().toLowerCase());
@@ -219,6 +317,33 @@ export const useProductFilter = (
       });
       
       console.log("After type filter:", result.length);
+    }
+    
+    // 2.5. Apply URL exclude filter
+    if (urlParams.exclude) {
+      const excludeCategories = urlParams.exclude.split(",").map(c => c.trim().toLowerCase());
+      console.log("Applying exclude filter:", excludeCategories);
+      
+      result = result.filter(product => {
+        const productCategory = product.category.toLowerCase();
+        
+        // Check if product category should be excluded
+        const shouldExclude = excludeCategories.some(excludeCat => {
+          // Special handling for category mappings
+          if (excludeCat === 'softcopy') {
+            return productCategory === 'softcopy design';
+          }
+          if (excludeCat === 'acrylic') {
+            return productCategory === 'acrylic stand';
+          }
+          
+          return productCategory.includes(excludeCat) || productCategory === excludeCat;
+        });
+        
+        return !shouldExclude; // Keep product if NOT in exclude list
+      });
+      
+      console.log("After exclude filter:", result.length);
     }
     
     // 3. Apply URL size filter - SUPPORT MULTIPLE SIZES
@@ -311,10 +436,7 @@ export const useProductFilter = (
                 return true;
               }
               
-              // 2. 3D Frame dengan size A2, A1, A0 - hanya jika memenuhi:
-              //    a. Category adalah 3D Frame
-              //    b. Size adalah A2, A1, atau A0
-              //    c. JIKA ada URL type=3d, harus sesuai
+              // 2. 3D Frame dengan size A2, A1, A0
               if (productCategory.includes('3d') || productCategory === '3d frame' || productCategory === '3D Frame') {
                 // Cek size
                 const isSizeA = 
@@ -382,6 +504,25 @@ export const useProductFilter = (
           console.log("After 'softcopy/desain' filter:", result.length);
         }
         // SPECIAL HANDLING UNTUK "ADDITIONAL/TAMBAHAN"
+        else if (queryLower.includes('tambahan wajah')) {
+          console.log("Special handling for 'tambahan wajah' keyword - showing specific product only");
+          
+          result = result.filter(product => {
+            const productName = product.name.toLowerCase();
+            const productDisplayName = product.displayName?.toLowerCase() || '';
+            
+            // Hanya tampilkan produk "Additional BIAYA TAMBAHAN WAJAH KARIKATUR"
+            return (
+              productName.includes('biaya tambahan wajah karikatur') ||
+              productName.includes('tambahan wajah karikatur') ||
+              productDisplayName.includes('biaya tambahan wajah karikatur') ||
+              productDisplayName.includes('tambahan wajah karikatur')
+            );
+          });
+          
+          console.log("After 'tambahan wajah' filter:", result.length);
+          console.log("Filtered products:", result.map(p => p.name));
+        }
         else if (queryLower.includes('tambahan') || queryLower.includes('additional')) {
           console.log("Special handling for 'tambahan/additional' keyword");
           
@@ -434,33 +575,70 @@ export const useProductFilter = (
       } else {
         // REGULAR text search (not a special keyword)
         console.log("This is a regular text search");
-        const query = normalize(effectiveSearch);  
         
-        result = result.filter((product) => {
-          const nameNorm = normalize(product.name);  
-          const displayNameNorm = product.displayName ? normalize(product.displayName) : "";
-          const categoryNorm = normalize(product.category);  
-          const subcategoryNorm = normalize(product.subcategory || "");  
-          const pathNorm = normalize(product.fullPath);
-          const sizeNorm = normalize(product.size);
-
-          // Khusus untuk pencarian "softcopy" atau "desain" di regular search
-          if (query.includes('softcopy') || query.includes('desain')) {
-            const productCategory = product.category.toLowerCase();
-            return productCategory === 'softcopy design';
-          }
+        // Check if query matches a specific product name
+        let matchedProductSearch = false;
+        
+        for (const [productKeyword, searchConfig] of Object.entries(PRODUCT_NAME_SEARCH)) {
+          const isMatch = searchConfig.exactMatch 
+            ? queryLower === productKeyword.toLowerCase()
+            : queryLower.includes(productKeyword.toLowerCase());
           
-          return (  
-            nameNorm.includes(query) ||  
-            displayNameNorm.includes(query) ||
-            categoryNorm.includes(query) ||  
-            subcategoryNorm.includes(query) ||  
-            pathNorm.includes(query) ||
-            sizeNorm.includes(query)
-          );
-        });
+          if (isMatch) {
+            console.log(`Found product name match: ${productKeyword}`, searchConfig);
+            matchedProductSearch = true;
+            
+            // Filter by product name and category
+            result = result.filter(product => {
+              const productName = product.name.toLowerCase();
+              const productCategory = product.category.toLowerCase();
+              
+              // Check if category matches (if specified)
+              const categoryMatch = searchConfig.category 
+                ? searchConfig.category.some(cat => productCategory === cat.toLowerCase() || productCategory.includes(cat.toLowerCase()))
+                : true;
+              
+              // Check if product name contains the keyword
+              const nameMatch = productName.includes(productKeyword.toLowerCase());
+              
+              return categoryMatch && nameMatch;
+            });
+            
+            console.log(`After product name search '${productKeyword}':`, result.length);
+            break; // Stop after first match
+          }
+        }
         
-        console.log("After text search filter:", result.length);
+        // If no product name match, do regular text search
+        if (!matchedProductSearch) {
+          const query = normalize(effectiveSearch);  
+          
+          result = result.filter((product) => {
+            const nameNorm = normalize(product.name);  
+            const displayNameNorm = product.displayName ? normalize(product.displayName) : "";
+            const categoryNorm = normalize(product.category);  
+            const subcategoryNorm = normalize(product.subcategory || "");  
+            const pathNorm = normalize(product.fullPath);
+            const sizeNorm = normalize(product.size);
+
+            // Khusus untuk pencarian "softcopy" atau "desain" di regular search
+            if (query.includes('softcopy') || query.includes('desain')) {
+              const productCategory = product.category.toLowerCase();
+              return productCategory === 'softcopy design';
+            }
+            
+            return (  
+              nameNorm.includes(query) ||  
+              displayNameNorm.includes(query) ||
+              categoryNorm.includes(query) ||  
+              subcategoryNorm.includes(query) ||  
+              pathNorm.includes(query) ||
+              sizeNorm.includes(query)
+            );
+          });
+          
+          console.log("After text search filter:", result.length);
+        }
       }
     }
     
@@ -516,7 +694,9 @@ export const useProductFilter = (
       console.log("Applying shipped from filters:", filters.shippedFrom);
       result = result.filter(product => {
         const matchShippedFrom = filters.shippedFrom.some(location => {
-          return product.shippedFrom.includes(location);
+          const locationAvailable = product.shippedFrom.includes(location);
+          const categoryAvailable = isProductAvailableInLocation(product, location);
+          return locationAvailable && categoryAvailable;
         });
         
         return matchShippedFrom;
@@ -529,7 +709,9 @@ export const useProductFilter = (
       console.log("Applying shipped to filters:", filters.shippedTo);
       result = result.filter(product => {
         const matchShippedTo = filters.shippedTo.some(destination => {
-          return product.shippedTo.includes(destination);
+          const destinationMatch = product.shippedTo.includes(destination);
+          const categoryAvailable = isProductAvailableInLocation(product, destination);
+          return destinationMatch && categoryAvailable;
         });
         
         return matchShippedTo;

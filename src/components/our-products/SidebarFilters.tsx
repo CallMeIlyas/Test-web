@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { FC } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import SplitBorder from "./SplitBorder";
 import type { FilterOptions } from "../../types/types";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 
 interface SidebarFiltersProps {
   onFilterChange: React.Dispatch<React.SetAction<FilterOptions>>;
@@ -15,6 +16,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
   onMobileCategoryClick 
 }) => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [selectedMainCategories, setSelectedMainCategories] = useState<Set<string>>(new Set());
@@ -32,6 +34,13 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
     [t("side.categories.softcopy")]: "Softcopy Design",
   };
 
+  // Reverse mapping: Category → UI
+  const categoryToUiMap: Record<string, string> = Object.entries(uiToCategoryMap)
+    .reduce((acc, [ui, category]) => {
+      acc[category] = ui;
+      return acc;
+    }, {} as Record<string, string>);
+
   // 3D subcategories → Product name
   const threeDSizeToNameMap: Record<string, string> = {
     "12R": "12R",
@@ -46,6 +55,13 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
     "A0": "A0-80X110CM"
   };
 
+  // Reverse mapping untuk 3D
+  const threeDNameToSizeMap: Record<string, string> = Object.entries(threeDSizeToNameMap)
+    .reduce((acc, [size, name]) => {
+      acc[name] = size;
+      return acc;
+    }, {} as Record<string, string>);
+
   // 2D subcategories → Product name
   const twoDSizeToNameMap: Record<string, string> = {
     "12R": "12R",
@@ -54,6 +70,13 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
     "6R": "6R",
     "8R": "8R"
   };
+
+  // Reverse mapping untuk 2D
+  const twoDNameToSizeMap: Record<string, string> = Object.entries(twoDSizeToNameMap)
+    .reduce((acc, [size, name]) => {
+      acc[name] = size;
+      return acc;
+    }, {} as Record<string, string>);
 
   // Other subcategories → Product name
   const otherSubcategoryToNameMap: Record<string, Record<string, string>> = {
@@ -72,6 +95,15 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
     }
   };
 
+  // Reverse mapping untuk other categories
+  const otherNameToSubcategoryMap: Record<string, Record<string, string>> = {};
+  Object.entries(otherSubcategoryToNameMap).forEach(([mainCat, subMap]) => {
+    otherNameToSubcategoryMap[mainCat] = {};
+    Object.entries(subMap).forEach(([subcat, name]) => {
+      otherNameToSubcategoryMap[mainCat][name] = subcat;
+    });
+  });
+
   // ===== UI CONFIGURATION =====
   const customCategories = {
     [t("side.categories.3d")]: [
@@ -87,8 +119,12 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
       "A0"
     ],
     [t("side.categories.2d")]: [
+      "12R",
+      "15cm",
+      "4R", 
+      "6R",
+      "8R"
     ],
-    
     [t("side.categories.additional")]: [
       t("side.subcategories.backgroundCustom") || "Background Custom",
       t("side.subcategories.additionalFaces") || "Additional Faces"
@@ -103,6 +139,30 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
       t("side.subcategories.withoutBackground") || "Without Background"
     ]
   };
+
+  // ===== SYNC STATE DENGAN URL =====
+  useEffect(() => {
+    // Reset semua state filter ketika ada parameter search
+    // atau ketika URL berubah secara signifikan
+    const searchQuery = searchParams.get('search');
+    const typeParam = searchParams.get('type');
+    const excludeParam = searchParams.get('exclude');
+
+    if (searchQuery || typeParam || excludeParam) {
+      // Reset semua state filter
+      setSelectedMainCategories(new Set());
+      setSelectedSubcategories(new Set());
+      setSelectedShippedFrom(new Set());
+      setSelectedShippedTo(new Set());
+      
+      // Reset filter options ke parent component
+      onFilterChange({
+        categories: [],
+        shippedFrom: [],
+        shippedTo: []
+      });
+    }
+  }, [searchParams.toString()]); // Trigger ketika URL berubah
 
   const toggleCategory = (category: string) => {
     setExpandedCategories((prev) => {

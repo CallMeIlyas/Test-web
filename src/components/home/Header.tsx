@@ -52,81 +52,60 @@ const handleSearch = () => {
   // Normalize search query untuk mapping
   const normalizedQuery = value.trim().toLowerCase();
   
-// Update bagian keywordMapping di Header.tsx
-const keywordMapping: Record<string, { 
-  type?: string, 
-  size?: string, 
-  category?: string,
-  excludeCategories?: string[] 
-}> = {
-  // === SIZE SEARCH ===
-  '10': { type: '2d,3d', size: '10R' },
-  '12': { type: '2d,3d', size: '12R' },
-  '8': { type: '2d,3d', size: '8R' },
-  '6': { type: '2d,3d', size: '6R' },
-  '4': { type: '2d,3d', size: '4R' },
-  '15': { type: '2d,3d', size: '15cm' },
-  '20': { type: '2d,3d', size: '20cm' },
-  
-  '10r': { type: '2d,3d', size: '10R' },
-  '12r': { type: '2d,3d', size: '12R' },
-  '8r': { type: '2d,3d', size: '8R' },
-  '6r': { type: '2d,3d', size: '6R' },
-  '4r': { type: '2d,3d', size: '4R' },
-  '15cm': { type: '2d,3d', size: '15cm' },
-  '20cm': { type: '2d,3d', size: '20cm' },
-  'a2': { type: '3d', size: 'A2' },
-  'a1': { type: '3d', size: 'A1' },
-  'a0': { type: '3d', size: 'A0' },
-  
-  // === 2D/3D TYPE ===
-  '2d frame': { type: '2d' },
-  '2d': { type: '2d' },
-  '3d frame': { type: '3d' },
-  '3d': { type: '3d' },
-  
-  // === FRAME/BINGKAI ===
-  'frame': { type: '2d,3d', excludeCategories: ['additional'] },
-  'bingkai': { type: '2d,3d', excludeCategories: ['additional'] },
-  
-  // === KARIKATUR/FOTO ===
-  'karikatur': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
-  'caricature': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
-  'foto': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
-  'pop up frame': { type: '3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
-  
-  // === KACA ===
-  'kaca': { 
-    type: '2d,3d', 
-    excludeCategories: ['additional', 'softcopy', 'acrylic stand'],
-  },
-  
-  // === ACRYLIC === (HANYA 'acrylic' yang dapat A2,A1,A0)
-  'acrylic': { 
-    type: '3d',  // Tipe 3D untuk A2, A1, A0
-    size: 'A2,A1,A0',  // Hanya acrylic yang dapat size A2,A1,A0
-    // TIDAK ADA excludeCategories untuk acrylic
-  },
-  'standee': { category: 'acrylic stand' },  // Hanya acrylic stand
-  'acrylic stand': { category: 'acrylic stand' },  // Hanya acrylic stand
-  'plakat': { category: 'acrylic stand' },  // Hanya acrylic stand
-  
-  // === SOFTCOPY/DESAIN ===
-  'softcopy': { category: 'softcopy' },
-  'desain aja': { category: 'softcopy' },
-  'desain': { category: 'softcopy' },
-  'desain saja': { category: 'softcopy' },
-  
-  // === ADDITIONAL ===
-  'tambahan wajah': { category: 'additional' },
-  'tambahan': { category: 'additional' },
-  'additional': { category: 'additional' },
-  
-  // === GIFT/HADIAH ===
-  'kado': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
-  'hadiah': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
-  'hampers': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
-};
+  // List of CATEGORY keywords only (bukan product names)
+  const categoryKeywordMapping: Record<string, { 
+    type?: string, 
+    size?: string, 
+    category?: string,
+    excludeCategories?: string[] 
+  }> = {
+    // === 2D/3D TYPE ===
+    '2d frame': { type: '2d' },
+    '2d': { type: '2d' },
+    '3d frame': { type: '3d' },
+    '3d': { type: '3d' },
+    
+    // === FRAME/BINGKAI ===
+    'frame': { type: '2d,3d', excludeCategories: ['additional'] },
+    'bingkai': { type: '2d,3d', excludeCategories: ['additional'] },
+    
+    // === KARIKATUR/FOTO ===
+    'karikatur': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
+    'caricature': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
+    'foto': { type: '2d,3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
+    'pop up frame': { type: '3d', excludeCategories: ['additional', 'softcopy', 'acrylic stand'] },
+    
+    // === KACA ===
+    'kaca': { 
+      type: '2d,3d', 
+      excludeCategories: ['additional', 'softcopy', 'acrylic stand'],
+    },
+    
+    // === ACRYLIC === (HANYA 'acrylic' yang dapat A2,A1,A0)
+    'acrylic': { 
+      type: '3d',
+      size: 'A2,A1,A0',
+    },
+    'standee': { category: 'acrylic stand' },
+    'acrylic stand': { category: 'acrylic stand' },
+    'plakat': { category: 'acrylic stand' },
+    
+    // === SOFTCOPY/DESAIN ===
+    'softcopy': { category: 'softcopy' },
+    'desain aja': { category: 'softcopy' },
+    'desain': { category: 'softcopy' },
+    'desain saja': { category: 'softcopy' },
+    
+    // === ADDITIONAL ===
+    'tambahan wajah': { category: 'additional' },
+    'tambahan': { category: 'additional' },
+    'additional': { category: 'additional' },
+    
+    // === GIFT/HADIAH ===
+    'kado': { excludeCategories: ['additional', 'softcopy'] },
+    'hadiah': { excludeCategories: ['additional', 'softcopy'] },
+    'hampers': { excludeCategories: ['additional', 'softcopy'] },
+  };
 
   // Reset input setelah search
   if (isMobile && mobileSearchInputRef.current) {
@@ -140,64 +119,62 @@ const keywordMapping: Record<string, {
     setMenuOpen(false);
   }
 
-// Cari keyword yang cocok - URUTKAN DARI YANG TERPANJANG DULU
-const keywordEntries = Object.entries(keywordMapping);
+  // Cari keyword yang cocok - URUTKAN DARI YANG TERPANJANG DULU
+  const keywordEntries = Object.entries(categoryKeywordMapping);
 
-// Sort dari keyword terpanjang ke terpendek
-keywordEntries.sort((a, b) => b[0].length - a[0].length);
+  // Sort dari keyword terpanjang ke terpendek
+  keywordEntries.sort((a, b) => b[0].length - a[0].length);
 
-let matchedKeyword = '';
-let mapping = null;
+  let matchedKeyword = '';
+  let mapping = null;
 
-for (const [keyword, keywordMappingValue] of keywordEntries) {
-  if (normalizedQuery.includes(keyword.toLowerCase())) {
-    matchedKeyword = keyword;
-    mapping = keywordMappingValue;
-    console.log(`Matched keyword: ${keyword} (length: ${keyword.length})`);
-    break;
+  for (const [keyword, keywordMappingValue] of keywordEntries) {
+    if (normalizedQuery.includes(keyword.toLowerCase())) {
+      matchedKeyword = keyword;
+      mapping = keywordMappingValue;
+      console.log(`Matched category keyword: ${keyword} (length: ${keyword.length})`);
+      break;
+    }
   }
-}
 
   // Bangun query parameters
   const params = new URLSearchParams();
   
-if (matchedKeyword && mapping) {
-  console.log(`Found keyword match: ${matchedKeyword}`, mapping);
-  
-  // SPECIAL HANDLING UNTUK "ACRYLIC"
-  if (matchedKeyword === 'acrylic') {
-    console.log("Special handling for 'acrylic' keyword");
-    params.append('type', '3d');
-    params.append('size', 'A2,A1,A0');
-    params.append('special_filter', 'acrylic_plus_a_frames'); // PARAMETER KHUSUS
-    if (value) params.append('search', value);
-  } else {
-    // Keyword lainnya
-    if (mapping.type) {
-      params.append('type', mapping.type);
+  if (matchedKeyword && mapping) {
+    console.log(`Found category keyword match: ${matchedKeyword}`, mapping);
+    
+    // SPECIAL HANDLING UNTUK "ACRYLIC"
+    if (matchedKeyword === 'acrylic') {
+      console.log("Special handling for 'acrylic' keyword");
+      params.append('type', '3d');
+      params.append('size', 'A2,A1,A0');
+      params.append('special_filter', 'acrylic_plus_a_frames');
+      if (value) params.append('search', value);
+    } else {
+      // Keyword lainnya
+      if (mapping.type) {
+        params.append('type', mapping.type);
+      }
+      
+      if (mapping.size) params.append('size', mapping.size);
+      
+      if (mapping.category) {
+        params.append('category', mapping.category);
+      }
+      
+      if (mapping.excludeCategories && mapping.excludeCategories.length > 0) {
+        params.append('exclude', mapping.excludeCategories.join(','));
+      }
+      
+      if (value) params.append('search', value);
     }
+  } 
+  else if (normalizedQuery) {
+    // NO KEYWORD MATCH - Let useProductFilter handle product name search
+    console.log("No category keyword match - passing search query directly to filter");
     
-    if (mapping.size) params.append('size', mapping.size);
-    
-    if (mapping.category) {
-      params.append('category', mapping.category);
-    }
-    
-    if (mapping.excludeCategories && mapping.excludeCategories.length > 0) {
-      params.append('exclude', mapping.excludeCategories.join(','));
-    }
-    
-    if (value) params.append('search', value);
-  }
-} 
-else if (normalizedQuery) {
-    // Default: tampilkan semua produk kecuali additional
-    console.log("No keyword match, using default filters");
-    
-    // Untuk search non-keyword, tampilkan 2D dan 3D saja (exclude additional)
-    params.append('type', '2d,3d');
-    params.append('exclude', 'additional'); // HANYA additional, TIDAK softcopy
-    if (value) params.append('search', value);
+    // Just pass the search query, let useProductFilter handle it
+    params.append('search', value);
   } else {
     // Empty search, just go to products
     console.log("Empty search, redirecting to products");
