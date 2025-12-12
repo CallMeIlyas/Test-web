@@ -642,13 +642,11 @@ export const useProductFilter = (
       }
     }
     
-    // === APPLY REGULAR FILTERS (dari UI filter, bukan URL) ===
+    // === APPLY REGULAR FILTERS (dari UI filter) ===
+    // UI filters SELALU diterapkan jika ada selection dari sidebar
     
-    // Hanya apply UI category filter jika TIDAK ada search parameter aktif dari URL
-    const hasActiveSearchParams = urlParams.search || urlParams.type || urlParams.size || urlParams.category;
-    
-    if (filters.categories.length > 0 && !hasActiveSearchParams) {  
-      console.log("Applying UI category filters (no active URL search):", filters.categories);
+    if (filters.categories.length > 0) {  
+      console.log("Applying UI category filters:", filters.categories);
       result = result.filter((product) => {
         const matchCategory = filters.categories.some((filterCat) => {  
           const normalizedProductCategory = product.category.toLowerCase();  

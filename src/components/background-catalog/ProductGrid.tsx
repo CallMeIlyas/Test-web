@@ -9,12 +9,14 @@ interface Product {
   name: string;
   size: string;
   category: string;
+  folder: string;
 }
 
 // --- Mapping folder → kategori ---
 const folderToCategory: Record<string, string> = {
   "company-office-brand": "Company/Office/Brand",
   "goverment-police": "Goverment/Police",
+  "government-police": "Goverment/Police",
   "oil-construction-ship": "Oil/Construction/Ship",
   "hospital-medical": "Hospital/Medical",
   "graduation-school-children": "Graduation/School/Children",
@@ -54,6 +56,7 @@ const allProducts: Product[] = Object.keys(allImages).map((path, i) => {
     name: productName,
     size: `${30 + (i % 10)}x${40 + (i % 10)}cm`,
     category: folderToCategory[folder] || "Others",
+    folder: folder
   };
 });
 
@@ -73,14 +76,10 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
 
   // --- Helper: Check if product is frequently used ---
   const isFrequentlyUsed = (product: Product): boolean => {
-    // Cek apakah nama produk ada di daftar frequently used
     const isInList = FREQUENTLY_USED_NAMES.some(name => 
       product.name.toUpperCase().includes(name.toUpperCase())
     );
-    
-    // ATAU apakah dari kategori Company/Office/Brand
     const isCompanyCategory = product.category === "Company/Office/Brand";
-    
     return isInList || isCompanyCategory;
   };
 
@@ -88,31 +87,85 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
   const filteredProducts = allProducts.filter((product) => {
     // 1. Filter berdasarkan sortOption (frequently/rarely)
     if (sortOption === "frequently-used") {
-      if (!isFrequentlyUsed(product)) {
-        return false;
-      }
+      if (!isFrequentlyUsed(product)) return false;
     } else if (sortOption === "rarely-used") {
-      if (isFrequentlyUsed(product)) {
-        return false;
-      }
+      if (isFrequentlyUsed(product)) return false;
     }
 
     // 2. Filter kategori (dari sidebar)
-    if (filters.categories.length > 0 && !filters.categories.includes(product.category)) {
-      return false;
+    if (filters.categories.length > 0) {
+      const productCategoryLower = product.category.toLowerCase();
+      const hasMatch = filters.categories.some(filterCat => 
+        productCategoryLower.includes(filterCat.toLowerCase()) ||
+        filterCat.toLowerCase().includes(productCategoryLower)
+      );
+      
+      if (!hasMatch) return false;
     }
     
     // 3. Filter search
-    if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
+    if (searchQuery && searchQuery.trim() !== "") {
+      const normalizedSearch = searchQuery.toLowerCase().trim();
+      
+      // Cari di berbagai field dengan logika partial match
+      const searchInName = product.name.toLowerCase().includes(normalizedSearch);
+      const searchInCategory = product.category.toLowerCase().includes(normalizedSearch);
+      const searchInFolder = product.folder.toLowerCase().includes(normalizedSearch);
+      
+      // Juga coba cari dengan menghapus tanda baca/spasi
+      const cleanName = product.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanSearch = normalizedSearch.replace(/[^a-z0-9]/g, '');
+      const searchInCleanName = cleanName.includes(cleanSearch);
+      
+      // Untuk keyword khusus seperti "TNI", "PNS", "suster", cari di kategori yang sesuai
+      let searchInKeywords = false;
+      
+      // Mapping keyword ke kategori yang mungkin
+      const keywordToCategoryMapping: Record<string, string[]> = {
+        'tni': ['goverment', 'police', 'militer', 'tentara'],
+        'pns': ['company', 'office', 'brand', 'kantor'],
+        'suster': ['hospital', 'medical', 'medis', 'dokter'],
+        'dokter': ['hospital', 'medical', 'medis'],
+        'polisi': ['goverment', 'police'],
+        'karyawan': ['company', 'office', 'brand'],
+        'pegawai': ['company', 'office', 'brand'],
+        'bos': ['company', 'office', 'brand'],
+        'manager': ['company', 'office', 'brand'],
+        'direktur': ['company', 'office', 'brand'],
+        'wisuda': ['graduation', 'school'],
+        'sekolah': ['graduation', 'school', 'children'],
+        'anak': ['graduation', 'school', 'children'],
+        'ultah': ['couple', 'wedding', 'birthday'],
+        'nikah': ['couple', 'wedding', 'birthday'],
+        'olahraga': ['sport'],
+        'gym': ['sport'],
+        'travel': ['travel', 'place', 'country', 'culture'],
+        'liburan': ['travel', 'place', 'country', 'culture'],
+        'cafe': ['indoor', 'cafe', 'kitchen'],
+        'restoran': ['indoor', 'cafe', 'kitchen'],
+      };
+      
+      // Cek jika search query adalah keyword yang punya mapping
+      if (keywordToCategoryMapping[normalizedSearch]) {
+        const possibleCategories = keywordToCategoryMapping[normalizedSearch];
+        searchInKeywords = possibleCategories.some(keyword => 
+          product.category.toLowerCase().includes(keyword) ||
+          product.folder.toLowerCase().includes(keyword)
+        );
+      }
+      
+      // Gabungkan semua kemungkinan pencarian
+      const hasMatch = searchInName || searchInCategory || searchInFolder || 
+                      searchInCleanName || searchInKeywords;
+      
+      if (!hasMatch) return false;
     }
     
     return true;
   });
 
-  // --- Sorting (alphabetical + priority for frequently used) ---
+  // --- Sorting ---
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    // Jika sortOption adalah "frequently-used", prioritaskan gambar spesifik
     if (sortOption === "frequently-used") {
       const aIsSpecific = FREQUENTLY_USED_NAMES.some(name => 
         a.name.toUpperCase().includes(name.toUpperCase())
@@ -121,12 +174,8 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
         b.name.toUpperCase().includes(name.toUpperCase())
       );
 
-      // Jika a adalah gambar spesifik tapi b bukan, a lebih dulu
       if (aIsSpecific && !bIsSpecific) return -1;
-      // Jika b adalah gambar spesifik tapi a bukan, b lebih dulu
       if (!aIsSpecific && bIsSpecific) return 1;
-
-      // Jika keduanya gambar spesifik, urutkan sesuai urutan di FREQUENTLY_USED_NAMES
       if (aIsSpecific && bIsSpecific) {
         const aIndex = FREQUENTLY_USED_NAMES.findIndex(name => 
           a.name.toUpperCase().includes(name.toUpperCase())
@@ -136,16 +185,13 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
         );
         return aIndex - bIndex;
       }
-
-      // Jika keduanya bukan gambar spesifik, sort alphabetically
       return a.name.localeCompare(b.name);
     }
 
-    // Sorting biasa untuk option lainnya
     if (sortOption === "name-asc") return a.name.localeCompare(b.name);
     if (sortOption === "name-desc") return b.name.localeCompare(a.name);
-    if (sortOption === "size-asc") return a.size.localeCompare(b.size);
-    if (sortOption === "size-desc") return b.size.localeCompare(a.size);
+    if (sortOption === "size-asc") return a.size.localeCompare(a.size);
+    if (sortOption === "size-desc") return b.size.localeCompare(b.size);
     return 0;
   });
 
@@ -162,7 +208,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
 
   return (
     <div className="pb-10 bg-white">
-      {/* Product Grid - responsive */}
+      {/* Product Grid */}
       <div className="
         grid 
         grid-cols-2 
@@ -192,11 +238,13 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
       </div>
 
       {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+      {sortedProducts.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 };

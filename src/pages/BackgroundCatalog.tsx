@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Footer from '../components/home/Footer';
 import Sidebar from '../components/background-catalog/SidebarFilters';
 import ProductGrid from '../components/background-catalog/ProductGrid';
 import MobileFilterSheet from '../components/background-catalog/MobileFilterSheet';
-import SortControls from '../components/background-catalog/SortControls'; // Import SortControls
+import SortControls from '../components/background-catalog/SortControls';
 import type { FilterOptions } from '../types/types';
 import NoteIcon from "../assets/Icons/NOTES.png";
 
@@ -12,18 +13,28 @@ interface BackgroundCatalogProps {
 }
 
 const BackgroundCatalog: React.FC<BackgroundCatalogProps> = ({ searchQuery = "" }) => {
+  const location = useLocation();
   const [filters, setFilters] = useState<FilterOptions>({
     categories: [],
     shippedFrom: [],
     shippedTo: []
   });
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [sortOption, setSortOption] = useState("all"); // State untuk sort
+  const [sortOption, setSortOption] = useState("all");
+  const [urlSearchQuery, setUrlSearchQuery] = useState("");
+
+  // Extract search query dari URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const urlSearch = searchParams.get('search') || "";
+    setUrlSearchQuery(urlSearch);
+  }, [location.search]);
+
+  // Gabungkan search query dari props dan URL
+  const combinedSearchQuery = searchQuery || urlSearchQuery;
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* HAPUS tombol filter mobile statis dari sini */}
-
       {/* Main Content */}
       <div className="flex flex-1">
         {/* Sidebar - hidden di mobile */}
@@ -38,14 +49,14 @@ const BackgroundCatalog: React.FC<BackgroundCatalogProps> = ({ searchQuery = "" 
             <SortControls 
               sortOption={sortOption}
               onSortChange={setSortOption}
-              onOpenFilters={() => setSheetOpen(true)} // Tambahkan prop ini
+              onOpenFilters={() => setSheetOpen(true)}
             />
           </div>
           
           <ProductGrid 
             filters={filters} 
-            searchQuery={searchQuery} 
-            sortOption={sortOption} // Teruskan sortOption ke ProductGrid
+            searchQuery={combinedSearchQuery} // Gunakan combined search query
+            sortOption={sortOption}
           />
         </div>
       </div>
