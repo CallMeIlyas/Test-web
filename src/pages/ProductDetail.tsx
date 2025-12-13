@@ -18,6 +18,7 @@ import { allProducts } from "../data/productDataLoader";
 import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import productOptions from "../data/productOptions";
+import { getProductDescription, getProductTitle } from "../data/productDescriptions";
 
 // Helper function to determine variations based on category and size
 const getProductVariations = (category: string, name: string): string[] => {
@@ -119,48 +120,6 @@ const formatProductName = (name: string): string => {
   return name;
 };
 
-// Mock fallback data
-const MOCK_PRODUCT_DATA = {
-  shipped: "Jakarta",
-  details: {
-    "Greeting card": "Artcarton 310gr 1 side 10x15cm",
-    "Black Envelope": "Aster black 150gsm A6 11x16,2cm",
-    "Frame material": "Wood, Glass, back side MDF 2-3mm",
-    "Overall frame size": "Â±35x45x4cm",
-    "Depth": "Â± 2.5-3cm",
-    "Frame Color": "White",
-    Packing: "Black Hardbox+Paperbag",
-  },
-  additionalProducts: [
-    {
-      id: "add1",
-      name: "Additional Faces",
-      price: getAdditionalPrice("Additional Faces"),
-      imageUrl: "https://i.ibb.co/6yFbq5Y/original-palette.jpg",
-      attributes: { isFace: true },
-    },
-    {
-      id: "add2",
-      name: "Background Custom",
-      price: 62800,
-      imageUrl: new URL(
-        "../assets/bg-catalog/goverment-police/KA-MAY23-01.jpg",
-        import.meta.url
-      ).href,
-      attributes: { isBackground: true },
-    },
-    {
-      id: "add3",
-      name: "Additional Packing",
-      price: 52800,
-      imageUrl: new URL(
-        "../assets/list-products/3D/A0-80X110CM/PACKING AIR COLUMN BAGS.jpg",
-        import.meta.url
-      ).href,
-    },
-  ],
-};
-
 const ProductDetail = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
@@ -206,109 +165,122 @@ const ProductDetail = () => {
   const [selectedExpressOption, setSelectedExpressOption] = useState<string>("");
   const [selectedAcrylicOption, setSelectedAcrylicOption] = useState<string>("");
 
-// ======== AUTO LOAD VARIATION IMAGES ========
+  // ======== AUTO LOAD VARIATION IMAGES ========
+  const frameSizeImages = import.meta.glob("../assets/list-products/2D/variation/frame/**/*.{jpg,png,JPG,jpeg,webp}", {
+    eager: true,
+    as: "url",
+  });
 
-// Frame size images
-const frameSizeImages = import.meta.glob("../assets/list-products/2D/variation/frame/**/*.{jpg,png,JPG,jpeg,webp}", {
-  eager: true,
-  as: "url",
-});
+  const shadingImages = import.meta.glob("../assets/list-products/2D/variation/shading/**/*.{jpg,png,JPG,jpeg,webp}", {
+    eager: true,
+    as: "url",
+  });
 
-// Shading images (nested folder)
-const shadingImages = import.meta.glob("../assets/list-products/2D/variation/shading/**/*.{jpg,png,JPG,jpeg,webp}", {
-  eager: true,
-  as: "url",
-});
+  // Group berdasarkan nama folder (misal: "4R", "6R", dst)
+  const frameGroups: Record<string, string[]> = {};
 
-// Group berdasarkan nama folder (misal: "4R", "6R", dst)
-const frameGroups: Record<string, string[]> = {};
+  Object.entries(frameSizeImages).forEach(([path, url]) => {
+    const parts = path.split("/");
+    const folderName = parts[parts.length - 2];
+    if (!frameGroups[folderName]) frameGroups[folderName] = [];
+    frameGroups[folderName].push(url as string);
+  });
 
-Object.entries(frameSizeImages).forEach(([path, url]) => {
-  const parts = path.split("/");
-  const folderName = parts[parts.length - 2];
-  if (!frameGroups[folderName]) frameGroups[folderName] = [];
-  frameGroups[folderName].push(url as string);
-});
+  // Convert ke format UI
+  const frameSizeOptions = Object.entries(frameGroups).map(([folder, urls]) => ({
+    value: folder,
+    label: folder.toUpperCase(),
+    image: urls[0],
+    allImages: urls,
+  }));
 
-// Convert ke format UI
-const frameSizeOptions = Object.entries(frameGroups).map(([folder, urls]) => ({
-  value: folder,
-  label: folder.toUpperCase(),
-  image: urls[0],
-  allImages: urls,
-}));
+  // Urutkan frame size sesuai urutan prioritas tertentu
+  const sizeOrder = ["4R", "6R", "8R", "12R", "15CM"];
+  frameSizeOptions.sort((a, b) => {
+    const aIndex = sizeOrder.findIndex((s) => a.value.toUpperCase().includes(s));
+    const bIndex = sizeOrder.findIndex((s) => b.value.toUpperCase().includes(s));
 
-// Urutkan frame size sesuai urutan prioritas tertentu
-const sizeOrder = ["4R", "6R", "8R", "12R", "15CM"];
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+    return a.value.localeCompare(b.value, "en", { numeric: true });
+  });
 
-frameSizeOptions.sort((a, b) => {
-  const aIndex = sizeOrder.findIndex((s) => a.value.toUpperCase().includes(s));
-  const bIndex = sizeOrder.findIndex((s) => b.value.toUpperCase().includes(s));
+  // Group shading berdasarkan nama folder utama
+  const shadingGroups: Record<string, { value: string; label: string; preview: string }> = {};
 
-  if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-  if (aIndex !== -1) return -1;
-  if (bIndex !== -1) return 1;
-  return a.value.localeCompare(b.value, "en", { numeric: true });
-});
+  Object.entries(shadingImages).forEach(([path, url]) => {
+    const parts = path.split("/");
+    const folderName = parts[parts.length - 2];
+    if (!shadingGroups[folderName]) {
+      shadingGroups[folderName] = {
+        value: folderName,
+        label: folderName.replace(/^2D\s+/i, ""),
+        preview: url as string,
+      };
+    }
+  });
 
-// Group shading berdasarkan nama folder utama
-const shadingGroups: Record<string, { value: string; label: string; preview: string }> = {};
+  const shadingOptions = Object.values(shadingGroups);
 
-Object.entries(shadingImages).forEach(([path, url]) => {
-  const parts = path.split("/");
-  const folderName = parts[parts.length - 2];
-  if (!shadingGroups[folderName]) {
-    shadingGroups[folderName] = {
-      value: folderName,
-      label: folderName.replace(/^2D\s+/i, ""),
-      preview: url as string,
-    };
+  // 🆕 DAPATKAN TITLE DAN DESKRIPSI PRODUK DARI FILE TERPISAH
+  const productDescription = getProductDescription(category, name);
+  const productTitle = getProductTitle(category, name);
+  
+  // 🆕 TENTUKAN DETAIL PRODUK - SEMUA DATA DARI ENGLISH VERSION
+  let productDetails = {};
+  let hasDescriptionData = false;
+  
+  if (productDescription) {
+    hasDescriptionData = true;
+    // Ambil semua field kecuali 'title' untuk dimasukkan ke details
+    const { title, ...detailsWithoutTitle } = productDescription;
+    productDetails = detailsWithoutTitle;
   }
-});
 
-const shadingOptions = Object.values(shadingGroups);
+  // Product data - SEMUA MOCK DATA DIHAPUS
+  const product = {
+    id: id,
+    name: name || "Default Product Name",
+    title: productTitle, // 🆕 Judul dari English Version
+    imageUrl: imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg",
+    category: category || "2D Frame",
+    size: size || "",
+    type: type || "",
+    price: price || getPrice(category, name) || 0,
+    allImages: allImages || [],
+    shadingOptions,
+    sizeFrameOptions: frameSizeOptions,
+    variations: productVariations,
+    details: productDetails, // 🆕 Semua detail dari English Version
+    hasDescriptionData, // 🆕 Flag untuk mengecek apakah ada data
+  };
 
-  // Product data
-const product = {
-  id: id,
-  name: name || "Default Product Name",
-  imageUrl: imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg",
-  category: category || "2D Frame",
-  size: size || "",
-  type: type || "",
-  price: price || getPrice(category, name) || 0,
-  allImages: allImages || [],
-  shadingOptions,
-  sizeFrameOptions: frameSizeOptions,
-  variations: productVariations, // Gunakan hasil dari getProductVariations
-  ...MOCK_PRODUCT_DATA,
-};
+  const categoryOptions = productOptions[product.category as keyof typeof productOptions];
 
-const categoryOptions = productOptions[product.category as keyof typeof productOptions];
+  // Untuk Additional dan Softcopy Design, tidak perlu size
+  const isAdditionalOrSoftcopy = ["Additional", "Softcopy Design"].includes(product.category);
 
-// Untuk Additional dan Softcopy Design, tidak perlu size
-const isAdditionalOrSoftcopy = ["Additional", "Softcopy Design"].includes(product.category);
+  // 🆕 TAMBAHKAN LOGIC UNTUK ACRYLIC STAND
+  const isAcrylicStand = product.category === "Acrylic Stand" || 
+                        product.name?.toLowerCase().includes("acrylic stand");
 
-// 🆕 TAMBAHKAN LOGIC UNTUK ACRYLIC STAND
-const isAcrylicStand = product.category === "Acrylic Stand" || 
-                      product.name?.toLowerCase().includes("acrylic stand");
+  const defaultSize = isAdditionalOrSoftcopy || isAcrylicStand
+    ? "" 
+    : (categoryOptions?.sizes?.find((s) => s.label.toUpperCase().startsWith(product.name.toUpperCase()))
+        ?.label || product.size || "Custom");
 
-const defaultSize = isAdditionalOrSoftcopy || isAcrylicStand
-  ? "" 
-  : (categoryOptions?.sizes?.find((s) => s.label.toUpperCase().startsWith(product.name.toUpperCase()))
-      ?.label || product.size || "Custom");
+  // 🆕 DEFINE normalizedSizeKey SEBELUM DIGUNAKAN
+  const normalizedSizeKey = Object.keys(categoryOptions?.specialCases || {}).find((key) =>
+    key.toLowerCase().includes(product.name.toLowerCase())
+  );
 
-// 🆕 DEFINE normalizedSizeKey SEBELUM DIGUNAKAN
-const normalizedSizeKey = Object.keys(categoryOptions?.specialCases || {}).find((key) =>
-  key.toLowerCase().includes(product.name.toLowerCase())
-);
+  const specialVariations =
+    product.category === "3D Frame" && normalizedSizeKey
+      ? categoryOptions?.specialCases?.[normalizedSizeKey] || []
+      : [];
 
-const specialVariations =
-  product.category === "3D Frame" && normalizedSizeKey
-    ? categoryOptions?.specialCases?.[normalizedSizeKey] || []
-    : [];
-
-  // semua useEffect
+  // semua useEffect (tetap sama)
   useEffect(() => {
     if (specialVariations.length > 0 && !selectedProductVariation) {
       setSelectedProductVariation(specialVariations[0].value);
@@ -710,7 +682,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
             {product.category} &gt;
           </span>
           
-          <span className="mx-1">{product.name}</span>
+          <span className="mx-1">{product.title}</span>
         </div>
 
         {/* Layout - Mobile: Stack vertically, Desktop: Grid */}
@@ -726,7 +698,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
             ) : (
               <img
                 src={selectedImage}
-                alt={product.name}
+                alt={product.title}
                 className="w-full h-auto object-cover rounded-lg border border-gray-200 mb-3 md:mb-4"
               />
             )}
@@ -777,7 +749,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                         ) : (
                           <img
                             src={media}
-                            alt={`${product.name} ${idx + 1}`}
+                            alt={`${product.title} ${idx + 1}`}
                             onClick={() => setSelectedImage(media)}
                             className={`w-full h-16 md:h-24 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
                               selectedImage === media
@@ -868,15 +840,10 @@ const previewRef = useRef<HTMLDivElement | null>(null);
           
           {/* Right: Info - Mobile optimized */}
           <div className="flex flex-col">
-          <h1 className="text-[18px] md:text-[25px] font-poppinsMedium leading-tight">
-            {[product.category, 
-              // Hanya tampilkan defaultSize jika bukan "Custom" atau produk tidak punya ukuran spesifik
-              (defaultSize !== "Custom" || !product.name?.match(/(A\d+-\d+X\d+CM|\d+R)/i)) ? defaultSize : "",
-              product.type, 
-              formatProductName(product.name)]
-              .filter(Boolean)
-              .join(" ")}
-          </h1>
+            {/* 🆕 JUDUL PRODUK DARI ENGLISH VERSION */}
+            <h1 className="text-[18px] md:text-[25px] font-poppinsMedium leading-tight">
+              {product.title}
+            </h1>
           
             {/* ⭐ Best Selling label - Mobile optimized */}
             {(() => {
@@ -1348,146 +1315,160 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                     </div>
         </div>
 
-        {/* Product Details - Mobile optimized */}
-        <div className="mt-10 md:mt-16 pt-6 md:pt-10">
-          <h2 className="text-[20px] md:text-[24px] font-poppinsSemiBold mb-3 md:mb-4">
-              {t("product.details")}
-          </h2>
-          <div className="grid grid-cols-[max-content_1fr] gap-x-2 md:gap-x-4 gap-y-2 text-[13px] md:text-[15px]">
-            {Object.entries(product.details).map(([key, value]) => (
-              <React.Fragment key={key}>
-                <span className="font-poppinsSemiBold">{key}</span>
-                <span className="font-poppinsRegular font-bold">: {value}</span>
-              </React.Fragment>
-            ))}
+{/* Product Details - Mobile optimized */}
+<div className="mt-10 md:mt-16 pt-6 md:pt-10">
+  <h2 className="text-[20px] md:text-[24px] font-poppinsSemiBold mb-3 md:mb-4">
+    {t("product.details")}
+  </h2>
+  
+  {/* 🆕 SEMUA DETAIL DARI ENGLISH VERSION DITAMPILKAN DI SINI */}
+  {product.hasDescriptionData ? (
+    <div className="grid grid-cols-[max-content_max-content_1fr] gap-x-1 md:gap-x-2 gap-y-2 text-[13px] md:text-[15px] items-baseline">
+      {Object.entries(product.details).map(([key, value]) => (
+        <React.Fragment key={key}>
+          {/* Kolom 1: Label */}
+          <span className="font-poppinsSemiBold">{key}</span>
+          
+          {/* Kolom 2: Titik Dua */}
+          <span className="font-poppinsRegular font-bold">:</span>
+          
+          {/* Kolom 3: Value */}
+          <span className="font-poppinsRegular font-bold">{value}</span>
+        </React.Fragment>
+      ))}
+    </div>
+  ) : (
+    <p className="text-gray-600">Product details not available.</p>
+  )}
+  
+  {/* Info packing default */}
+  <p className="font-poppinsRegular mt-4 md:mt-6 text-[13px] md:text-base">
+    {t("product.packingInfo")}
+    <br />
+    <br />
+  </p>
+</div>
+
+        {/* 🧩 Additional Products - SEKARANG UNTUK SEMUA KATEGORI KECUALI Additional DAN Softcopy Design */}
+        {!["Additional", "Softcopy Design"].includes(product.category) && (
+          <div ref={additionalSectionRef} className="mt-10 md:mt-16">
+            <h2 className="text-[18px] md:text-xl font-bold font-poppinsRegular mb-4 md:mb-6">
+                {t("product.additionalProducts")}
+            </h2>
+
+            {(() => {
+              const additionalProductsMap = [
+                { 
+                  displayName: "Additional Faces", 
+                  match: "BIAYA TAMBAHAN WAJAH KARIKATUR", 
+                  targetProduct: "BIAYA TAMBAHAN WAJAH KARIKATUR",
+                  imageUrl: new URL(
+                    "../assets/list-products/ADDITIONAL/BIAYA TAMBAHAN WAJAH KARIKATUR/TAMBAHAN WAJAH 1.jpg",
+                    import.meta.url
+                  ).href,
+                  price: `Rp ${priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"].toLocaleString("id-ID")} - Rp ${priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"].toLocaleString("id-ID")}`
+                },
+                { 
+                  displayName: "Background Custom", 
+                  match: "BACKGROUND Custom", 
+                  targetProduct: "BACKGROUND Custom",
+                  imageUrl: new URL(
+                    "../assets/bg-catalog/goverment-police/KA-MAY23-01.jpg",
+                    import.meta.url
+                  ).href,
+                  price: `Rp ${priceList.Additional["Background Custom"].toLocaleString("id-ID")}`
+                },
+                { 
+                  displayName: "Additional Packing", 
+                  match: "BIAYA TAMBAHAN PACKING", 
+                  targetProduct: "BIAYA TAMBAHAN PACKING",
+                  imageUrl: new URL(
+                    "../assets/list-products/3D/A0-80X110CM/PACKING AIR COLUMN BAGS.jpg",
+                    import.meta.url
+                  ).href,
+                  price: `Rp ${priceList.Additional["Biaya Tambahan Packing"].toLocaleString("id-ID")}`
+                },
+              ];
+
+              // helper: cari produk Additional dengan prefer exact match lalu fallback ke includes
+              const findAdditionalProduct = (nameToMatch) => {
+                if (!nameToMatch) return null;
+                const needle = nameToMatch.trim().toLowerCase();
+                // exact match first
+                const exact = allProducts.find(
+                  (p) => p.category === "Additional" && p.name?.trim().toLowerCase() === needle
+                );
+                if (exact) return exact;
+                // fallback: includes
+                return allProducts.find(
+                  (p) => p.category === "Additional" && p.name?.trim().toLowerCase().includes(needle)
+                ) || null;
+              };
+
+              // map ke produk yang benar menggunakan findAdditionalProduct
+              const additionalProducts = additionalProductsMap
+                .map((item) => {
+                  const found = findAdditionalProduct(item.targetProduct);
+                  return found
+                    ? { ...found, displayName: item.displayName, targetProduct: item.targetProduct, imageUrl: item.imageUrl, price: item.price }
+                    : null;
+                })
+                .filter(Boolean) as (Product & {
+                  displayName: string;
+                  targetProduct: string;
+                  imageUrl: string;
+                  price: string;
+                })[];
+
+              const handleCardClick = (product: Product & { targetProduct: string }) => {
+                const targetName = product.targetProduct.trim().toLowerCase();
+                // prefer exact match when navigating
+                const targetProduct =
+                  allProducts.find((p) => p.category === "Additional" && p.name?.trim().toLowerCase() === targetName)
+                  || allProducts.find((p) => p.category === "Additional" && p.name?.trim().toLowerCase().includes(targetName));
+
+                if (targetProduct) {
+                  navigate(`/product/${targetProduct.id}`, {
+                    state: {
+                      ...targetProduct,
+                      specialVariations: targetProduct.specialVariations || [],
+                      details: targetProduct.details || {},
+                    },
+                  });
+                }
+              };
+
+              return (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                  {additionalProducts.map((product) => (
+                    <div
+                      key={product.id}
+                      onClick={() => handleCardClick(product)}
+                      className="border rounded-xl overflow-hidden text-center hover:shadow-md transition-all bg-white cursor-pointer flex flex-col items-center justify-between w-full h-[300px] md:h-[360px] hover:scale-105 transition-transform duration-200"
+                    >
+                      <div className="relative w-full aspect-square overflow-hidden">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.displayName}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 hover:scale-110"
+                        />
+                      </div>
+
+                      <div className="p-2 md:p-3 flex flex-col flex-grow justify-between w-full">
+                        <h3 className="text-[12px] md:text-sm font-semibold text-gray-700 line-clamp-2">
+                          {product.displayName}
+                        </h3>
+                        <p className="text-[12px] md:text-sm font-bold text-pink-600 mt-1">
+                          {product.price}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
-          <p className="font-poppinsRegular mt-4 md:mt-6 text-[13px] md:text-base">
-            {t("product.packingInfo")}
-            <br />
-            <br />
-          </p>
-        </div>
-
-{/* 🧩 Additional Products - Mobile optimized */}
-{!["Additional", "Softcopy Design"].includes(product.category) && (
-  <div ref={additionalSectionRef}>
-    <h2 className="text-[18px] md:text-xl font-bold font-poppinsRegular mb-4 md:mb-6">
-        {t("product.additionalProducts")}
-    </h2>
-
-    {(() => {
-      const additionalProductsMap = [
-        { 
-          displayName: "Additional Faces", 
-          match: "BIAYA TAMBAHAN WAJAH KARIKATUR", 
-          targetProduct: "BIAYA TAMBAHAN WAJAH KARIKATUR",
-          imageUrl: new URL(
-            "../assets/list-products/ADDITIONAL/BIAYA TAMBAHAN WAJAH KARIKATUR/TAMBAHAN WAJAH 1.jpg",
-            import.meta.url
-          ).href,
-          price: `Rp ${priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"].toLocaleString("id-ID")} - Rp ${priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"].toLocaleString("id-ID")}`
-        },
-        { 
-          displayName: "Background Custom", 
-          match: "BACKGROUND Custom", 
-          targetProduct: "BACKGROUND Custom",
-          imageUrl: new URL(
-            "../assets/bg-catalog/goverment-police/KA-MAY23-01.jpg",
-            import.meta.url
-          ).href,
-          price: `Rp ${priceList.Additional["Background Custom"].toLocaleString("id-ID")}`
-        },
-        { 
-          displayName: "Additional Packing", 
-          match: "BIAYA TAMBAHAN PACKING", 
-          targetProduct: "BIAYA TAMBAHAN PACKING",
-          imageUrl: new URL(
-            "../assets/list-products/3D/A0-80X110CM/PACKING AIR COLUMN BAGS.jpg",
-            import.meta.url
-          ).href,
-          price: `Rp ${priceList.Additional["Biaya Tambahan Packing"].toLocaleString("id-ID")}`
-        },
-      ];
-
-      // helper: cari produk Additional dengan prefer exact match lalu fallback ke includes
-      const findAdditionalProduct = (nameToMatch) => {
-        if (!nameToMatch) return null;
-        const needle = nameToMatch.trim().toLowerCase();
-        // exact match first
-        const exact = allProducts.find(
-          (p) => p.category === "Additional" && p.name?.trim().toLowerCase() === needle
-        );
-        if (exact) return exact;
-        // fallback: includes
-        return allProducts.find(
-          (p) => p.category === "Additional" && p.name?.trim().toLowerCase().includes(needle)
-        ) || null;
-      };
-
-      // map ke produk yang benar menggunakan findAdditionalProduct
-      const additionalProducts = additionalProductsMap
-        .map((item) => {
-          const found = findAdditionalProduct(item.targetProduct);
-          return found
-            ? { ...found, displayName: item.displayName, targetProduct: item.targetProduct, imageUrl: item.imageUrl, price: item.price }
-            : null;
-        })
-        .filter(Boolean) as (Product & {
-          displayName: string;
-          targetProduct: string;
-          imageUrl: string;
-          price: string;
-        })[];
-
-      const handleCardClick = (product: Product & { targetProduct: string }) => {
-        const targetName = product.targetProduct.trim().toLowerCase();
-        // prefer exact match when navigating
-        const targetProduct =
-          allProducts.find((p) => p.category === "Additional" && p.name?.trim().toLowerCase() === targetName)
-          || allProducts.find((p) => p.category === "Additional" && p.name?.trim().toLowerCase().includes(targetName));
-
-        if (targetProduct) {
-          navigate(`/product/${targetProduct.id}`, {
-            state: {
-              ...targetProduct,
-              specialVariations: targetProduct.specialVariations || [],
-              details: targetProduct.details || {},
-            },
-          });
-        }
-      };
-
-      return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-          {additionalProducts.map((product) => (
-            <div
-              key={product.id}
-              onClick={() => handleCardClick(product)}
-              className="border rounded-xl overflow-hidden text-center hover:shadow-md transition-all bg-white cursor-pointer flex flex-col items-center justify-between w-full h-[300px] md:h-[360px] hover:scale-105 transition-transform duration-200"
-            >
-              <div className="relative w-full aspect-square overflow-hidden">
-                <img
-                  src={product.imageUrl}
-                  alt={product.displayName}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 hover:scale-110"
-                />
-              </div>
-
-              <div className="p-2 md:p-3 flex flex-col flex-grow justify-between w-full">
-                <h3 className="text-[12px] md:text-sm font-semibold text-gray-700 line-clamp-2">
-                  {product.displayName}
-                </h3>
-                <p className="text-[12px] md:text-sm font-bold text-pink-600 mt-1">
-                  {product.price}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    })()}
-  </div>
-)}
+        )}
       </main>
       <Footer />
     </div>
