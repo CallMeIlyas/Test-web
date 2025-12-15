@@ -38,7 +38,7 @@ export default function FAQPage() {
         }
       `}</style>
 
-      {/* 🏷️ JUDUL & DESKRIPSI MOBILE - Hanya tampil di mobile */}
+      {/* ️ JUDUL & DESKRIPSI MOBILE - Hanya tampil di mobile */}
       <div className="md:hidden">
         <div className="relative my-6 mb-8 text-center">
           <h1
@@ -70,7 +70,7 @@ export default function FAQPage() {
         </div>
       </div>
 
-      {/* 🏷️ JUDUL & DESKRIPSI DESKTOP - Hanya tampil di desktop */}
+      {/* ️ JUDUL & DESKRIPSI DESKTOP - Hanya tampil di desktop */}
       <div className="hidden md:block">
         <div className="relative my-8 text-center">
           <h1
@@ -107,13 +107,13 @@ export default function FAQPage() {
       </div>
 
 
-      {/* 🧩 FAQ Grid */}
+      {/*  FAQ Grid */}
       <main className="max-w-[700px] mx-auto py-6 md:py-12 px-4 md:px-5 font-sans flex-1">
         {/* Single column untuk mobile, 2 columns untuk desktop */}
         <div className="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 font-poppinsRegular">
           
           
-          {/* 📄 Left Column */}
+          {/*  Left Column */}
           <div className="space-y-3">
             {/* Q1 */}
             <div className="faq-item-wrapper">
@@ -680,7 +680,7 @@ export default function FAQPage() {
             </div>
           </div>
 
-          {/* 📄 Right Column - hanya untuk desktop */}
+          {/*  Right Column - hanya untuk desktop */}
           <div className="hidden md:block space-y-3">
             {/* Q10 */}
             <div className="faq-item-wrapper">
@@ -985,7 +985,7 @@ export default function FAQPage() {
           </div>
         </div>
 
-        {/* 💬 Custom FAQ */}
+        {/*  Custom FAQ */}
         <div className="max-w-[430px] mx-auto my-6 md:my-7.5 p-4 md:p-5 font-sans">
           <FAQItem
             question={

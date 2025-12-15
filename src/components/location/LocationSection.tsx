@@ -74,7 +74,7 @@ const MobileLayout: React.FC<{ location: LocationSectionProps['location']; isLas
 
   return (
     <div className={`mx-4 ${!isLast ? "mb-12 pb-6" : "mb-6"}`}>
-      {/* 📍 Location Info - Mobile */}
+      {/*  Location Info - Mobile */}
       <div className="flex items-start gap-2">
         <img
           src={locationIcon}
@@ -82,7 +82,7 @@ const MobileLayout: React.FC<{ location: LocationSectionProps['location']; isLas
           className="w-[50px] h-auto -mt-2 translate-x-1"
         />
         <div className="mt-0 flex-1">
-          {/* 🌍 Dynamic Language */}
+          {/* Dynamic Language */}
           <div className="font-poppinsRegular text-base">
             {t("location.shippingFrom")}{" "}
             <span className="font-poppinsRegular font-semibold">
@@ -90,7 +90,7 @@ const MobileLayout: React.FC<{ location: LocationSectionProps['location']; isLas
             </span>
           </div>
 
-          {/* 📝 Descriptions */}
+          {/*  Descriptions */}
           {location.description.map((line, index) => (
             <p key={index} className="text-[13px] w-[260px] font-poppinsRegular my-[1px] leading-snug">
               {line}
@@ -99,7 +99,7 @@ const MobileLayout: React.FC<{ location: LocationSectionProps['location']; isLas
         </div>
       </div>
 
-      {/* 📞 Contact & Address - Mobile */}
+      {/*  Contact & Address - Mobile */}
       <div className="mt-3 w-full">
         <div className="text-left">
           {/* WhatsApp Contact */}
@@ -141,7 +141,7 @@ const MobileLayout: React.FC<{ location: LocationSectionProps['location']; isLas
         </div>
       </div>
 
-      {/* 🚚 Shipping Methods - Mobile */}
+      {/*  Shipping Methods - Mobile */}
       <div className="border border-gray-600 rounded-xl p-2 mt-4 mx-auto">
         {location.shippingMethods.map((method, index) => {
           const courierName =
@@ -195,7 +195,7 @@ const DesktopLayout: React.FC<{ location: LocationSectionProps['location']; isLa
 
   return (
     <div className={`mx-16 ${!isLast ? "pb-10" : "mb-8"}`}>
-      {/* 📍 Location Info */}
+      {/*  Location Info */}
       <div className="flex items-start gap-3">
         <img
           src={locationIcon}
@@ -203,7 +203,7 @@ const DesktopLayout: React.FC<{ location: LocationSectionProps['location']; isLa
           className="w-[80px] h-auto -mt-5 translate-x-4"
         />
         <div className="mt-1">
-          {/* 🌍 Dynamic Language */}
+          {/*  Dynamic Language */}
           <div className="font-poppinsRegular text-2xl">
             {t("location.shippingFrom")}{" "}
             <span className="font-poppinsRegular font-semibold">
@@ -211,7 +211,7 @@ const DesktopLayout: React.FC<{ location: LocationSectionProps['location']; isLa
             </span>
           </div>
 
-          {/* 📝 Descriptions */}
+          {/*  Descriptions */}
           {location.description.map((line, index) => (
             <p key={index} className="text-lg my-[1px] leading-snug">
               {line}
@@ -220,7 +220,7 @@ const DesktopLayout: React.FC<{ location: LocationSectionProps['location']; isLa
         </div>
       </div>
 
-      {/* 📞 Contact & Address */}
+      {/* Contact & Address */}
       <div className="mt-3 mx-auto w-full max-w-2xl">
         <div className="text-left">
           {/* WhatsApp Contact */}
@@ -262,7 +262,7 @@ const DesktopLayout: React.FC<{ location: LocationSectionProps['location']; isLa
         </div>
       </div>
 
-      {/* 🚚 Shipping Methods */}
+      {/*  Shipping Methods */}
 <div
   className={`border border-gray-600 rounded-[30px] p-4 max-w-xl mt-8 mx-auto 
     ${isLast ? "mb-32" : ""}

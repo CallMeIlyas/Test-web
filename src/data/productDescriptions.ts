@@ -1,5 +1,3 @@
-
-
 export const ENGLISH_VERSION_PRODUCT_DETAILS = {
   // ============ 3D FRAME ============
   "3D Frame": {

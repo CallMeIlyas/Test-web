@@ -39,8 +39,8 @@ export const mergeFooterPdf = async (
 
     // KONFIGURASI MARGIN FOOTER
     const FOOTER_CONFIG = {
-      newPageTopMargin: 0,      // Jarak dari atas halaman BARU (0 = paling atas)
-      samePageBottomMargin: 0,  // Jarak footer dari bawah halaman (0 = menempel di bawah)
+      newPageTopMargin: 0,      // Jarak dari atas halaman BARU 
+      samePageBottomMargin: 0,  // Jarak footer dari bawah halaman 
     };
 
     // LOGIKA: Jika produk >= 4, PASTI buat halaman baru untuk footer

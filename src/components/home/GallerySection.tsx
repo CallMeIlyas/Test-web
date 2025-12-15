@@ -259,24 +259,24 @@ const GallerySection: FC = () => {
             
                 {/* Tombol ukuran di tengah bawah */}
                 {photo.label && (
-  <button
-    onClick={(e) => handleLabelClick(photo.label, e)}
-    className="
-      absolute bottom-4 left-4
-      flex items-center gap-2
-      bg-white/20 backdrop-blur-lg
-      text-white font-semibold text-sm md:text-[15px]
-      px-4 py-[6px] md:py-2
-      rounded-full shadow-lg border border-white/30
-      whitespace-nowrap
-      transition-all duration-300
-      hover:scale-105 hover:shadow-xl hover:bg-white/30
-    "
-  >
-    <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-sm"></span>
-    {photo.label}
-  </button>
-)}
+                  <button
+                    onClick={(e) => handleLabelClick(photo.label, e)}
+                    className="
+                      absolute bottom-4 left-4
+                      flex items-center gap-2
+                      bg-white/20 backdrop-blur-lg
+                      text-white font-semibold text-sm md:text-[15px]
+                      px-4 py-[6px] md:py-2
+                      rounded-full shadow-lg border border-white/30
+                      whitespace-nowrap
+                      transition-all duration-300
+                      hover:scale-105 hover:shadow-xl hover:bg-white/30
+                    "
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-sm"></span>
+                    {photo.label}
+                  </button>
+                )}
               </div>
             ))}
               </div>
@@ -358,24 +358,24 @@ const GallerySection: FC = () => {
             
                 {/* Tombol ukuran di tengah bawah */}
                {photo.label && (
-  <button
-    onClick={(e) => handleLabelClick(photo.label, e)}
-    className="
-      absolute bottom-4 left-4
-      flex items-center gap-2
-      bg-white/20 backdrop-blur-lg
-      text-white font-semibold text-sm md:text-[15px]
-      px-4 py-[6px] md:py-2
-      rounded-full shadow-lg border border-white/30
-      whitespace-nowrap
-      transition-all duration-300
-      hover:scale-105 hover:shadow-xl hover:bg-white/30
-    "
-  >
-    <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-sm"></span>
-    {photo.label}
-  </button>
-)}
+                  <button
+                    onClick={(e) => handleLabelClick(photo.label, e)}
+                    className="
+                      absolute bottom-4 left-4
+                      flex items-center gap-2
+                      bg-white/20 backdrop-blur-lg
+                      text-white font-semibold text-sm md:text-[15px]
+                      px-4 py-[6px] md:py-2
+                      rounded-full shadow-lg border border-white/30
+                      whitespace-nowrap
+                      transition-all duration-300
+                      hover:scale-105 hover:shadow-xl hover:bg-white/30
+                    "
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-sm"></span>
+                    {photo.label}
+                  </button>
+                )}
               </div>
             ))}
               </div>
@@ -542,7 +542,6 @@ const GallerySection: FC = () => {
               "
               onClick={(e) => e.stopPropagation()}
               style={{
-                // Menempel tepat di tepi gambar
                 marginRight: '0px'
               }}
             >

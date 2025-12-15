@@ -5,7 +5,7 @@ interface LazyImageProps {
   src: string;
   alt: string;
   className?: string;
-  placeholder?: string; // Optional custom placeholder
+  placeholder?: string; // Custom placeholder
   skeletonClassName?: string; // Custom skeleton style
   onLoad?: () => void;
   onError?: () => void;
@@ -39,7 +39,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
         });
       },
       {
-        rootMargin: "50px", // Mulai load 50px sebelum masuk viewport
+        rootMargin: "50px", 
       }
     );
 

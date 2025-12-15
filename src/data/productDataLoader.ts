@@ -51,7 +51,7 @@ const groupedImages: Record<string, string[]> = {};
 Object.entries(allMedia).forEach(([path, imageUrl]) => {
   const lowerPath = path.toLowerCase();
 
-  // 🚫 Abaikan folder variation
+  //  Abaikan folder variation
   if (lowerPath.includes("/variation/") || lowerPath.includes("/variations/"))
     return;
 
@@ -62,7 +62,7 @@ Object.entries(allMedia).forEach(([path, imageUrl]) => {
   const rawCategory = parts[baseIndex + 1] || "Unknown";
   let subcategory = parts[baseIndex + 2] || null;
 
-  // 🚫 Skip jika subcategory adalah variasi (khusus kategori 2D)
+  //  Skip jika subcategory adalah variasi (khusus kategori 2D)
   if (subcategory) {
     const lowerSub = subcategory.toLowerCase();
 
@@ -154,7 +154,7 @@ return {
   subcategory: subcategory || null,
   fullPath: `${mappedCategory}${subcategory ? " / " + subcategory : ""}`,
   price: getPrice(mappedCategory, fileName),
-  shippedFrom: ["Bogor", "Jakarta"], // SEMUA produk dari kedua lokasi
+  shippedFrom: ["Bogor", "Jakarta"], 
   shippedTo: ["Worldwide"],
   allImages: decodedImages,
   shadingOptions:
@@ -211,11 +211,11 @@ const part2 = baris2.map(findProduct).filter((p): p is Product => p !== null);
 const part3 = baris3.map(findProduct).filter((p): p is Product => p !== null);
 const part4 = baris4.map(findProduct).filter((p): p is Product => p !== null);
 
-// === Gabungkan & Hilangkan Duplikat
+// === Gabungkan
 let orderedProducts = [...part1, ...part2, ...part3, ...part4];
 const usedIds = new Set(orderedProducts.map((p) => p.id));
 const remainingProducts = allProducts.filter((p) => !usedIds.has(p.id));
 orderedProducts = [...orderedProducts, ...remainingProducts];
 
-// === EXPORT FINAL TANPA DUPLIKAT ===
+
 export { orderedProducts };

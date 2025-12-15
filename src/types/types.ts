@@ -19,8 +19,8 @@ export interface CartItem {
   imageUrl: string;
   productType: "frame";
   attributes?: {
-    faceCount?: number;         // optional, TIDAK dicampur ke variation
-    backgroundType?: string;    // optional, TIDAK dicampur ke variation
+    faceCount?: number;     
+    backgroundType?: string;
   };
 }
 export interface Step {

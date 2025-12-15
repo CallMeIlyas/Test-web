@@ -21,7 +21,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
 
   return (
     <div className="relative overflow-hidden">
-      {/* 🎥 Overlay Transisi */}
+      {/*  Overlay Transisi */}
       <AnimatePresence mode="wait">
         {/* Layer bawah (hitam) */}
         <motion.div
@@ -31,7 +31,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
           exit={{ y: "-100%" }}
           transition={{
             duration: 1.6,
-            ease: [0.77, 0, 0.175, 1], // lebih smooth dan panjang
+            ease: [0.77, 0, 0.175, 1], 
           }}
           className="fixed top-0 left-0 w-full h-full bg-black z-[998]"
         />
@@ -43,15 +43,15 @@ export default function PageTransition({ children }: PageTransitionProps) {
           animate={{ y: "-100%" }}
           exit={{ y: "-100%" }}
           transition={{
-            duration: 1.8, // sedikit lebih lama dari layer hitam
+            duration: 1.8,
             ease: [0.77, 0, 0.175, 1],
-            delay: 0.15, // overlap halus antara layer
+            delay: 0.15, 
           }}
           className="fixed top-0 left-0 w-full h-full bg-[#dcbec1] z-[999]"
         />
       </AnimatePresence>
 
-      {/* 🪄 Konten halaman baru — fade-in smooth */}
+      {/* Konten halaman baru — fade-in smooth */}
       {showContent && (
         <motion.div
           key={location.pathname}
@@ -60,8 +60,8 @@ export default function PageTransition({ children }: PageTransitionProps) {
           exit={{ opacity: 0 }}
           transition={{
             duration: 0.9,
-            ease: [0.25, 1, 0.5, 1], // cubic-bezier lembut banget
-            delay: 0.3, // muncul pas overlay mulai naik
+            ease: [0.25, 1, 0.5, 1], 
+            delay: 0.3,
           }}
           className="relative z-0"
         >

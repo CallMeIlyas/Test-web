@@ -8,12 +8,12 @@ interface SlideUpTransitionProps {
 const SlideUpTransition: React.FC<SlideUpTransitionProps> = ({ children }) => {
   return (
     <motion.div
-      initial={{ y: "100vh" }}       // mulai dari luar layar (bawah penuh)
-      animate={{ y: 0 }}             // naik ke posisi normal
-      exit={{ y: "-20vh", opacity: 0 }} // keluar sedikit ke atas
+      initial={{ y: "100vh" }}      
+      animate={{ y: 0 }}            
+      exit={{ y: "-20vh", opacity: 0 }}
       transition={{
-        duration: 1.6,               // 🕐 agak lebih lama biar lembut
-        ease: [0.77, 0, 0.175, 1],   // kurva easing elegan, bukan linear
+        duration: 1.6,               
+        ease: [0.77, 0, 0.175, 1],  
       }}
       className="min-h-screen w-full bg-white will-change-transform overflow-hidden"
     >

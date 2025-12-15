@@ -12,7 +12,7 @@ export const getFullProductName = (category: string, size?: string, name?: strin
     "A0": "80x110cm",
   };
 
-  // 🔍 Jika size kosong atau "Custom", coba ambil dari nama produk
+  // Jika size kosong atau "Custom", coba ambil dari nama produk
   if (!size || size.toLowerCase() === "custom") {
     const detected = name?.match(/\b(\d{1,2}R|A\d|CM)\b/i)?.[0];
     size = detected || "";

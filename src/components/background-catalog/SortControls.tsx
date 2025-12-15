@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 interface SortControlsProps {
   sortOption?: string;
   onSortChange: (option: string) => void;
-  onOpenFilters?: () => void; // Tambahkan prop ini
+  onOpenFilters?: () => void; 
 }
 
 const SortControls: FC<SortControlsProps> = ({ 

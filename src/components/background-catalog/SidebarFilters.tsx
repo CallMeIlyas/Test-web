@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 interface SidebarFiltersProps {
   onFilterChange: React.Dispatch<React.SetStateAction<FilterOptions>>;
-  onMobileCategoryClick?: () => void; // Tambah prop ini
+  onMobileCategoryClick?: () => void; 
 }
 
 const SidebarFilters: FC<SidebarFiltersProps> = ({ 
@@ -85,7 +85,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
                     type="checkbox"
                     id={`mobile-${item.toLowerCase().replace(/\s+/g, "-")}`}
                     checked={isChecked}
-                    onChange={() => {}} // Handled by parent div
+                    onChange={() => {}}
                     className="
                       w-4 h-4 border border-black rounded-sm
                       appearance-none cursor-pointer
@@ -123,7 +123,7 @@ const SidebarFilters: FC<SidebarFiltersProps> = ({
                     type="checkbox"
                     id={`desktop-${item.toLowerCase().replace(/\s+/g, "-")}`}
                     checked={isChecked}
-                    onChange={() => {}} // Handled by parent div
+                    onChange={() => {}} 
                     className="
                       w-4 h-4 border border-black rounded-sm
                       appearance-none cursor-pointer

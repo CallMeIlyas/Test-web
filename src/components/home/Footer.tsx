@@ -20,7 +20,7 @@ const Footer = () => {
     <footer className="w-full bg-[#dcbec1] overflow-hidden">
       {isMobile ? (
         <>
-          {/* MOBILE VIEW - SAMA SEPERTI DESKTOP */}
+          {/* MOBILE VIEW */}
           <div className="flex flex-row items-start justify-between px-4 py-9 w-full -mt-8">
             {/* Bagian kiri: Logo dan copyright perusahaan */}
             <div className="flex flex-col">
@@ -56,7 +56,7 @@ const Footer = () => {
           </div>
         </>
       ) : (
-        // DESKTOP VIEW - STYLE ASLI dengan responsive container
+        // DESKTOP VIEW
         <div 
           className="flex items-center justify-between mx-auto"
           style={{ 

@@ -5,7 +5,7 @@ import type { Product } from "../../data/productDataLoader";
 import { useScrollFloat } from "../../utils/scrollFloat";
 import { useTranslation } from "react-i18next";
 
-// 🖼️ Import gambar best selling
+//  Import gambar best selling
 import img10R from "../../assets/karya/10R.jpg";
 import img12R from "../../assets/karya/12R-6.jpg";
 import imgA2 from "../../assets/karya/55x80cm.jpg";
@@ -16,7 +16,7 @@ const BestSelling = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // Jalankan animasi scroll halus
+  // Jalankan animasi scroll
   useScrollFloat(".scroll-float");
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const BestSelling = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 🗺️ Data best selling
+  // ️ Data best selling
   const bestSellingMap = [
     { displayName: "10R / A4 25x30cm", match: "10R", target3D: "10R", imageUrl: img10R },
     { displayName: "12R / A3 30x40cm", match: "12R", target3D: "12R", imageUrl: img12R },
@@ -34,7 +34,7 @@ const BestSelling = () => {
     { displayName: "A1 55x80cm", match: "A1-55X80CM", target3D: "A0-80X110CM", imageUrl: imgA1 },
   ];
 
-  // 🎯 Ambil produk yang sesuai
+  //  Ambil produk yang sesuai
   const bestSellingProducts = bestSellingMap
     .map((b) => {
       const found = allProducts.find(

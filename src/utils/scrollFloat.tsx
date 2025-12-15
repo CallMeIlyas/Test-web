@@ -41,7 +41,7 @@ export const useScrollFloat = (
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // 🔍 Deteksi arah scroll (up/down)
+    //  Deteksi arah scroll (up/down)
     const handleScroll = () => {
       const current = window.scrollY;
       scrollDir.current = current > lastScrollY.current ? "down" : "up";

@@ -55,7 +55,6 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
     // === BACKGROUND CATALOG KEYWORDS ===
     // Mapping keyword ke Background Catalog dengan kategori spesifik
     const backgroundCatalogKeywords: Record<string, string | null> = {
-      // Company/Office/Brand
       'pns': 'Company/Office/Brand',
       'bos': 'Company/Office/Brand',
       'kantor': 'Company/Office/Brand',
@@ -296,7 +295,7 @@ const Header = ({ cartCount, cartItems, onSearch }: HeaderProps) => {
         excludeCategories: ["additional", "softcopy", "acrylic stand"],
       },
 
-      // === ACRYLIC === (HANYA 'acrylic' yang dapat A2,A1,A0)
+      // === ACRYLIC === (A2,A1,A0 & acrylic stand)
       acrylic: {
         type: "3d",
         size: "A2,A1,A0",

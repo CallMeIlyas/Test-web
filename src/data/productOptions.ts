@@ -1,4 +1,3 @@
-// productOptions.ts
 export interface ProductSize {
   label: string;
   value: string;

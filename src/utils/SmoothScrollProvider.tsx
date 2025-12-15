@@ -1,4 +1,3 @@
-// utils/SmoothScrollProvider.tsx
 import React, { useEffect } from "react";
 import Lenis from "@studio-freight/lenis";
 import gsap from "gsap";
@@ -12,15 +11,15 @@ const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let lenis: Lenis | null = null;
     let rafId: number;
 
-    // 🧠 Desktop pakai smooth inertia, Mobile pakai scroll native
+    //  Desktop pakai smooth inertia, Mobile pakai scroll native
     if (!isMobile) {
       lenis = new Lenis({
-        duration: 1.6,           // smooth halus kayak GSAP ScrollSmoother
+        duration: 1.6,        
         smoothWheel: true,
-        smoothTouch: false,      // disable inertia di mobile
+        smoothTouch: false,   
         touchMultiplier: 1.4,
         wheelMultiplier: 1.15,
-        lerp: 0.08,              // ~ smooth:6.5 equivalent
+        lerp: 0.08,           
         easing: (t: number) => 1 - Math.pow(1 - t, 3),
       });
 
@@ -32,7 +31,7 @@ const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       rafId = requestAnimationFrame(raf);
     }
 
-    // 🚀 Sinkronisasi dengan PageTransition
+    //  Sinkronisasi dengan PageTransition
     const handleTransitionDone = () => {
       if (lenis) {
         lenis.scrollTo(0, { immediate: true });

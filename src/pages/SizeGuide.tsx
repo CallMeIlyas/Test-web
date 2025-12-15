@@ -85,7 +85,7 @@ const SizeGuide: React.FC = () => {
     { 
       size: "15CM", 
       match: "15CM", 
-      target3D: "15CM",
+      target3D: "15X15CM",
       id: size15CM_ID, 
       en: size15CM_EN,
       displayName: "15CM - 15x15cm"
@@ -101,7 +101,7 @@ const SizeGuide: React.FC = () => {
     { 
       size: "20CM", 
       match: "20CM", 
-      target3D: "20CM",
+      target3D: "20X20CM",
       id: size20CM_ID, 
       en: size20CM_EN,
       displayName: "20CM - 20x20cm"

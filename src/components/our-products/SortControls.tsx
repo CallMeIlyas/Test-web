@@ -36,7 +36,7 @@ const SortControls: FC<SortControlsProps> = ({
   return (
     <div className="bg-[#f0f0f0] px-4 py-3 rounded-xl">
 
-      {/* DESKTOP: layout asli */}
+      {/* DESKTOP */}
       <div className="hidden md:flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8 text-sm font-poppinsBold text-black">
 
         <span className="whitespace-nowrap">{t("sort.sortBy")}</span>

@@ -41,7 +41,7 @@ export default function MobileFilterSheet({ isOpen, onClose, onFilterChange }) {
         </div>
 
         <div className="overflow-y-auto p-4">
-          {/* Tambah onMobileCategoryClick prop */}
+          {/* onMobileCategoryClick prop */}
           <SidebarFilters 
             onFilterChange={onFilterChange} 
             onMobileCategoryClick={onClose} 

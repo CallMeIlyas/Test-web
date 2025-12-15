@@ -150,7 +150,7 @@ const OrderSteps = () => {
   const [activeStep, setActiveStep] = useState<any>(null);
   const [promptValue, setPromptValue] = useState("");
 
-  // 💡 state untuk ukuran
+  //  state untuk ukuran
   const [category, setCategory] = useState<"2D" | "3D" | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("");
 

@@ -88,7 +88,7 @@ const Location: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow">
-        {/* 🌍 Section Title */}
+        {/*  Section Title */}
         <div className="relative my-8 mb-10 text-center">
           <h1 className="inline-block px-5 text-4xl md:text-5xl font-nataliecaydence relative z-10">
             {t("location.title")}
@@ -97,7 +97,7 @@ const Location: React.FC = () => {
           <div className="absolute top-1/2 right-0 w-[20%] border-t-4 border-black transform -translate-y-1/2"></div>
         </div>
 
-        {/* 📍 Render lokasi */}
+        {/*  Render lokasi */}
         {locations.map((location, index) => (
           <LocationSection
             key={`${location.city}-${index}`}

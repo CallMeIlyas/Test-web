@@ -16,7 +16,7 @@ const Hero = () => {
   const textRef = useRef<HTMLParagraphElement | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
 
-  // ✅ Deteksi Mobile / Desktop
+  //  Deteksi Mobile / Desktop
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 768px)");
     const handleChange = (e: MediaQueryListEvent | MediaQueryList) =>
@@ -26,7 +26,7 @@ const Hero = () => {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
-  // ✅ Animasi ScrollTrigger
+  //  Animasi ScrollTrigger
   useEffect(() => {
     if (isMobile === null) return;
 

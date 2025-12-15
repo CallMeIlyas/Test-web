@@ -23,7 +23,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
   const location = useLocation(); // Tambahkan ini
   const PRODUCTS_PER_PAGE = 16;
 
-  // ✅ Step 1: Filter products - SEKARANG DENGAN URL PARAMS
+  // Step 1: Filter products - SEKARANG DENGAN URL PARAMS
   const filteredProducts = useProductFilter(
     orderedProducts, 
     filters, 
@@ -31,10 +31,10 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
     location.search // Kirim URL search string ke hook
   );
   
-  // ✅ Step 2: Sort products menggunakan useSort yang sudah diperbaiki
+  //  Step 2: Sort products menggunakan useSort yang sudah diperbaiki
   const { sortedProducts } = useSort(filteredProducts);
   
-  // ✅ Step 3: Apply sort option dari parent (untuk override jika perlu)
+  //  Step 3: Apply sort option dari parent (untuk override jika perlu)
   const finalProducts = (() => {
     switch (sortOption) {
       case "best-selling":

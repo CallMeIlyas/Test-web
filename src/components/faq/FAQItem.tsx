@@ -33,7 +33,7 @@ export default function FAQItem({ question, answer, isCustom = false }: FAQItemP
       <div 
         className={`block overflow-hidden transition-all duration-300 ${isActive ? 'max-h-[500px] py-2.5 px-4 md:px-5' : 'max-h-0 py-0 px-4 md:px-5'}`}
       >
-        {/* ✅ wrapper font style untuk semua answer */}
+        {/*  wrapper font style untuk semua answer */}
         <div className="text-xs md:text-[13px] text-black leading-relaxed">
           {answer}
         </div>
