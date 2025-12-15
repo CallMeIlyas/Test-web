@@ -749,7 +749,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
             {product.category} &gt;
           </span>
           
-          <span className="mx-1 text-gray-600">{product.title}</span>
+          <span className="mx-1 text-black">{product.title}</span>
         </div>
 
         {/* Layout - Mobile: Stack vertically, Desktop: Grid */}
