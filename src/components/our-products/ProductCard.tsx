@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import type { Product } from "../../data/productDataLoader";
 import { FaStar } from "react-icons/fa";
 import LazyImage from "../../utils/LazyImage";
@@ -9,8 +9,6 @@ interface ProductCardProps {
 }
 
 const ProductCard: FC<ProductCardProps> = ({ product }) => {
-  const navigate = useNavigate();
-
   // Fungsi menentukan produk Best Selling
   const isBestSelling = (product: Product) => {
     if (!product.displayName || !product.category) return false;
@@ -37,20 +35,15 @@ const ProductCard: FC<ProductCardProps> = ({ product }) => {
     return false;
   };
 
-  const handleCardClick = () => {
-    navigate(`/product/${product.id}`, {
-      state: {
+  return (
+    <Link
+      to={`/product/${product.id}`}
+      state={{
         ...product,
         specialVariations: product.specialVariations || [],
         details: product.details || {},
-      },
-    });
-  };
-
-  return (
-    <div
-      className="cursor-pointer text-center bg-white p-[15px] rounded-[10px] shadow-md transition-transform duration-300 ease-in-out hover:-translate-y-[5px] w-[150px] h-[240px] sm:w-[180px] sm:h-[260px] md:w-[200px] md:h-[280px] flex flex-col justify-between"
-      onClick={handleCardClick}
+      }}
+      className="cursor-pointer text-center bg-white p-[15px] rounded-[10px] shadow-md transition-transform duration-300 ease-in-out hover:-translate-y-[5px] w-[150px] h-[240px] sm:w-[180px] sm:h-[260px] md:w-[200px] md:h-[280px] flex flex-col justify-between no-underline"
     >
       {/* WRAPPER GAMBAR */}
       <div className="relative mb-[12px] rounded-[8px] overflow-hidden">
@@ -61,7 +54,7 @@ const ProductCard: FC<ProductCardProps> = ({ product }) => {
           className="w-full aspect-square object-cover"
         />
 
-        {/* ️ BEST SELLING BADGE */}
+        {/* ⭐ BEST SELLING BADGE */}
         {isBestSelling(product) && (
           <div className="absolute bottom-0 left-0 bg-black text-white text-[11px] font-semibold px-[10px] py-[4px] rounded-r-full flex items-center gap-[6px] shadow-md font-poppinsItalic">
             <FaStar className="text-white text-[10px]" />
@@ -81,7 +74,7 @@ const ProductCard: FC<ProductCardProps> = ({ product }) => {
             : "Harga tidak tersedia"}
         </p>
       </div>
-    </div>
+    </Link>
   );
 };
 

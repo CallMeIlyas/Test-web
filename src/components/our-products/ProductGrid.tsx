@@ -20,7 +20,7 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
   searchQuery,
   sortOption,
 }) => {
-  const location = useLocation(); // Tambahkan ini
+  const location = useLocation();
   const PRODUCTS_PER_PAGE = 16;
 
   // Step 1: Filter products - SEKARANG DENGAN URL PARAMS
@@ -97,11 +97,9 @@ const ProductGridWithPagination: FC<ProductGridWithPaginationProps> = ({
           place-items-center
         "
       >
-        {currentProducts.length > 0 ? (
+          {currentProducts.length > 0 ? (
           currentProducts.map((product) => (
-            <div key={product.id} className="w-full flex justify-center">
-              <ProductCard product={product} />
-            </div>
+            <ProductCard key={product.id} product={product} />
           ))
         ) : (
           <div className="col-span-full text-center py-10 text-gray-500">
