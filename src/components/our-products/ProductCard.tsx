@@ -11,7 +11,7 @@ interface ProductCardProps {
 const ProductCard: FC<ProductCardProps> = ({ product }) => {
   const navigate = useNavigate();
 
-  // ✅ Fungsi menentukan produk Best Selling
+  // Fungsi menentukan produk Best Selling
   const isBestSelling = (product: Product) => {
     if (!product.displayName || !product.category) return false;
 
@@ -61,7 +61,7 @@ const ProductCard: FC<ProductCardProps> = ({ product }) => {
           className="w-full aspect-square object-cover"
         />
 
-        {/* 🏷️ BEST SELLING BADGE */}
+        {/* ️ BEST SELLING BADGE */}
         {isBestSelling(product) && (
           <div className="absolute bottom-0 left-0 bg-black text-white text-[11px] font-semibold px-[10px] py-[4px] rounded-r-full flex items-center gap-[6px] shadow-md font-poppinsItalic">
             <FaStar className="text-white text-[10px]" />
