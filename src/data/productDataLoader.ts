@@ -143,7 +143,7 @@ export const allProducts: Product[] = Object.entries(groupedImages).map(
     const fileName = cleanSubcategory || `Product ${index + 1}`;
 
 return {
-  id: `prod-${index + 1}`,
+  id: `prod-${rawCategory.toLowerCase()}-${(subcategory || 'default').toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
   imageUrl: mainImage,
   name: fileName,
   displayName: subcategory

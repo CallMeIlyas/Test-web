@@ -14,7 +14,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { allProducts } from "../data/productDataLoader";
+import { allProducts, orderedProducts } from "../data/productDataLoader";
 import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import productOptions from "../data/productOptions";
@@ -57,8 +57,6 @@ const getFullSizeLabel = (category, shortName) => {
   if (!categoryData || !categoryData.sizes) return shortName;
 
   const found = categoryData.sizes.find(size => {
-    // Size value = "12R_30x40cm"
-    // Folder name = "12R"
     return size.value.startsWith(shortName);
   });
 
@@ -104,11 +102,9 @@ const getAdditionalPrice = (name: string): number | string => {
   }
 };
 
-
 const formatProductName = (name: string): string => {
   if (!name) return name;
   
-  // Format khusus untuk pola A2-40X55CM, A1-55X80CM, A0-80X110CM
   const sizePattern = /(A\d+)-(\d+)X(\d+)CM/i;
   const match = name.match(sizePattern);
   
@@ -128,11 +124,52 @@ const ProductDetail = () => {
   const { addToCart } = useOutletContext<LayoutContext>();
   const currentLang = i18n.language;
   const faceOptions = currentLang === "id" 
-  ? ["1–9 Wajah", "Di atas 10 Wajah"]
-  : ["1–9 Faces", "Above 10 Faces"];
+    ? ["1–9 Wajah", "Di atas 10 Wajah"]
+    : ["1–9 Faces", "Above 10 Faces"];
 
-  const { imageUrl, name, category, size, type, price, allImages } =
-    (location.state as any) || {};
+  // ===== 🚨 PERBAIKAN UTAMA: CARI PRODUK DENGAN BENAR =====
+  const findProductById = (productId: string) => {
+    // 1. Cari di orderedProducts dulu (prioritas utama - karena ini yang ditampilkan di grid)
+    let product = orderedProducts.find(p => p.id === productId);
+    
+    // 2. Jika tidak ditemukan, cari di allProducts
+    if (!product) {
+      product = allProducts.find(p => p.id === productId);
+    }
+    
+    // 3. DEBUG: Log untuk mencari tahu
+    console.log("=== PRODUCT SEARCH DEBUG ===");
+    console.log("Looking for ID:", productId);
+    console.log("Found in orderedProducts:", !!orderedProducts.find(p => p.id === productId));
+    console.log("Found in allProducts:", !!allProducts.find(p => p.id === productId));
+    console.log("Product found:", product ? {
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      subcategory: product.subcategory
+    } : "Not found");
+    
+    return product;
+  };
+
+  // Gunakan location.state jika ada (klik kiri), jika tidak cari dari ID (klik kanan/tab baru)
+  const productFromState = location.state as any;
+  const productFromId = productFromState || findProductById(id || "");
+
+  // Destructure dari product yang ditemukan
+  const { 
+    imageUrl = "https://i.ibb.co/z5pYtWj/1000273753.jpg", 
+    name = "Default Product Name", 
+    category = "2D Frame", 
+    size = "", 
+    type = "", 
+    price = 0, 
+    allImages = [],
+    shadingOptions: productShadingOptions = [],
+    sizeFrameOptions: productSizeFrameOptions = [],
+    specialVariations: productSpecialVariations = [],
+    details: productDetailsFromData = {}
+  } = productFromId || {};
 
   // 🧩 State utama
   const [includePacking, setIncludePacking] = useState(false);
@@ -152,15 +189,12 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(
     imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg"
   );
-  const [selectedProductVariation, setSelectedProductVariation] =
-    useState<string>("");
+  const [selectedProductVariation, setSelectedProductVariation] = useState<string>("");
   const [displayedPrice, setDisplayedPrice] = useState<number>(price || getPrice(category, name) || 0);
   const [selectedShading, setSelectedShading] = useState<string>("");
   const [selectedSizeFrame, setSelectedSizeFrame] = useState<string>("");
   const [selectedFaceOptionCustom, setSelectedFaceOptionCustom] = useState<string>("");
-  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(
-    null
-  );
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [selectedExpressOption, setSelectedExpressOption] = useState<string>("");
   const [selectedAcrylicOption, setSelectedAcrylicOption] = useState<string>("");
@@ -176,7 +210,7 @@ const ProductDetail = () => {
     as: "url",
   });
 
-  // Group berdasarkan nama folder (misal: "4R", "6R", dst)
+  // Group berdasarkan nama folder
   const frameGroups: Record<string, string[]> = {};
 
   Object.entries(frameSizeImages).forEach(([path, url]) => {
@@ -194,7 +228,7 @@ const ProductDetail = () => {
     allImages: urls,
   }));
 
-  // Urutkan frame size sesuai urutan prioritas tertentu
+  // Urutkan frame size
   const sizeOrder = ["4R", "6R", "8R", "12R", "15CM"];
   frameSizeOptions.sort((a, b) => {
     const aIndex = sizeOrder.findIndex((s) => a.value.toUpperCase().includes(s));
@@ -206,7 +240,7 @@ const ProductDetail = () => {
     return a.value.localeCompare(b.value, "en", { numeric: true });
   });
 
-  // Group shading berdasarkan nama folder utama
+  // Group shading
   const shadingGroups: Record<string, { value: string; label: string; preview: string }> = {};
 
   Object.entries(shadingImages).forEach(([path, url]) => {
@@ -223,37 +257,54 @@ const ProductDetail = () => {
 
   const shadingOptions = Object.values(shadingGroups);
 
-  // 🆕 DAPATKAN TITLE DAN DESKRIPSI PRODUK DARI FILE TERPISAH
+  // 🆕 DAPATKAN TITLE DAN DESKRIPSI PRODUK
   const productDescription = getProductDescription(category, name);
   const productTitle = getProductTitle(category, name);
   
-  // 🆕 TENTUKAN DETAIL PRODUK - SEMUA DATA DARI ENGLISH VERSION
+  // 🆕 TENTUKAN DETAIL PRODUK
   let productDetails = {};
   let hasDescriptionData = false;
   
   if (productDescription) {
     hasDescriptionData = true;
-    // Ambil semua field kecuali 'title' untuk dimasukkan ke details
     const { title, ...detailsWithoutTitle } = productDescription;
     productDetails = detailsWithoutTitle;
   }
 
-  // Product data - SEMUA MOCK DATA DIHAPUS
-  const product = {
-    id: id,
-    name: name || "Default Product Name",
-    title: productTitle, // 🆕 Judul dari English Version
-    imageUrl: imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg",
-    category: category || "2D Frame",
-    size: size || "",
-    type: type || "",
-    price: price || getPrice(category, name) || 0,
-    allImages: allImages || [],
-    shadingOptions,
-    sizeFrameOptions: frameSizeOptions,
+  // 🚨 PERBAIKAN: Gunakan data dari productFromId jika ada
+  const product = productFromId ? {
+    id: productFromId.id,
+    name: productFromId.name || "Default Product Name",
+    title: productTitle,
+    imageUrl: productFromId.imageUrl || "https://i.ibb.co/z5pYtWj/1000273753.jpg",
+    category: productFromId.category || "2D Frame",
+    size: productFromId.size || "",
+    type: productFromId.type || "",
+    price: productFromId.price || getPrice(productFromId.category, productFromId.name) || 0,
+    allImages: productFromId.allImages || [],
+    shadingOptions: productShadingOptions.length > 0 ? productShadingOptions : shadingOptions,
+    sizeFrameOptions: productSizeFrameOptions.length > 0 ? productSizeFrameOptions : frameSizeOptions,
     variations: productVariations,
-    details: productDetails, // 🆕 Semua detail dari English Version
-    hasDescriptionData, // 🆕 Flag untuk mengecek apakah ada data
+    details: Object.keys(productDetailsFromData).length > 0 ? productDetailsFromData : productDetails,
+    hasDescriptionData: hasDescriptionData || Object.keys(productDetailsFromData).length > 0,
+    specialVariations: productSpecialVariations,
+  } : {
+    // Fallback jika tidak ditemukan
+    id: id || "",
+    name: "Product Not Found",
+    title: "Product Not Found",
+    imageUrl: "https://i.ibb.co/z5pYtWj/1000273753.jpg",
+    category: "Unknown",
+    size: "",
+    type: "",
+    price: 0,
+    allImages: [],
+    shadingOptions: [],
+    sizeFrameOptions: [],
+    variations: [],
+    details: {},
+    hasDescriptionData: false,
+    specialVariations: [],
   };
 
   const categoryOptions = productOptions[product.category as keyof typeof productOptions];
@@ -270,7 +321,7 @@ const ProductDetail = () => {
     : (categoryOptions?.sizes?.find((s) => s.label.toUpperCase().startsWith(product.name.toUpperCase()))
         ?.label || product.size || "Custom");
 
-  // 🆕 DEFINE normalizedSizeKey SEBELUM DIGUNAKAN
+  // 🆕 DEFINE normalizedSizeKey
   const normalizedSizeKey = Object.keys(categoryOptions?.specialCases || {}).find((key) =>
     key.toLowerCase().includes(product.name.toLowerCase())
   );
@@ -278,9 +329,29 @@ const ProductDetail = () => {
   const specialVariations =
     product.category === "3D Frame" && normalizedSizeKey
       ? categoryOptions?.specialCases?.[normalizedSizeKey] || []
-      : [];
+      : product.specialVariations || [];
 
-  // semua useEffect (tetap sama)
+  // 🚨 EMERGENCY FIX: Redirect jika ID adalah prod-8 lama
+  useEffect(() => {
+    if (id === 'prod-8' && !location.state && productFromId?.category?.includes("2D")) {
+      console.log("EMERGENCY FIX: Redirecting old prod-8 to 3D 12R");
+      
+      // Cari 3D 12R di orderedProducts
+      const correctProduct = orderedProducts.find(p => 
+        p.category.includes("3D") && 
+        (p.name.includes("12R") || p.subcategory?.includes("12R"))
+      );
+      
+      if (correctProduct && correctProduct.id !== 'prod-8') {
+        navigate(`/product/${correctProduct.id}`, {
+          state: correctProduct,
+          replace: true
+        });
+      }
+    }
+  }, [id, location.state, navigate, productFromId]);
+
+  // semua useEffect lainnya tetap sama
   useEffect(() => {
     if (specialVariations.length > 0 && !selectedProductVariation) {
       setSelectedProductVariation(specialVariations[0].value);
@@ -351,17 +422,15 @@ useEffect(() => {
 
   if (!isManyFaceProduct) return;
 
-  // Gunakan faceOptions[0] dan faceOptions[1]
-  if (selectedFaceOptionCustom === faceOptions[0]) { // "1–9 Wajah" atau "1–9 Faces"
+  if (selectedFaceOptionCustom === faceOptions[0]) {
     setDisplayedPrice(
       priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
     );
-  } else if (selectedFaceOptionCustom === faceOptions[1]) { // "Di atas 10 Wajah" atau "Above 10 Faces"
+  } else if (selectedFaceOptionCustom === faceOptions[1]) {
     setDisplayedPrice(
       priceList.Additional["Biaya Tambahan Wajah Banyak diatas 10 wajah"] || product.price
     );
   } else {
-    // Set default ke option pertama
     setSelectedFaceOptionCustom(faceOptions[0]);
     setDisplayedPrice(
       priceList.Additional["Biaya Tambahan Wajah Banyak 1-9 wajah"] || product.price
@@ -484,7 +553,6 @@ useEffect(() => {
 
   if (!isKarikaturProduct) return;
 
-  // Gunakan faceOptions[0] dan faceOptions[1]
   if (selectedKarikaturOption === faceOptions[0]) {
     setDisplayedPrice(
       priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || product.price
@@ -494,7 +562,6 @@ useEffect(() => {
       priceList.Additional["Tambahan Wajah Karikatur diatas 10 wajah"] || product.price
     );
   } else {
-    // Set default ke option pertama
     setSelectedKarikaturOption(faceOptions[0]);
     setDisplayedPrice(
       priceList.Additional["Tambahan Wajah Karikatur 1-9 wajah"] || product.price
@@ -502,14 +569,12 @@ useEffect(() => {
   }
 }, [selectedKarikaturOption, product, faceOptions]);
 
-
 const handleAddToCart = () => {
   const finalQty = quantity === "" ? 1 : quantity;
   const faceCountLabel = "1–9 wajah";
 
   let productName = "";
   
-  // 🎯 DETEKSI JENIS PRODUK
   const isKarikaturProduct = product.name
     ?.toLowerCase()
     .includes("biaya tambahan wajah karikatur");
@@ -532,7 +597,6 @@ const handleAddToCart = () => {
   const is8RProduct = product.name?.toLowerCase().includes("8r") || 
                      selectedSizeFrame?.toLowerCase().includes("8r");
   
-  // 🎯 GUNAKAN productVariations DARI getProductVariations
   const productVariations = getProductVariations(product.category, product.name);
   
   let variationOptions: string[] = [];
@@ -548,26 +612,22 @@ const handleAddToCart = () => {
   } else if (is8RProduct) {
     variationOptions = ["Dus Kraft + Paperbag", "Black Hardbox + Paperbag"];
   } else if (productVariations.length > 0) {
-    // 🎯 GUNAKAN productVariations DARI getProductVariations
     variationOptions = productVariations;
   } else {
-    // Default untuk produk frame biasa
     variationOptions = ["Frame Kaca", "Frame Acrylic"];
   }
   
-  // 🎯 PERBAIKAN: BERSIHKAN selectedShading DARI "2D" SEBELUM DIKIRIM
   const cleanShadingStyle = (shading: string): string => {
     if (!shading) return "";
     return shading
-      .replace(/^2d\s+/i, "") // hapus "2d" di awal
-      .replace(/\s*2d\s*/gi, " ") // hapus "2d" di tengah
-      .replace(/\s+/g, " ") // hapus spasi berlebih
+      .replace(/^2d\s+/i, "")
+      .replace(/\s*2d\s*/gi, " ")
+      .replace(/\s+/g, " ")
       .trim();
   };
   
   const cleanedShadingStyle = cleanShadingStyle(selectedShading);
   
-  // 🎯 TENTUKAN SELECTED OPTION
   let selectedOption = "";
   
   if (isKarikaturProduct) {
@@ -583,14 +643,11 @@ const handleAddToCart = () => {
   } else if (is8RProduct) {
     selectedOption = "Dus Kraft + Paperbag";
   } else if (productVariations.length > 0) {
-    // 🎯 GUNAKAN selectedVariation (yang dipilih di halaman produk)
     selectedOption = selectedVariation || productVariations[0];
   } else {
     selectedOption = "Frame Kaca";
   }
 
-  
-  // 🎯 TENTUKAN NAMA PRODUK
   if (isAcrylicStand) {
     productName = `Acrylic Stand ${product.name}`;
   } 
@@ -614,7 +671,6 @@ const handleAddToCart = () => {
     productName = product.name || "Default Product Name";
   }
   
-  // 🎯 SET PACKAGING PRICE MAP UNTUK 8R
   let packagingPriceMap: Record<string, number> = {};
   if (is8RProduct) {
     packagingPriceMap = {
@@ -637,7 +693,7 @@ const handleAddToCart = () => {
       backgroundType: background === "Custom" ? "BG Custom" : "BG Default",
       includePacking,
       frameSize: selectedSizeFrame,
-      shadingStyle: cleanedShadingStyle, // 🎯 GUNAKAN cleanedShadingStyle YANG SUDAH DIBERSIHKAN
+      shadingStyle: cleanedShadingStyle,
       isAcrylicStand: isAcrylicStand,
       selectedOption: selectedOption,
       isAdditionalProduct: isKarikaturProduct || isManyFacesProduct || 
@@ -665,15 +721,26 @@ const previewRef = useRef<HTMLDivElement | null>(null);
             Little Amora
           </Link>{" "}
           &gt;
-          <Link to="/products" className="mx-1">
+          <Link to="/products" className="mx-1 hover:underline">
               {t("product.breadcrumbProducts")}
           </Link>{" "}
           &gt;
           <span
-            className="mx-1 cursor-pointer"
+            className="mx-1 cursor-pointer hover:underline"
             onClick={() => {
-              if (product.category.toLowerCase().includes("3d")) {
-                navigate(`/products?category=${encodeURIComponent(product.category)}`);
+              const categoryLower = product.category.toLowerCase();
+              
+              // Navigasi berdasarkan kategori dengan param yang konsisten
+              if (categoryLower.includes("3d")) {
+                navigate(`/products?category=3d&type=3d_frame`);
+              } else if (categoryLower.includes("2d")) {
+                navigate(`/products?category=2d&type=2d_frame`);
+              } else if (categoryLower.includes("acrylic")) {
+                navigate(`/products?category=acrylic`);
+              } else if (categoryLower.includes("softcopy")) {
+                navigate(`/products?category=softcopy`);
+              } else if (categoryLower.includes("additional")) {
+                navigate(`/products?category=additional`);
               } else {
                 navigate("/products");
               }
@@ -682,7 +749,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
             {product.category} &gt;
           </span>
           
-          <span className="mx-1">{product.title}</span>
+          <span className="mx-1 text-gray-600">{product.title}</span>
         </div>
 
         {/* Layout - Mobile: Stack vertically, Desktop: Grid */}
@@ -999,7 +1066,6 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                           </label>
                           <div className="flex flex-row flex-wrap gap-2 md:-translate-x-[165px] md:translate-y-2 font-poppinsRegular">
                             {product.variations.map((variation) => {
-                              // Terjemahkan di sini saja
                               let displayText = variation;
                               if (variation === "Frame Kaca") displayText = t("product.frameGlass");
                               if (variation === "Frame Acrylic") displayText = t("product.frameAcrylic");
@@ -1321,7 +1387,7 @@ const previewRef = useRef<HTMLDivElement | null>(null);
     {t("product.details")}
   </h2>
   
-  {/* 🆕 SEMUA DETAIL DARI ENGLISH VERSION DITAMPILKAN DI SINI */}
+  {/*  SEMUA DETAIL DARI ENGLISH VERSION DITAMPILKAN DI SINI */}
   {product.hasDescriptionData ? (
     <div className="grid grid-cols-[max-content_max-content_1fr] gap-x-1 md:gap-x-2 gap-y-2 text-[13px] md:text-[15px] items-baseline">
       {Object.entries(product.details).map(([key, value]) => (
@@ -1390,22 +1456,18 @@ const previewRef = useRef<HTMLDivElement | null>(null);
                 },
               ];
 
-              // helper: cari produk Additional dengan prefer exact match lalu fallback ke includes
               const findAdditionalProduct = (nameToMatch) => {
                 if (!nameToMatch) return null;
                 const needle = nameToMatch.trim().toLowerCase();
-                // exact match first
                 const exact = allProducts.find(
                   (p) => p.category === "Additional" && p.name?.trim().toLowerCase() === needle
                 );
                 if (exact) return exact;
-                // fallback: includes
                 return allProducts.find(
                   (p) => p.category === "Additional" && p.name?.trim().toLowerCase().includes(needle)
                 ) || null;
               };
 
-              // map ke produk yang benar menggunakan findAdditionalProduct
               const additionalProducts = additionalProductsMap
                 .map((item) => {
                   const found = findAdditionalProduct(item.targetProduct);
@@ -1422,7 +1484,6 @@ const previewRef = useRef<HTMLDivElement | null>(null);
 
               const handleCardClick = (product: Product & { targetProduct: string }) => {
                 const targetName = product.targetProduct.trim().toLowerCase();
-                // prefer exact match when navigating
                 const targetProduct =
                   allProducts.find((p) => p.category === "Additional" && p.name?.trim().toLowerCase() === targetName)
                   || allProducts.find((p) => p.category === "Additional" && p.name?.trim().toLowerCase().includes(targetName));

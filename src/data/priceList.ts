@@ -36,7 +36,7 @@ export const priceList = {
     "12R ai": 296800,
   },
   "Acrylic Stand": {
-    "Acrylic Stand 2cm size 15x15cm": 455800,
+    "Acrylic Stand 2cm size 15x15cm": 497800,
     "Acrylic Stand 3mm size 15x15cm 1 sisi": 324800,
     "Acrylic Stand 3mm size A4 2 sisi": 455800,
     "Acrylic Stand 3mm size A3 2 sisi": 595800,
