@@ -206,7 +206,7 @@ const SizeGuide: React.FC = () => {
 
   const SectionTitle = ({ title }: { title: string }) => (
     <div className={`relative my-6 mb-8 md:my-8 md:mb-10 text-center w-screen left-1/2 -translate-x-1/2 ${isMobile ? 'px-2' : ''}`}>
-      <h1 className={`inline-block px-4 font-nataliecaydence relative z-10 ${isMobile ? 'text-2xl' : 'text-4xl'}`}>
+      <h1 className={`inline-block px-4 font-nataliecaydence relative z-10 ${isMobile ? 'text-[21px]' : 'text-4xl'}`}>
         {title}
       </h1>
       <div className={`absolute top-1/2 left-0 border-t-2 md:border-t-4 border-black transform -translate-y-1/2 ${isMobile ? 'w-[10%]' : 'w-[15%] md:w-[20%]'}`}></div>
